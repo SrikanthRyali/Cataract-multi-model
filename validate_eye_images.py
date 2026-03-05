@@ -1,7 +1,7 @@
 import os
 import csv
 
-from app import basic_image_validation
+from app import is_eye_image
 
 
 def main():
@@ -23,15 +23,17 @@ def main():
             for cls in ("Cataract", "Normal"):
                 folder = os.path.join(dataset_root, split, cls)
                 if not os.path.isdir(folder):
+                    print(f"⚠️  Skipping missing folder: {folder}")
                     continue
                 for fname in os.listdir(folder):
                     fpath = os.path.join(folder, fname)
                     if not os.path.isfile(fpath):
                         continue
-                    # run the validator
-                    is_valid, error_msg = basic_image_validation(fpath)
+                    # run the 5-layer robust is_eye_image validator
+                    is_valid, error_msg = is_eye_image(fpath)
                     t_cnt += 1
-                    print("running...", fname, t_cnt, "->", is_valid)
+                    status = "✓ VALID" if is_valid else "✗ INVALID"
+                    print(f"{status} | {fname} | {t_cnt} | {error_msg if not is_valid else ''}")
                     buffer.append((fpath, split, cls, is_valid, error_msg))
                     count += 1
 
@@ -43,7 +45,8 @@ def main():
         if buffer:
             writer.writerows(buffer)
 
-    print(f"Finished validation. Report written to {output_csv}")
+    print(f"\n✓ Finished validation. Report written to {output_csv}")
+    print(f"Total images processed: {t_cnt}")
 
 
 if __name__ == "__main__":

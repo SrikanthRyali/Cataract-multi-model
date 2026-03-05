@@ -19,7 +19,8 @@ import textwrap
 load_dotenv()
 
 MODEL_DIR    = "models"
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+# GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_API_KEY='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'
 
 # ── Classes ────────────────────────────────────────────────────
 classes = ["Cataract", "Normal"]
@@ -101,8 +102,10 @@ def get_model(model_name):
 # ══════════════════════════════════════════════════════════════
 def get_groq_summary(final_result, model_results):
     if not GROQ_API_KEY:
+        print("❌ Groq API Key not configured!")
         return "Groq API Key not configured. Please set the GROQ_API_KEY environment variable."
     try:
+        print(f"🔄 Generating Groq summary for prediction: {final_result['prediction']} ({final_result['confidence']}%)")
         client    = Groq(api_key=GROQ_API_KEY)
         base_data = (
             f"- Diagnosis: {final_result['prediction']}\n"
@@ -203,8 +206,10 @@ def get_groq_summary(final_result, model_results):
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0, max_tokens=2000,
         )
+        print(f"🔍 Groq API Response: {completion.choices[0].message.content[:200]}...")
         return completion.choices[0].message.content
     except Exception as e:
+        print(f"❌ Groq API Error: {str(e)}")
         return f"Error generating summary: {str(e)}"
 
 
@@ -619,11 +624,14 @@ def chat():
     last_result   = session.get("last_result")
 
     if not user_msg:
+        print("❌ Chat: Empty message received")
         return jsonify({"reply": "I didn't receive your message. Please try again. 🤖"})
     if not GROQ_API_KEY:
+        print("❌ Chat: Groq API Key not configured!")
         return jsonify({"reply": "My AI brain (Groq) is not configured. Please set GROQ_API_KEY! 🧠"})
 
     try:
+        print(f"💬 Processing chat message in {selected_lang}: '{user_msg[:50]}...'")
         client  = Groq(api_key=GROQ_API_KEY)
         context = (
             "The user just scanned their eye. "
@@ -650,9 +658,12 @@ def chat():
             ],
             temperature=0.5, max_tokens=500,
         )
-        return jsonify({"reply": completion.choices[0].message.content})
+        reply = completion.choices[0].message.content
+        print(f"💬 Chat Response ({selected_lang}): {reply[:100]}...")
+        return jsonify({"reply": reply})
 
     except Exception as e:
+        print(f"❌ Chat API Error: {str(e)}")
         return jsonify({"reply": f"Oops! I encountered an error: {str(e)} 🤖"})
 
 
