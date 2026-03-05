@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Cataract Hub — Clinical Eye Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal:  #0d9488;
+            --sky:   #0ea5e9;
+            --blue:  #2563eb;
+            --rose:  #e11d48;
+            --ink:   #0f172a;
+            --muted: #64748b;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f0fdf9;
+            background-image:
+                radial-gradient(ellipse 80% 55% at 0%   0%,   #ccfbf1 0%, transparent 60%),
+                radial-gradient(ellipse 65% 55% at 100% 100%, #dbeafe 0%, transparent 60%),
+                radial-gradient(ellipse 45% 45% at 55%  45%,  #f0f9ff 0%, transparent 70%);
+            background-attachment: fixed;
+            color: var(--ink);
+            overflow-x: hidden;
+            min-height: 100dvh;
+        }
+
+        /* ── Glass ── */
+        .glass {
+            background: rgba(255,255,255,0.76);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid rgba(255,255,255,0.58);
+        }
+        .glass-dark {
+            background: rgba(15,23,42,0.82);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .font-display { font-family: 'Sora', sans-serif; }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--sky) 50%, var(--blue) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--sky) 55%, var(--blue) 100%);
+            color: white;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(13,148,136,0.4); }
+        .btn-primary:active { transform: scale(0.97); }
+
+        /* ════════════════════════════════════════
+           CHAT WIDGET — bottom-right floating panel
+           ════════════════════════════════════════ */
+
+        /* FAB pill — looks like Chrome's "Customise Chrome" */
+        #chat-fab {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 1.1rem 0.55rem 0.55rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 20px rgba(13,148,136,0.35);
+            background: white;
+            transition: transform 0.22s, box-shadow 0.22s;
+            user-select: none;
+        }
+        #chat-fab:hover  { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(13,148,136,0.45); }
+        #chat-fab:active { transform: scale(0.95); }
+
+        #chat-fab .fab-avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #0d9488, #2563eb);
+            animation: pulseGlow 2.5s ease infinite;
+        }
+        #chat-fab .fab-label {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--ink);
+            white-space: nowrap;
+        }
+
+        /* Chat panel */
+        #chat-panel {
+            position: fixed;
+            bottom: 5rem;
+            right: 1.25rem;
+            width: min(360px, calc(100vw - 2rem));
+            height: min(520px, calc(100dvh - 7rem));
+            z-index: 199;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(15,23,42,0.2), 0 4px 16px rgba(15,23,42,0.1);
+            transform: scale(0.85) translateY(20px);
+            transform-origin: bottom right;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+        }
+        #chat-panel.open {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Mobile: panel takes more height */
+        @media (max-width: 480px) {
+            #chat-panel {
+                bottom: 5.5rem;
+                right: 0.75rem;
+                left: 0.75rem;
+                width: auto;
+                height: min(480px, calc(100dvh - 8rem));
+                border-radius: 1.25rem;
+            }
+            #chat-fab {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+
+        /* Typing dots */
+        .dot {
+            width: 6px; height: 6px;
+            background: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
+            animation: dotBounce 1.2s ease-in-out infinite;
+        }
+        .dot:nth-child(2) { animation-delay: 0.18s; }
+        .dot:nth-child(3) { animation-delay: 0.36s; }
+        @keyframes dotBounce {
+            0%,80%,100% { transform: translateY(0); }
+            40%         { transform: translateY(-5px); }
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes floatY {
+            0%,100% { transform: translateY(0); }
+            50%     { transform: translateY(-7px); }
+        }
+        @keyframes pulseGlow {
+            0%,100% { box-shadow: 0 0 0 0 rgba(13,148,136,0.5); }
+            60%     { box-shadow: 0 0 0 8px rgba(13,148,136,0); }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes confIn { from { width: 0%; } }
+
+        .anim-0 { animation: fadeUp 0.55s 0s    ease both; }
+        .anim-1 { animation: fadeUp 0.55s 0.10s ease both; }
+        .anim-2 { animation: fadeUp 0.55s 0.20s ease both; }
+        .anim-3 { animation: fadeUp 0.55s 0.30s ease both; }
+        .anim-4 { animation: fadeUp 0.55s 0.40s ease both; }
+        .anim-5 { animation: fadeUp 0.55s 0.50s ease both; }
+
+        .float-anim   { animation: floatY 3.2s ease-in-out infinite; }
+        .msg-anim     { animation: msgIn 0.25s ease both; }
+
+        /* ── Upload zone ── */
+        #drop-zone {
+            transition: border-color 0.25s, background 0.25s, transform 0.2s;
+        }
+        #drop-zone:hover, #drop-zone.drag-over {
+            border-color: var(--teal);
+            background: rgba(13,148,136,0.035);
+            transform: scale(1.005);
+        }
+
+        /* ── Card hover ── */
+        .card-lift { transition: transform 0.25s, box-shadow 0.25s; }
+        .card-lift:hover { transform: translateY(-3px); box-shadow: 0 18px 48px rgba(13,148,136,0.14); }
+
+        /* ── Nav links ── */
+        .nav-link {
+            position: relative;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.83rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -3px; left: 0; right: 100%;
+            height: 2px;
+            background: var(--teal);
+            border-radius: 1px;
+            transition: right 0.25s;
+        }
+        .nav-link:hover { color: var(--teal); }
+        .nav-link:hover::after { right: 0; }
+
+        /* ── Section badge ── */
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--teal);
+            background: rgba(13,148,136,0.08);
+            border: 1px solid rgba(13,148,136,0.2);
+            padding: 0.28rem 0.85rem;
+            border-radius: 9999px;
+        }
+
+        /* ── AI Summary markdown ── */
+        .md-body { line-height: 1.7; color: #334155; font-size: 0.875rem; }
+        .md-body h2 {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.97rem; font-weight: 700; color: var(--ink);
+            margin: 1.75rem 0 0.65rem;
+            padding-left: 0.85rem;
+            border-left: 3px solid var(--teal);
+        }
+        .md-body h3 { font-size: 0.88rem; font-weight: 700; color: var(--blue); margin: 1.25rem 0 0.4rem; }
+        .md-body p  { margin-bottom: 0.8rem; }
+        .md-body ul, .md-body ol {
+            display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem;
+        }
+        .md-body li {
+            position: relative;
+            background: white;
+            padding: 0.6rem 1rem 0.6rem 2.4rem;
+            border-radius: 0.7rem;
+            border-left: 3px solid var(--teal);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            font-size: 0.82rem;
+        }
+        .md-body li::before { content: "💡"; position: absolute; left: 0.7rem; top: 0.55rem; }
+        .md-body strong { color: var(--ink); }
+
+        /* ── Confidence bar ── */
+        .conf-fill {
+            height: 100%; border-radius: 9999px;
+            animation: confIn 1.3s cubic-bezier(0.22,1,0.36,1) both;
+            animation-delay: 0.3s;
+        }
+
+        /* ── Loading overlay ── */
+        #loading-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.42);
+            backdrop-filter: blur(22px);
+            z-index: 500;
+            flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 1.5rem;
+        }
+        .spinner {
+            width: 52px; height: 52px;
+            border: 4px solid rgba(13,148,136,0.18);
+            border-top-color: var(--teal);
+            border-radius: 50%;
+            animation: spin 0.85s linear infinite;
+        }
+
+        /* ── Error shake ── */
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%,60% { transform: translateX(-5px); }
+            40%,80% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.45s ease both; }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+        *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     FULL-WIDTH MAIN CONTENT
+═══════════════════════════════════════════════════════ -->
+<main>
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 pt-5 pb-28">
+
+    <!-- ── Navbar ── -->
+    <nav class="glass rounded-2xl px-4 sm:px-7 py-3.5 mb-10 flex items-center justify-between shadow-sm anim-0">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0"
+                 style="background:linear-gradient(135deg,#0d9488,#2563eb)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+            </div>
+            <span class="font-display font-bold text-slate-800 text-[15px]">Cataract Hub</span>
+        </div>
+        <div class="flex items-center gap-5 sm:gap-7">
+            <a href="#about"      class="nav-link">About</a>
+            <a href="#tech-stack" class="nav-link hidden sm:inline">Tech</a>
+            <a href="#helps"      class="nav-link">Help</a>
+        </div>
+    </nav>
+
+    <!-- ── Hero ── -->
+    <header class="text-center mb-10 sm:mb-14 anim-1">
+        <div class="badge mb-5">
+            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+            AI Eye Screening
+        </div>
+        <h1 class="font-display font-extrabold text-slate-900 leading-[1.07] tracking-tight mb-3"
+            style="font-size:clamp(2.2rem,7vw,4rem)">
+            Cataract <span class="text-gradient">Hub</span>
+        </h1>
+        <p class="text-slate-400 font-medium" style="font-size:clamp(0.9rem,2.5vw,1.1rem)">
+            Upload a single eye image for instant AI-powered analysis
+        </p>
+    </header>
+
+    <!-- ── Upload Card ── -->
+    <section class="glass rounded-3xl shadow-xl p-2 mb-8 anim-2">
+        <div class="bg-white/45 rounded-[1.4rem] p-5 sm:p-8 lg:p-10">
+            <form action="/" method="POST" enctype="multipart/form-data" id="main-upload-form">
+
+                <div id="drop-zone"
+                    class="relative border-2 border-dashed border-slate-200 rounded-2xl p-10 sm:p-14 lg:p-20 text-center cursor-pointer">
+                    <input type="file" name="file" id="file-input"
+                        class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" accept="image/*"
+                        onchange="previewFile(event)">
+
+                    <!-- Preview -->
+                    <div id="preview-container" class="hidden flex justify-center mb-6">
+                        <div class="p-2 glass rounded-2xl shadow-xl inline-block">
+                            <img id="image-preview" src="#" alt="Preview"
+                                class="max-h-56 sm:max-h-80 rounded-xl border border-white/80 object-contain">
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div id="upload-instruction">
+                        <div class="float-anim w-16 h-16 sm:w-20 sm:h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center shadow-inner"
+                             style="background:linear-gradient(135deg,#f0fdf9,#e0f2fe)">
+                            <svg class="text-teal-500 w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-display font-bold text-slate-800 mb-2"
+                            style="font-size:clamp(1.15rem,3.5vw,1.55rem)">Upload Eye Image</h3>
+                        <p class="text-slate-400 text-sm sm:text-base">Single eye only · JPG / PNG / WEBP</p>
+                        <p class="text-teal-500 text-xs sm:text-sm font-semibold mt-2.5">
+                            Tap to browse &nbsp;·&nbsp; or drag &amp; drop
+                        </p>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn"
+                    class="btn-primary w-full mt-5 py-4 sm:py-5 rounded-2xl text-sm sm:text-base font-bold shadow-xl hidden"
+                    style="letter-spacing:0.02em">
+                    ✦ &nbsp;Start Vision Analysis
+                </button>
+            </form>
+
+            {% if error_message %}
+            <div class="shake mt-5 p-4 sm:p-5 rounded-2xl flex items-start gap-3.5 border border-rose-200"
+                 style="background:#fff1f2">
+                <div class="w-10 h-10 rounded-xl bg-rose-500 flex items-center justify-center text-white shrink-0 text-sm shadow-md">⚠</div>
+                <p class="text-rose-700 font-semibold text-sm leading-relaxed pt-1">{{ error_message }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if prediction_data %}
+    <!-- ── Results ── -->
+    <div class="space-y-6 anim-3">
+
+        <!-- Verdict + Model Logs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
+
+            <!-- Verdict -->
+            <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-lg card-lift">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-5">Eye Condition</p>
+
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-md
+                    {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-50 border border-rose-200{% else %}bg-teal-50 border border-teal-200{% endif %}">
+                    {% if prediction_data.final.prediction == 'Cataract' %}🚨{% else %}✨{% endif %}
+                </div>
+
+                <h2 class="font-display font-extrabold mb-2
+                    {% if prediction_data.final.prediction == 'Cataract' %}text-rose-600{% else %}text-teal-600{% endif %}"
+                    style="font-size:clamp(1.75rem,5vw,2.5rem)">
+                    {{ prediction_data.final.prediction }}
+                </h2>
+
+                <p class="text-slate-500 text-sm font-medium mb-5">
+                    Confidence: <strong class="text-slate-800">{{ prediction_data.final.confidence }}%</strong>
+                </p>
+
+                <div class="w-full bg-slate-100 rounded-full overflow-hidden shadow-inner" style="height:10px">
+                    <div class="conf-fill {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-500{% else %}bg-teal-500{% endif %}"
+                         style="width:{{ prediction_data.final.confidence|int }}%"></div>
+                </div>
+
+                {% if prediction_data.final.prediction == 'Cataract' %}
+                <div class="mt-4 w-full p-3 rounded-xl bg-rose-50 border border-rose-100 text-xs text-rose-600 font-semibold leading-snug">
+                    ⚕️ Consult a real eye doctor before taking any medical steps.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Model Logs -->
+            <div class="glass rounded-3xl p-6 sm:p-8 shadow-lg card-lift">
+                <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-5">Model Intelligence</p>
+                <div class="space-y-2.5 overflow-y-auto pr-0.5" style="max-height:240px">
+                    {% for item in prediction_data.individual %}
+                    <div class="bg-white/70 px-4 py-3 rounded-xl flex justify-between items-center border border-slate-50 hover:shadow-md transition-all">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-2 h-2 rounded-full shrink-0
+                                {% if item.prediction == 'Cataract' %}bg-rose-400{% else %}bg-teal-400 animate-pulse{% endif %}"></div>
+                            <span class="font-semibold text-slate-700 text-sm truncate">{{ item.model }}</span>
+                        </div>
+                        <div class="text-right shrink-0 ml-3">
+                            <div class="text-[10px] font-bold text-slate-300 uppercase">{{ item.confidence }}%</div>
+                            <div class="text-xs font-bold {% if item.prediction == 'Cataract' %}text-rose-500{% else %}text-teal-600{% endif %}">
+                                {{ item.prediction }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Report -->
+        <section class="glass rounded-3xl p-6 sm:p-10 lg:p-14 shadow-xl card-lift">
+            <div class="flex items-center gap-4 mb-8 pb-7 border-b border-slate-100/80">
+                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xl"
+                     style="width:clamp(2.5rem,8vw,3.5rem);height:clamp(2.5rem,8vw,3.5rem);background:linear-gradient(135deg,#0d9488,#2563eb)">
+                    <svg style="width:46%;height:46%" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="font-display font-extrabold text-slate-900 leading-tight"
+                        style="font-size:clamp(1.2rem,4vw,2rem)">AI Report</h2>
+                    <p class="text-teal-600 text-[11px] font-bold uppercase tracking-[0.2em] mt-1">Verified by Llama-3 · 70B</p>
+                </div>
+            </div>
+            <div id="groq-summary-text" class="md-body">{{ prediction_data.summary }}</div>
+        </section>
+    </div>
+    {% endif %}
+
+    <!-- ── Info Sections ── -->
+    <div class="mt-16 space-y-4 anim-5">
+        <section id="about" class="glass rounded-2xl p-6 sm:p-8 card-lift">
+            <h3 class="font-display font-bold text-slate-900 text-base mb-3 flex items-center gap-2">
+                <span class="text-teal-500">✦</span> About
+            </h3>
+            <p class="text-slate-600 text-sm leading-relaxed">This app gives a quick AI screening to identify whether an uploaded eye image shows signs of cataract or looks normal. Multiple trained models vote for a consensus-based answer.</p>
+            <p class="text-slate-500 text-sm leading-relaxed mt-2">Intended as a screening aid — not a medical diagnosis. If the system flags a potential cataract, please consult an eye specialist.</p>
+        </section>
+
+        <section id="tech-stack" class="glass rounded-2xl p-6 sm:p-8 card-lift">
+            <h3 class="font-display font-bold text-slate-900 text-base mb-3 flex items-center gap-2">
+                <span class="text-sky-500">⚡</span> Tech Stack
+            </h3>
+            <p class="text-slate-600 text-sm leading-relaxed">Backend: Python · Flask · PyTorch. Frontend: Tailwind CSS with vanilla JS. Utilities: OpenCV for validation, Pillow for image handling, Groq LLM (Llama-3 70B) for summaries and chat.</p>
+        </section>
+
+        <section id="helps" class="glass rounded-2xl p-6 sm:p-8 card-lift">
+            <h3 class="font-display font-bold text-slate-900 text-base mb-3 flex items-center gap-2">
+                <span class="text-blue-500">❓</span> Help
+            </h3>
+            <p class="text-slate-600 text-sm leading-relaxed"><strong>Upload:</strong> tap the drop zone or drag an image of one open eye. Images showing both eyes, full faces, or unrelated objects are rejected.</p>
+            <p class="text-slate-600 text-sm leading-relaxed mt-2"><strong>Chat:</strong> click the <strong>"Medical AI"</strong> button at the bottom-right corner to open the assistant panel. Switch reply language from the dropdown in the chat header.</p>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-20 text-center pb-24">
+        <div class="flex justify-center gap-2 mb-4">
+            <span class="w-8 h-1 rounded-full bg-teal-400/70"></span>
+            <span class="w-8 h-1 rounded-full bg-sky-400/70"></span>
+            <span class="w-8 h-1 rounded-full bg-blue-400/70"></span>
+        </div>
+        <p class="font-display font-bold text-slate-400 text-[11px] uppercase tracking-widest mb-2">
+            Cataract Intelligence Hub
+        </p>
+        <p class="text-slate-400/60 text-[11px] max-w-sm mx-auto leading-relaxed">
+            This tool is a screening aid only and does not replace professional medical advice. Always consult a qualified eye doctor.
+        </p>
+    </footer>
+
+</div>
+</main>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOATING CHAT WIDGET  (bottom-right, always on top)
+═══════════════════════════════════════════════════════ -->
+
+<!-- Chat panel (pops up above FAB) -->
+<div id="chat-panel" class="glass shadow-2xl">
+
+    <!-- Panel header -->
+    <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-100/70 bg-white/50 shrink-0 rounded-t-[1.5rem]">
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0"
+                 style="background:linear-gradient(135deg,#0d9488,#2563eb);animation:pulseGlow 2.5s ease infinite">
+                👁️
+            </div>
+            <div>
+                <p class="font-display font-bold text-[13px] text-slate-800 leading-tight">Medical AI</p>
+                <select id="chat-lang"
+                    class="text-[10px] bg-transparent border-none outline-none text-slate-500 font-semibold uppercase tracking-wide cursor-pointer">
+                    <option value="English">🇬🇧 English</option>
+                    <option value="Telugu">🇮🇳 Telugu</option>
+                    <option value="Hindi">🇮🇳 Hindi</option>
+                </select>
+            </div>
+        </div>
+        <!-- Close X -->
+        <button onclick="toggleChat()" aria-label="Close chat"
+            class="w-7 h-7 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-400 flex items-center justify-center text-slate-400 transition-colors text-xs font-bold">
+            ✕
+        </button>
+    </div>
+
+    <!-- Messages -->
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-3.5 space-y-3" style="overscroll-behavior:contain">
+        <div class="msg-anim mr-4 p-3.5 rounded-2xl rounded-tl-none border border-teal-100/50 text-sm text-slate-600 leading-relaxed"
+             style="background:linear-gradient(135deg,#f0fdf9,#f0f9ff)">
+            Welcome! I can explain your scan results or answer cataract questions. 👁️
+        </div>
+    </div>
+
+    <!-- Input -->
+    <form id="chat-form" class="p-3 border-t border-slate-100/60 flex gap-2 bg-white/60 shrink-0 rounded-b-[1.5rem]">
+        <input type="text" id="chat-input"
+            placeholder="Ask me anything…" autocomplete="off"
+            class="flex-1 bg-slate-100 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400 border border-transparent transition-all placeholder-slate-400 min-w-0">
+        <button type="submit"
+            class="btn-primary w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7-7 7M3 12h18"/>
+            </svg>
+        </button>
+    </form>
+</div>
+
+<!-- FAB pill button -->
+<button id="chat-fab" onclick="toggleChat()" aria-label="Open Medical AI chat">
+    <div class="fab-avatar text-white">👁️</div>
+    <span class="fab-label">Medical AI</span>
+</button>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     LOADING OVERLAY
+═══════════════════════════════════════════════════════ -->
+<div id="loading-overlay">
+    <div class="glass rounded-3xl px-10 sm:px-14 py-10 flex flex-col items-center shadow-2xl text-center mx-4 w-full max-w-xs">
+        <div class="spinner mb-5"></div>
+        <h2 class="font-display font-extrabold text-slate-900 text-lg mb-1">Analysing…</h2>
+        <p class="text-teal-600 text-[11px] font-bold uppercase tracking-widest animate-pulse">Running all models</p>
+    </div>
+</div>
+
+
+<script>
+    /* ── Markdown render ── */
+    const md = window.markdownit({ html: true, linkify: true, typographer: true });
+    const summaryEl = document.getElementById('groq-summary-text');
+    if (summaryEl) {
+        const raw = (summaryEl.textContent || summaryEl.innerText).trim();
+        if (raw) summaryEl.innerHTML = md.render(raw.split('\n').map(l => l.trim()).join('\n'));
+    }
+
+    /* ── Chat panel toggle ── */
+    let chatOpen = false;
+    function toggleChat() {
+        chatOpen = !chatOpen;
+        document.getElementById('chat-panel').classList.toggle('open', chatOpen);
+        if (chatOpen) setTimeout(() => document.getElementById('chat-input').focus(), 320);
+    }
+
+    /* ── File preview ── */
+    function previewFile(e) {
+        if (!e.target.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            document.getElementById('image-preview').src = reader.result;
+            document.getElementById('preview-container').classList.remove('hidden');
+            document.getElementById('upload-instruction').classList.add('hidden');
+            const btn = document.getElementById('submit-btn');
+            btn.classList.remove('hidden');
+            btn.style.animation = 'fadeUp 0.4s ease both';
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    }
+
+    /* ── Upload → loading overlay ── */
+    document.getElementById('main-upload-form').onsubmit = () => {
+        document.getElementById('loading-overlay').style.display = 'flex';
+    };
+
+    /* ── Drag & drop ── */
+    const dz = document.getElementById('drop-zone');
+    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag-over'); }));
+    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, () => dz.classList.remove('drag-over')));
+
+    /* ── Chat ── */
+    const chatForm  = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatBox   = document.getElementById('chat-messages');
+
+    chatForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const msg  = chatInput.value.trim();
+        const lang = document.getElementById('chat-lang').value;
+        if (!msg) return;
+
+        chatInput.disabled    = true;
+        chatInput.placeholder = 'AI is thinking…';
+        addMsg(msg, 'user');
+        chatInput.value = '';
+
+        /* typing indicator */
+        const typing = document.createElement('div');
+        typing.className = 'msg-anim mr-4 bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex gap-1.5 items-center';
+        typing.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+        chatBox.appendChild(typing);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const res  = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg, language: lang })
+            });
+            const data = await res.json();
+            typing.remove();
+            addMsg(data.reply, 'ai');
+        } catch {
+            typing.remove();
+            addMsg('Connection error. Please try again. ⚠️', 'ai');
+        } finally {
+            chatInput.disabled    = false;
+            chatInput.placeholder = 'Ask me anything…';
+            chatInput.focus();
+        }
+    };
+
+    function addMsg(text, side) {
+        const div = document.createElement('div');
+        if (side === 'user') {
+            div.className = 'msg-anim ml-4 p-3.5 rounded-2xl rounded-tr-none text-sm text-white shadow-md';
+            div.style.background = 'linear-gradient(135deg,#0d9488,#2563eb)';
+        } else {
+            div.className = 'msg-anim mr-4 bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-100 text-sm text-slate-700 shadow-sm';
+        }
+        div.innerHTML = `<p class="leading-relaxed">${text}</p>`;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+</script>
+</body>
+</html>

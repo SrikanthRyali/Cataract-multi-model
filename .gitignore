@@ -1,0 +1,8 @@
+.env
+models/
+static/uploads
+__pycache__/
+.idea/
+myenv/
+Dataset/
+static/
