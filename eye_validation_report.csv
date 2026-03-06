@@ -19,7 +19,7 @@ Dataset\Train\Cataract\cat_0_1806.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1811.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1815.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1819.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1820.jpg,Train,Cataract,False,"❌ Invalid Image: This appears to be a hand, leg, or other body part. Please upload a close-up photograph of an eye."
+Dataset\Train\Cataract\cat_0_1820.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1822.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1823.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1825.jpg,Train,Cataract,True,
@@ -29,7 +29,7 @@ Dataset\Train\Cataract\cat_0_1830.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1831.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1834.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1837.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1838.jpg,Train,Cataract,False,"❌ Invalid Image: This appears to be a hand, leg, or other body part. Please upload a close-up photograph of an eye."
+Dataset\Train\Cataract\cat_0_1838.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1841.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1846.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1847.jpg,Train,Cataract,True,
@@ -38,18 +38,18 @@ Dataset\Train\Cataract\cat_0_1849.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1850.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1851.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1852.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1853.jpg,Train,Cataract,False,"❌ Invalid Image: This appears to be a hand, leg, or other body part. Please upload a close-up photograph of an eye."
-Dataset\Train\Cataract\cat_0_1854.jpg,Train,Cataract,False,"❌ Invalid Image: This appears to be a hand, leg, or other body part. Please upload a close-up photograph of an eye."
+Dataset\Train\Cataract\cat_0_1853.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
+Dataset\Train\Cataract\cat_0_1854.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1855.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1862.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1868.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1869.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1871.jpg,Train,Cataract,True,
+Dataset\Train\Cataract\cat_0_1871.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1872.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1875.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1876.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1879.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1880.jpg,Train,Cataract,True,
+Dataset\Train\Cataract\cat_0_1880.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1882.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1884.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1885.jpg,Train,Cataract,True,
@@ -78,7 +78,7 @@ Dataset\Train\Cataract\cat_0_1936.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1939.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1943.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1945.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1946.jpg,Train,Cataract,True,
+Dataset\Train\Cataract\cat_0_1946.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1947.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1949.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1950.jpg,Train,Cataract,True,
@@ -91,9 +91,9 @@ Dataset\Train\Cataract\cat_0_1961.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1962.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1963.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1965.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1966.jpg,Train,Cataract,True,
+Dataset\Train\Cataract\cat_0_1966.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1968.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1971.jpg,Train,Cataract,False,"❌ Invalid Image: This appears to be a hand, leg, or other body part. Please upload a close-up photograph of an eye."
+Dataset\Train\Cataract\cat_0_1971.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1973.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1975.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1977.jpg,Train,Cataract,True,
@@ -101,9 +101,9 @@ Dataset\Train\Cataract\cat_0_1979.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1980.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1981.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1984.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1987.jpg,Train,Cataract,True,
+Dataset\Train\Cataract\cat_0_1987.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1988.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_1989.jpg,Train,Cataract,True,
+Dataset\Train\Cataract\cat_0_1989.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_1992.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1993.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_1995.jpg,Train,Cataract,True,
@@ -122,15 +122,15 @@ Dataset\Train\Cataract\cat_0_2015.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2019.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2020.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2026.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2027.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2028.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2030.jpg,Train,Cataract,False,"❌ Invalid Image: This appears to be a hand, leg, or other body part. Please upload a close-up photograph of an eye."
+Dataset\Train\Cataract\cat_0_2027.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
+Dataset\Train\Cataract\cat_0_2028.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
+Dataset\Train\Cataract\cat_0_2030.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_2031.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2034.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2035.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2038.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2039.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2041.jpg,Train,Cataract,True,
+Dataset\Train\Cataract\cat_0_2041.jpg,Train,Cataract,False,❌ Invalid Image: This does not appear to be a close-up eye photo. Please upload a clear photograph of a single open eye.
 Dataset\Train\Cataract\cat_0_2044.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2045.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2047.jpg,Train,Cataract,True,
@@ -139,13 +139,3 @@ Dataset\Train\Cataract\cat_0_2050.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2052.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2058.jpg,Train,Cataract,True,
 Dataset\Train\Cataract\cat_0_2059.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2062.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2067.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2069.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2070.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2073.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2077.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2079.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2080.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2082.jpg,Train,Cataract,True,
-Dataset\Train\Cataract\cat_0_2085.jpg,Train,Cataract,True,
