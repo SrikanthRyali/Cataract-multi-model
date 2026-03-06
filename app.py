@@ -611,6 +611,7 @@ def index():
         error_message=error_message,
     )
 
+add_memory_last_3_messsages = []
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -622,6 +623,8 @@ def chat():
         return jsonify({"reply": "I didn't receive your message. Please try again. 🤖"})
     if not GROQ_API_KEY:
         return jsonify({"reply": "My AI brain (Groq) is not configured. Please set GROQ_API_KEY! 🧠"})
+    if len(add_memory_last_3_messsages) > 7:
+        add_memory_last_3_messsages.pop(0)
 
     try:
         client  = Groq(api_key=GROQ_API_KEY)
@@ -630,13 +633,13 @@ def chat():
             f"Result: {json.dumps(last_result['final'] if last_result else 'No scan yet')}."
         )
         system_prompt = textwrap.dedent(f"""
-            You are a friendly AI Eye Assistant. Speak like a real person in plain everyday language.
+            You are a friendly AI Eye Assistant who can give hope in the deepest dark times. Speak like a real person in plain everyday language.
             {context}
+            Below is the memory attached for this user utilize this memory for better context : {add_memory_last_3_messsages}
             Keep responses VERY BRIEF — 2 to 4 sentences max.
             RESPOND ONLY IN {selected_lang.upper()} LANGUAGE.
             IF TELUGU: use only Telugu script (తెలుగు లిపి). NO English letters.
             IF HINDI: use only Devanagari script (देवनागरी). NO English letters.
-            Include EXACTLY ONE emoji in your entire response.
             NO asterisks (*) or square brackets ([]).
             Be professional but friendly — like a trusted friend.
             If the user asks about their scan, refer to the data provided.
@@ -650,6 +653,7 @@ def chat():
             ],
             temperature=0.5, max_tokens=500,
         )
+        add_memory_last_3_messsages.append(completion.choices[0].message.content)
         return jsonify({"reply": completion.choices[0].message.content})
 
     except Exception as e:

@@ -56,6 +56,7 @@ def load_data(data_dir, batch_size=64, blur_threshold=50, filter_blur=True):
 
 
 def visualize_samples(dataset, class_names, num_samples=5):
+    print("inside func")
     indices = torch.randint(0, len(dataset), (num_samples,))
     fig, axs = plt.subplots(1, num_samples, figsize=(15, 5))
 
@@ -67,7 +68,7 @@ def visualize_samples(dataset, class_names, num_samples=5):
         axs[i].imshow(image)
         axs[i].set_title(class_names[label])
         axs[i].axis("off")
-
+    print("at plt ")
     plt.show()
 
 train_loader, val_loader, class_names = load_data("Dataset", batch_size=64 )
