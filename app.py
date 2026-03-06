@@ -19,8 +19,8 @@ import textwrap
 load_dotenv()
 
 MODEL_DIR    = "models"
-# GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-GROQ_API_KEY= process.env.GROQ_API_KEY
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+# GROQ_API_KEY= process.env.GROQ_API_KEY
 
 # ── Classes ────────────────────────────────────────────────────
 classes = ["Cataract", "Normal"]
