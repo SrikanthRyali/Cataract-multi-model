@@ -59,10 +59,6 @@ MIN_CONFIDENCE   = 30     # % — below this result is unreliable
 MAX_ENTROPY      = 0.67   # above this model is too uncertain
 MAX_LAP_VARIANCE = 8000   # Laplacian variance above this → random noise / screenshot
 # Illustration / non-photo rejection thresholds (Layer 2b)
-# Real eye photos always have warm/skin-toned pixels (iris surround, sclera, eyelids).
-# Digital illustrations (cars, cartoons, graphics) have almost none.
-# Rule A: heavily saturated image with no skin → digital illustration
-# Rule B: neither skin tones nor warm tones present → not a biological photo
 ILLUS_HI_SAT_THRESH  = 0.60   # fraction of pixels with HSV-S > 200
 ILLUS_SKIN_THRESH    = 0.15   # fraction of skin-toned pixels
 ILLUS_WARM_THRESH    = 0.10   # fraction of warm-toned pixels (broader than skin)
@@ -209,54 +205,35 @@ def get_groq_summary(final_result, model_results):
 
 
 # ══════════════════════════════════════════════════════════════
-#  is_eye_image() — 5-layer robust single-eye validation
-#
-#  Accepts:  clinical/dataset eye images of all types:
-#            slit-lamp, ophthalmoscope, phone camera, close-ups,
-#            images with solid-colour dataset border strips,
-#            cataract eyes (low Laplacian — NOT used as lower bound)
-#
-#  Rejects:  non-eye uploads — screenshots, cars, random images,
-#            faces with two eyes, blank/solid, random noise
-#
-#  LAYER 1 — Size & blank check
-#  LAYER 2 — Noise/screenshot rejection via Laplacian upper bound
-#             (real biological eyes always have lap < 8000;
-#              random noise, JPEG screenshots hit 10,000–100,000)
-#  LAYER 2b— Digital illustration / non-photo rejection
-#             Real eye photos always have warm/skin-toned pixels around
-#             the iris (eyelids, sclera, skin). Digital art (cars,
-#             cartoons, graphics) has almost none.
-#             Rule A: hi_sat_frac > 0.60 AND skin_frac < 0.15
-#             Rule B: skin_frac < 0.10 AND warm_frac < 0.10
-#  LAYER 3 — Strip solid-colour dataset border artifacts
-#  LAYER 4 — Haar cascade (6-pass: 3 cascades × raw + CLAHE)
-#             Groups detections; uses score-dominance and border-
-#             proximity filtering to suppress eyelash/texture noise.
-#  LAYER 5 — Hough-circle iris fallback for extreme close-ups
-#             where cascades miss; filters edge circles, discards
-#             sub-dominant circles, rejects only when two large
-#             groups are genuinely far apart.
+#  is_eye_image() — 5‑layer robust single‑eye validation (FIXED)
 # ══════════════════════════════════════════════════════════════
 
 def _crop_solid_borders(img, gray, std_thresh=18):
-    """Remove solid-colour dataset border strips (column/row by column/row)."""
+    """Remove solid‑colour dataset border strips (column/row by column/row)."""
     h, w = gray.shape
     t, b, l, r = 0, h, 0, w
     max_frac = 0.35   # never remove more than 35% from any side
 
     for c in range(int(w * max_frac)):
-        if np.std(gray[:, c]) < std_thresh: l = c + 1
-        else: break
+        if np.std(gray[:, c]) < std_thresh:
+            l = c + 1
+        else:
+            break
     for c in range(w - 1, int(w * (1 - max_frac)), -1):
-        if np.std(gray[:, c]) < std_thresh: r = c
-        else: break
+        if np.std(gray[:, c]) < std_thresh:
+            r = c
+        else:
+            break
     for row in range(int(h * max_frac)):
-        if np.std(gray[row, :]) < std_thresh: t = row + 1
-        else: break
+        if np.std(gray[row, :]) < std_thresh:
+            t = row + 1
+        else:
+            break
     for row in range(h - 1, int(h * (1 - max_frac)), -1):
-        if np.std(gray[row, :]) < std_thresh: b = row
-        else: break
+        if np.std(gray[row, :]) < std_thresh:
+            b = row
+        else:
+            break
 
     if b - t >= 50 and r - l >= 50:
         return img[t:b, l:r], gray[t:b, l:r]
@@ -264,14 +241,16 @@ def _crop_solid_borders(img, gray, std_thresh=18):
 
 
 def _group_dets(dets, prox):
-    """Group (cx, cy, r) detections within `prox` pixels of each other."""
+    """Group detections within `prox` pixels of each other."""
     groups = []
     for d in dets:
         placed = False
         for g in groups:
             gc = (sum(x[0] for x in g) / len(g), sum(x[1] for x in g) / len(g))
             if np.sqrt((d[0] - gc[0]) ** 2 + (d[1] - gc[1]) ** 2) < prox:
-                g.append(d); placed = True; break
+                g.append(d)
+                placed = True
+                break
         if not placed:
             groups.append([d])
     return groups
@@ -306,10 +285,6 @@ def is_eye_image(image_path):
             return False, "❌ Invalid Image: Image appears blank or solid-colour."
 
         # ── LAYER 2: Reject random noise / screenshots ─────────
-        # Real biological eye images (even very blurry slit-lamp shots)
-        # have Laplacian variance well below 8,000.
-        # Random noise images, JPEG-compressed screenshots, and non-photo
-        # content regularly exceed 10,000–100,000.
         lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
         if lap_var > MAX_LAP_VARIANCE:
             return (
@@ -319,10 +294,6 @@ def is_eye_image(image_path):
             )
 
         # ── LAYER 2b: Reject digital illustrations / non-photos ──
-        # Real eye photos always have warm/skin-toned pixels (iris surround,
-        # sclera, eyelids). Cars, cartoons, and other digital art have almost
-        # none. Two independent rules — either one alone is enough to reject.
-        hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)   # reused below
         hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         s_chan   = hsv_img[:, :, 1].ravel().astype(np.float32)
         b_ch     = img[:, :, 0].ravel().astype(np.int32)
@@ -338,9 +309,7 @@ def is_eye_image(image_path):
         ))
         warm_frac   = float(np.mean((r_ch - b_ch > 20) & (r_ch > 100)))
 
-        # Rule A: very high flat saturation + almost no skin → digital art
         rule_a = (hi_sat_frac > ILLUS_HI_SAT_THRESH) and (skin_frac < ILLUS_SKIN_THRESH)
-        # Rule B: neither skin tones nor warm tones → not a biological photo
         rule_b = (skin_frac < 0.10) and (warm_frac < ILLUS_WARM_THRESH)
 
         if rule_a or rule_b:
@@ -390,25 +359,19 @@ def is_eye_image(image_path):
                 dom_s    = _group_score(dom)
                 dom_c    = _group_center(dom)
 
-                # Discard secondary groups that:
-                #   (a) hug the image border (eyelashes / skin texture hits), OR
-                #   (b) score < 30% of dominant (clearly weaker detections)
                 interior_sec = [
                     g for g in scored[1:]
                     if not _near_border(*_group_center(g), w, h, 0.15)
                     and _group_score(g) >= dom_s * 0.30
                 ]
 
-                # No real secondary candidates → treat as single eye
                 if not interior_sec:
                     return True, ""
 
-                # Dominant group is 3× stronger than any secondary → single eye
                 sec_s = max(_group_score(g) for g in interior_sec)
                 if dom_s >= sec_s * 3.0:
                     return True, ""
 
-                # Check angular separation between dominant and strongest secondary
                 sec   = max(interior_sec, key=_group_score)
                 sec_c = _group_center(sec)
                 sep   = np.sqrt((dom_c[0] - sec_c[0]) ** 2 + (dom_c[1] - sec_c[1]) ** 2)
@@ -419,11 +382,9 @@ def is_eye_image(image_path):
                         f"❌ Invalid Image: {len(strong)} eyes detected. "
                         "Please upload a close-up photo of ONE eye only.",
                     )
-                # Groups are close together → same iris, multiple cascade hits
                 return True, ""
 
-        # ── LAYER 5: Hough-circle iris fallback ───────────────
-        # For extreme close-ups where cascades find nothing.
+        # ── LAYER 5: Hough-circle iris fallback (FIXED grouping) ──
         blurred = cv2.GaussianBlur(gray_eq, (9, 9), 2)
         raw_circles = []
         for param2 in [40, 30, 22, 18, 14]:
@@ -435,9 +396,8 @@ def is_eye_image(image_path):
             if cc is not None:
                 raw_circles = np.round(cc[0]).astype(int).tolist()
                 if len(raw_circles) <= 12:
-                    break   # use first level that gives a manageable count
+                    break
 
-        # Keep only circles centred in the inner 80% of the image
         interior = [
             c for c in raw_circles
             if w * 0.10 <= c[0] <= w * 0.90
@@ -451,32 +411,31 @@ def is_eye_image(image_path):
                 "Please upload a clear, close-up photo of a single open eye.",
             )
 
-        # Dominant iris = largest interior circle
-        dom_r       = max(c[2] for c in interior)
-        significant = [c for c in interior if c[2] >= dom_r * 0.60]
+        # Group circles and sort groups by maximum radius (largest first)
+        groups = _group_dets(interior, min_dim * 0.55)
+        # For each group, record its maximum radius
+        groups_with_maxr = [(g, max(c[2] for c in g)) for g in groups]
+        groups_sorted = sorted(groups_with_maxr, key=lambda x: x[1], reverse=True)
 
-        groups = _group_dets(significant, min_dim * 0.55)
-
-        if len(groups) == 1:
+        if len(groups_sorted) == 1:
             return True, ""
 
-        # Multiple groups: only reject if a second group is truly iris-sized
-        group_max_r = sorted([max(c[2] for c in g) for g in groups], reverse=True)
-        primary_r   = group_max_r[0]
+        # Compare the two largest groups
+        primary_group, primary_r = groups_sorted[0]
+        secondary_group, secondary_r = groups_sorted[1]
 
         # Secondary must be ≥75% of primary's radius to count as a real second iris
-        real_secondary = [r for r in group_max_r[1:] if r >= primary_r * 0.75]
-        if not real_secondary:
-            return True, ""   # secondary groups are reflections / noise
+        if secondary_r < primary_r * 0.75:
+            return True, ""
 
         # Measure separation between the two strongest group centres
-        group_centers = [_group_center(g) for g in groups]
+        primary_center = _group_center(primary_group)
+        secondary_center = _group_center(secondary_group)
         sep = np.sqrt(
-            (group_centers[0][0] - group_centers[1][0]) ** 2
-            + (group_centers[0][1] - group_centers[1][1]) ** 2
+            (primary_center[0] - secondary_center[0]) ** 2
+            + (primary_center[1] - secondary_center[1]) ** 2
         )
 
-        # Two real irises are separated by more than 55% of the longer image dimension
         if sep > max_dim * 0.55:
             return (
                 False,
@@ -611,7 +570,6 @@ def index():
         error_message=error_message,
     )
 
-add_memory_last_3_messsages = []
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -623,11 +581,14 @@ def chat():
         return jsonify({"reply": "I didn't receive your message. Please try again. 🤖"})
     if not GROQ_API_KEY:
         return jsonify({"reply": "My AI brain (Groq) is not configured. Please set GROQ_API_KEY! 🧠"})
-    if len(add_memory_last_3_messsages) > 7:
-        add_memory_last_3_messsages.pop(0)
+
+    # Retrieve conversation history from session (max 5 exchanges)
+    history = session.get("chat_history", [])
+    if len(history) > 5:
+        history = history[-5:]
 
     try:
-        client  = Groq(api_key=GROQ_API_KEY)
+        client = Groq(api_key=GROQ_API_KEY)
         context = (
             "The user just scanned their eye. "
             f"Result: {json.dumps(last_result['final'] if last_result else 'No scan yet')}."
@@ -635,7 +596,8 @@ def chat():
         system_prompt = textwrap.dedent(f"""
             You are a friendly AI Eye Assistant who can give hope in the deepest dark times. Speak like a real person in plain everyday language.
             {context}
-            Below is the memory attached for this user utilize this memory for better context : {add_memory_last_3_messsages}
+            Below is the recent conversation history. Use it to maintain context, but keep your answer brief.
+            History: {history}
             Keep responses VERY BRIEF — 2 to 4 sentences max.
             RESPOND ONLY IN {selected_lang.upper()} LANGUAGE.
             IF TELUGU: use only Telugu script (తెలుగు లిపి). NO English letters.
@@ -653,8 +615,14 @@ def chat():
             ],
             temperature=0.5, max_tokens=500,
         )
-        add_memory_last_3_messsages.append(completion.choices[0].message.content)
-        return jsonify({"reply": completion.choices[0].message.content})
+        reply = completion.choices[0].message.content
+
+        # Update history
+        history.append(user_msg)
+        history.append(reply)
+        session["chat_history"] = history[-5:]  # keep last 5 exchanges
+
+        return jsonify({"reply": reply})
 
     except Exception as e:
         return jsonify({"reply": f"Oops! I encountered an error: {str(e)} 🤖"})
