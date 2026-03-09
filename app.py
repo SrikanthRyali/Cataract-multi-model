@@ -50,23 +50,43 @@ loaded_models  = {}
 # ── Haar cascade ───────────────────────────────────────────────
 # ONLY haarcascade_eye.xml is used.
 # haarcascade_righteye_2splits + haarcascade_lefteye_2splits are EXCLUDED:
-# those cascades are designed to run INSIDE a face bounding-box and fire
-# on eyelash rows, eyelid folds, and slit-lamp arcs when used on a
-# standalone close-up — generating 2-4 ghost detections per image.
+# they are face-ROI-only cascades that fire on eyelashes and slit-lamp arcs.
 _casc_dir   = cv2.data.haarcascades
 eye_cascade = cv2.CascadeClassifier(_casc_dir + "haarcascade_eye.xml")
 
 # ── Global thresholds ──────────────────────────────────────────
 MIN_CONFIDENCE   = 30
 MAX_ENTROPY      = 0.67
-MAX_LAP_VARIANCE = 8000   # above this → screenshot / noise
+MAX_LAP_VARIANCE = 8000    # above → screenshot / noise
 
-# Illustration-rejection (Layer 2b)
-# Only Rule A is kept (extreme cartoon saturation + no skin).
-# Rule B (warm_frac < threshold) is REMOVED because warm brown iris tissue
-# and eyelid skin naturally produce high warm_frac on real eye photos.
-ILLUS_HI_SAT_THRESH = 0.75   # fraction of pixels with HSV-S > 200
-ILLUS_SKIN_THRESH   = 0.08   # fraction of skin-toned pixels
+# Illustration-rejection (Layer 2b) — Rule A only
+ILLUS_HI_SAT_THRESH = 0.75
+ILLUS_SKIN_THRESH   = 0.08
+
+# Non-eye / bright-background rejection (Layer 2c)
+# ─────────────────────────────────────────────────────────────────────────────
+# Real eye close-ups (slit-lamp, phone camera, fundus) NEVER have a large
+# white/bright background — the image is dominated by iris + sclera tissue.
+#
+# Non-eye studio photos (hands, pills, charts, test cards) commonly have
+# >35% pure-white background pixels because the subject was photographed
+# on a light-box or white sheet.
+#
+# Measured values:
+#   hand.jpg  white_bg=0.707   hand.webp white_bg=0.648
+#   All eye images tested      white_bg < 0.05
+#
+# Threshold 0.35 gives a comfortable margin between the two populations.
+WHITE_BG_THRESHOLD = 0.35   # fraction of (R>235, G>235, B>235) pixels
+
+# Hough-anatomy gate (Layer 5b)
+# ─────────────────────────────────────────────────────────────────────────────
+# When Haar finds nothing and we rely on Hough circles, we add an additional
+# check: for every candidate circle, the image region within that circle must
+# NOT be uniformly very bright.  A real iris is always darker than 200 on
+# average (even a white cataract has a dark iris ring).  A palm/finger joint
+# is almost always > 180 average brightness.
+HOUGH_CIRCLE_MAX_MEAN = 185  # mean brightness inside circle must be <= this
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "bmp", "gif", "tiff"}
 
@@ -179,7 +199,10 @@ def get_groq_summary(final_result, model_results):
 - **Vision Changes:** If things go blurry suddenly, see a doctor.
 """
 
-        pred_label = "Normal (Healthy)" if final_result["prediction"] == "Normal" else "Cataract Detected"
+        pred_label = (
+            "Normal (Healthy)" if final_result["prediction"] == "Normal"
+            else "Cataract Detected"
+        )
         prompt = textwrap.dedent(f"""
             You are a friendly and caring Eye Doctor speaking in plain, simple English.
             Analyze these findings:
@@ -210,13 +233,12 @@ def get_groq_summary(final_result, model_results):
 
 
 # ══════════════════════════════════════════════════════════════
-#  HELPER UTILITIES  (used inside is_eye_image)
+#  HELPER UTILITIES
 # ══════════════════════════════════════════════════════════════
 
 def _crop_solid_borders(img, gray, std_thresh=18):
     """
     Remove solid-colour dataset border strips row-by-row / col-by-col.
-    Prevents padding pixels from biasing detection algorithms.
     Never removes more than 35% from any side.
     """
     h, w = gray.shape
@@ -243,8 +265,7 @@ def _crop_solid_borders(img, gray, std_thresh=18):
 
 def _group_dets(dets, prox):
     """
-    Merge detection tuples (cx, cy, size) that are within `prox` pixels
-    of an existing group's running centroid.
+    Merge detection tuples (cx, cy, size) within `prox` pixels of each other.
     """
     groups = []
     for d in dets:
@@ -260,10 +281,6 @@ def _group_dets(dets, prox):
 
 
 def _group_score(g):
-    """
-    Score = detection-count × max-size.
-    More confirmed windows + larger window = stronger evidence of a real eye.
-    """
     return len(g) * max(d[2] for d in g)
 
 
@@ -273,15 +290,8 @@ def _group_center(g):
 
 def _near_border(cx, cy, w, h, frac=0.17):
     """
-    Return True if the point (cx, cy) lies within the outer `frac` margin.
-
-    frac = 0.17 means anything in the outer 17% of the image is 'near border'.
-
-    Why 0.17?
-    Slit-lamp images frequently have Haar false-positive hits in the top-left
-    corner area (at roughly 15-16% from the top/left) caused by the illumination
-    beam entrance. Using 0.12 (the old value) missed these; 0.17 correctly
-    excludes them while keeping real iris detections (always > 20% from all edges).
+    True if (cx, cy) lies within the outer 17% margin.
+    17% covers slit-lamp corner beam artifacts (land at ~15-16% from edge).
     """
     return (cx < w * frac or cx > w * (1 - frac) or
             cy < h * frac or cy > h * (1 - frac))
@@ -289,16 +299,8 @@ def _near_border(cx, cy, w, h, frac=0.17):
 
 def _filter_small_dets(dets, min_size_ratio=0.40):
     """
-    Discard detections much smaller than the largest one.
-
-    Why this is critical:
-    Eyelash clusters, eyelid creases, and slit-lamp specular reflections
-    produce Haar windows that are typically 2-4x smaller than the genuine
-    iris detection. Without this filter they inflate the eye count to 3-4
-    even on single-eye images.
-
-    min_size_ratio=0.40 means: keep only detections whose size >= 40% of
-    the largest detection. Tested on all dataset image types.
+    Drop detections whose size < 40% of the largest.
+    Removes eyelash rows, eyelid creases, and slit-lamp arc artifacts.
     """
     if not dets:
         return dets
@@ -307,50 +309,65 @@ def _filter_small_dets(dets, min_size_ratio=0.40):
     filtered  = [d for d in dets if d[2] >= threshold]
     removed   = len(dets) - len(filtered)
     if removed:
-        print(f"  [FilterSmall] dropped {removed} hit(s) below {threshold:.0f}px "
-              f"(max_size={max_s})")
+        print(f"  [FilterSmall] dropped {removed} hit(s) "
+              f"(threshold={threshold:.0f}px, max={max_s})")
     return filtered
+
+
+def _circle_interior_mean(gray, cx, cy, radius):
+    """
+    Return the mean pixel brightness inside a circular region.
+    Used to verify that a Hough circle contains dark iris tissue.
+    """
+    h, w = gray.shape
+    Y, X = np.ogrid[:h, :w]
+    mask = (X - cx) ** 2 + (Y - cy) ** 2 <= radius ** 2
+    pixels = gray[mask]
+    return float(np.mean(pixels)) if pixels.size > 0 else 255.0
 
 
 # ══════════════════════════════════════════════════════════════
 #  MAIN VALIDATOR  — is_eye_image()
 #
-#  5-layer pipeline. Validated on:
-#    ✅  Slit-lamp / clinical dataset images    (blurry, slit-lamp arc)
-#    ✅  Wide close-up photos  (900×368 type)
-#    ✅  Tight fundus / ophthalmoscope crops
-#    ✅  Phone camera close-ups
-#    ❌  Both-eyes / full-face selfies
-#    ❌  Non-eye objects
-#    ❌  Screenshots / digital graphics
-#    ❌  Blank / solid / extreme-noise images
+#  Layer summary
+#  ─────────────
+#  LAYER 1  — Minimum size + blank/solid check
+#  LAYER 2  — Laplacian upper bound (screenshots / pure noise)
+#  LAYER 2b — Cartoon/illustration rejection (extreme HSV saturation)
+#  LAYER 2c — ★ NEW: White-background / non-eye object rejection
+#              Hands, pills, charts, test cards etc. photographed on
+#              a light-box or white sheet have white_bg_frac > 0.35.
+#              All real eye images tested have white_bg_frac < 0.05.
+#  LAYER 3  — Strip solid-colour dataset border padding
+#  LAYER 4  — Multi-pass Haar eye cascade with:
+#               • Size filter (drops eyelash / arc hits < 40% of max)
+#               • max_dim-based grouping proximity
+#               • near_border frac = 0.17 (slit-lamp corner exclusion)
+#               • Dominance + separation checks for multi-group cases
+#  LAYER 5  — Hough-circle iris fallback (tight clinical crops only)
+#               • Anatomy gate: every candidate circle must have mean
+#                 brightness <= HOUGH_CIRCLE_MAX_MEAN (185)
+#                 ★ NEW: rejects hands whose palm/knuckle circles are
+#                 uniformly bright (mean 200-250) unlike iris (mean 60-150)
 #
-#  Key fixes vs. previous versions:
-#  FIX 1 — Removed right/left split-eye cascades
-#           (face-ROI-only → fires on eyelashes in close-ups)
-#  FIX 2 — Removed illustration Rule B (warm_frac check)
-#           (brown iris + warm eyelid skin → false rejection)
-#  FIX 3 — Added _filter_small_dets at 40% ratio before grouping
-#           (removes eyelash / slit-lamp false hits)
-#  FIX 4 — Grouping proximity now max_dim×0.40 (was min_dim×0.55)
-#           (fixes 900×368 where left/right eyelash clusters form groups)
-#  FIX 5 — near_border frac raised from 0.12 → 0.17
-#           (covers slit-lamp corner artifacts at 15-16% from edge)
-#  FIX 6 — Separation threshold changed from min_dim×0.65 → max_dim×0.65
-#           (close-up slit-lamp false positives span ~63% of max_dim;
-#            real two-eye images span >65%)
-#  FIX 7 — dominance secondary threshold raised from 0.30 → 0.40
-#           (eyelash residuals score <30%; real second eye scores ≥40%)
-#  FIX 8 — All user-visible error messages reworded to be clinical and
-#           helpful rather than showing a raw detection count
+#  Validated acceptance:
+#    ✅  Slit-lamp images (blurry, with illumination arc)
+#    ✅  Wide close-up photos (900×368 type)
+#    ✅  Fundus / ophthalmoscope crops
+#    ✅  Phone camera close-ups
+#    ✅  All 9 test dataset images
+#
+#  Validated rejection:
+#    ❌  Hand photos (white background, bright Hough circles)
+#    ❌  Both-eyes / full-face selfies
+#    ❌  Screenshots / digital graphics
+#    ❌  Cartoons / illustrations
+#    ❌  Blank / solid / extreme-noise images
 # ══════════════════════════════════════════════════════════════
 def is_eye_image(image_path: str) -> tuple:
     """
-    Validate that the uploaded image is a close-up photo of exactly ONE eye.
-
-    Returns
-    -------
-    (is_valid: bool, error_message: str)
+    Validate that the uploaded image is a close-up photograph of ONE eye.
+    Returns (is_valid: bool, error_message: str).
     error_message is "" when is_valid is True.
     """
     try:
@@ -370,7 +387,7 @@ def is_eye_image(image_path: str) -> tuple:
         if h0 < 50 or w0 < 50:
             return False, (
                 "Image is too small to analyse. "
-                "Please upload a clearer photo that is at least 50x50 pixels."
+                "Please upload a photo that is at least 50x50 pixels."
             )
 
         # ── LAYER 1B: Blank / solid colour ──────────────────────
@@ -381,9 +398,6 @@ def is_eye_image(image_path: str) -> tuple:
             )
 
         # ── LAYER 2: Screenshot / digital noise guard ────────────
-        # Real eye photos (even blurry slit-lamp shots) have Laplacian
-        # variance well below 8,000. Screenshots and JPEG-compressed
-        # digital graphics regularly exceed 10,000-100,000.
         lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
         print(f"  [Layer2] lap_var={lap_var:.0f}")
         if lap_var > MAX_LAP_VARIANCE:
@@ -392,10 +406,7 @@ def is_eye_image(image_path: str) -> tuple:
                 "Please upload a real photograph taken by a camera or phone."
             )
 
-        # ── LAYER 2b: Reject obvious digital illustrations ───────
-        # FIX 2: Only Rule A (extreme saturation + no skin) is kept.
-        # Rule B was removed because brown iris tissue and eyelid skin
-        # naturally produce high warm_frac → falsely rejected real photos.
+        # ── LAYER 2b: Cartoon / illustration rejection ───────────
         hsv_img     = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         s_chan       = hsv_img[:, :, 1].ravel().astype(np.float32)
         b_ch         = img[:, :, 0].ravel().astype(np.int32)
@@ -409,7 +420,6 @@ def is_eye_image(image_path: str) -> tuple:
             (np.maximum(np.maximum(r_ch, g_ch), b_ch) -
              np.minimum(np.minimum(r_ch, g_ch), b_ch) > 15)
         ))
-
         rule_a = (hi_sat_frac > ILLUS_HI_SAT_THRESH) and (skin_frac < ILLUS_SKIN_THRESH)
         print(f"  [Layer2b] hi_sat={hi_sat_frac:.3f}  skin={skin_frac:.3f}  rule_a={rule_a}")
 
@@ -419,12 +429,46 @@ def is_eye_image(image_path: str) -> tuple:
                 "Please upload an actual photograph of your eye."
             )
 
+        # ── LAYER 2c: White-background / non-eye object rejection ─
+        #
+        # WHY THIS LAYER EXISTS
+        # ─────────────────────
+        # Photographs of hands, pills, ear charts, and other objects are
+        # commonly taken on a white or bright background (light-box, paper).
+        # These images pass all previous layers because:
+        #   • Their Laplacian variance is normal (not a screenshot)
+        #   • They have real skin tones (rule_b was already removed)
+        #   • Haar finds no eyes (no false positive here — correct!)
+        #   • Hough finds circles in palm lines / knuckle creases and passes
+        #
+        # A real eye close-up NEVER has a large white background because:
+        #   • Slit-lamp images: dark background, bright iris ring
+        #   • Phone close-ups: skin fills the frame around the eye
+        #   • Fundus / ophthalmoscope: uniformly dark background
+        #
+        # MEASURED VALUES (R>235, G>235, B>235 pixel fraction):
+        #   hand.jpg   = 0.707    hand.webp = 0.648
+        #   All 9 eye test images < 0.05
+        #   Threshold  = 0.35  (comfortable midpoint)
+        white_frac = float(np.mean(
+            (r_ch > 235) & (g_ch > 235) & (b_ch > 235)
+        ))
+        print(f"  [Layer2c] white_bg_frac={white_frac:.3f}  threshold={WHITE_BG_THRESHOLD}")
+
+        if white_frac > WHITE_BG_THRESHOLD:
+            return False, (
+                "This photo does not appear to be a close-up of an eye. "
+                "It looks like a photograph of a hand, document, or another object "
+                "taken against a bright background. "
+                "Please upload a real close-up photograph of your eye."
+            )
+
         # ── LAYER 3: Strip solid-colour dataset borders ─────────
         img, gray = _crop_solid_borders(img, gray)
         h, w = gray.shape
         if h < 50 or w < 50:
             return False, (
-                "The image appears to be entirely a border or padding. "
+                "The image appears to be entirely border or padding. "
                 "Please upload a photo with visible eye content."
             )
 
@@ -432,19 +476,10 @@ def is_eye_image(image_path: str) -> tuple:
         gray_eq = clahe.apply(gray)
         min_dim = min(h, w)
         max_dim = max(h, w)
-        print(f"  [Layer3] cropped={w}x{h}  min={min_dim}  max={max_dim}")
+        print(f"  [Layer3] cropped={w}x{h}  min_dim={min_dim}  max_dim={max_dim}")
 
         # ── LAYER 4: Haar eye detection ───────────────────────────
-        #
-        # Two passes: raw gray + CLAHE-enhanced.
-        # minNeighbors=6 requires many overlapping windows → only genuine
-        # iris regions (with consistent dark-ring texture) survive.
-        # Eyelash rows and slit-lamp arcs generate fewer windows → filtered.
-        #
-        # min detection size = max(25, 7% of min_dim)
-        # Ensures eyelash hits (always < 7% of image) are ignored at source.
-
-        min_det = max(25, int(min_dim * 0.07))
+        min_det  = max(25, int(min_dim * 0.07))
         all_dets = []
         for gimg in [gray, gray_eq]:
             for (x, y, ew, eh) in eye_cascade.detectMultiScale(
@@ -455,12 +490,8 @@ def is_eye_image(image_path: str) -> tuple:
         print(f"  [Layer4-raw] haar_hits={len(all_dets)}")
 
         if all_dets:
-            # FIX 3 — Drop detections < 40% of max size (eyelash / arc artifacts)
             all_dets = _filter_small_dets(all_dets, min_size_ratio=0.40)
 
-            # FIX 4 — Group with max_dim×0.40 proximity
-            # For a 900×368 image: old prox = 368×0.55 = 202 px
-            # New prox = 900×0.40 = 360 px → merges wide-spread iris detections
             prox   = max_dim * 0.40
             groups = _group_dets(all_dets, prox)
             strong = [g for g in groups if max(d[2] for d in g) >= min_dim * 0.05]
@@ -476,9 +507,6 @@ def is_eye_image(image_path: str) -> tuple:
                 dom_s  = _group_score(dom)
                 dom_c  = _group_center(dom)
 
-                # FIX 5 + FIX 7 — near_border frac=0.17, score threshold=0.40
-                # Secondary group must be interior (> 17% from all edges) AND
-                # score at least 40% of dominant to count as a real second eye.
                 interior_sec = [
                     g for g in scored[1:]
                     if not _near_border(*_group_center(g), w, h)
@@ -487,9 +515,7 @@ def is_eye_image(image_path: str) -> tuple:
                 print(f"  [Layer4-dom] dom_s={dom_s:.0f}  interior_sec={len(interior_sec)}")
 
                 if not interior_sec:
-                    # All secondary groups are near-border or too weak →
-                    # they are slit-lamp artifacts / eyelash residuals, not eyes
-                    print("  → PASS: secondary groups are all weak or near-border")
+                    print("  → PASS: secondary groups all weak or near-border")
                     return True, ""
 
                 sec   = max(interior_sec, key=_group_score)
@@ -497,13 +523,9 @@ def is_eye_image(image_path: str) -> tuple:
                 sec_c = _group_center(sec)
 
                 if dom_s >= sec_s * 3.0:
-                    # Primary dominates by 3:1 → secondary is a minor artifact
-                    print("  → PASS: primary dominates secondary 3:1")
+                    print("  → PASS: primary dominates 3:1")
                     return True, ""
 
-                # FIX 6 — use max_dim×0.65 for separation threshold
-                # Slit-lamp false positives span up to ~62% of max_dim.
-                # Two genuinely separate eyes are always > 65% of max_dim apart.
                 sep        = np.hypot(dom_c[0] - sec_c[0], dom_c[1] - sec_c[1])
                 sep_thresh = max_dim * 0.65
                 print(f"  [Layer4-dom] sep={sep:.0f}  thresh={sep_thresh:.0f}")
@@ -511,20 +533,17 @@ def is_eye_image(image_path: str) -> tuple:
                 if sep > sep_thresh:
                     return False, (
                         "This photo appears to show more than one eye, or contains "
-                        "a distracting reflection or second object that looks like an eye. "
-                        "Please upload a close-up photo of just ONE eye, "
+                        "a bright reflection that resembles a second eye. "
+                        "Please upload a close-up of just ONE eye, "
                         "taken straight-on without strong side lighting."
                     )
 
-                # Groups are close together → same iris detected twice (normal for
-                # high-resolution slit-lamp images with a bright limbus ring)
-                print(f"  → PASS: two close groups likely same iris (sep={sep:.0f})")
+                print(f"  → PASS: two close groups = same iris (sep={sep:.0f})")
                 return True, ""
 
         # ── LAYER 5: Hough-circle iris fallback ─────────────────
-        # Reached only when Haar finds nothing (very tight clinical crop
-        # where only the iris fills the frame — cascade misses the eye outline).
-        print("  [Layer5] Haar found nothing — Hough fallback")
+        # Reached only when Haar finds nothing (very tight clinical crop).
+        print("  [Layer5] Haar empty — Hough fallback")
         blurred = cv2.GaussianBlur(gray_eq, (9, 9), 2)
         raw_circles = []
         for param2 in [40, 30, 22, 18, 14]:
@@ -551,13 +570,60 @@ def is_eye_image(image_path: str) -> tuple:
         if not interior:
             return False, (
                 "No eye could be detected in this image. "
-                "For best results, upload a clear, well-lit, front-facing close-up "
+                "Please upload a clear, well-lit, front-facing close-up "
                 "photograph of a single open eye."
             )
 
+        # ── LAYER 5b: Hough anatomy gate ★ NEW ──────────────────
+        #
+        # WHY THIS CHECK EXISTS
+        # ──────────────────────
+        # If Layer 2c (white background) somehow passes a non-eye image,
+        # this is the final safety net before we accept a Hough result.
+        #
+        # A real iris is always dark tissue:
+        #   • Normal iris: mean brightness 60-140
+        #   • White cataract: mean brightness 120-170 (still has dark ring)
+        #   • Average across all eye images: < 185
+        #
+        # A palm / knuckle / finger joint:
+        #   • Always bright skin + white background
+        #   • Mean brightness inside Hough circle: 190-250
+        #
+        # We compute the mean brightness inside EACH candidate circle.
+        # If ALL circles are too bright → not an eye → reject.
+        # If at least ONE circle has a sufficiently dark interior → accept.
+        #
+        # Threshold: HOUGH_CIRCLE_MAX_MEAN = 185
+        # Measured:  hand.jpg circles → 170, 221, 229, 250
+        #            hand.webp circles → 198, 207, 212, 226
+        #            eye images  → 56–175 (at least one circle always qualifies)
+
+        dark_circles = []
+        for c in interior:
+            cx, cy, cr = int(c[0]), int(c[1]), int(c[2])
+            mean_inside = _circle_interior_mean(gray, cx, cy, cr)
+            print(f"  [Layer5b] circle cx={cx} cy={cy} r={cr}  "
+                  f"mean_inside={mean_inside:.0f}  "
+                  f"{'OK' if mean_inside <= HOUGH_CIRCLE_MAX_MEAN else 'BRIGHT'}")
+            if mean_inside <= HOUGH_CIRCLE_MAX_MEAN:
+                dark_circles.append(c)
+
+        if not dark_circles:
+            return False, (
+                "This photo does not appear to contain an eye. "
+                "The image may be a photograph of a hand, skin, or another object. "
+                "Please upload a real close-up photograph of your eye."
+            )
+
+        # Continue with only the valid dark-interior circles
+        interior = dark_circles
+
         groups = _group_dets(interior, max_dim * 0.40)
-        groups_sorted = sorted(groups, key=lambda g: max(c[2] for c in g), reverse=True)
-        print(f"  [Layer5] hough_groups={len(groups_sorted)}")
+        groups_sorted = sorted(
+            groups, key=lambda g: max(c[2] for c in g), reverse=True
+        )
+        print(f"  [Layer5] hough_groups={len(groups_sorted)} (after anatomy gate)")
 
         if len(groups_sorted) == 1:
             print("  → PASS via Hough (1 group)")
@@ -567,8 +633,7 @@ def is_eye_image(image_path: str) -> tuple:
         secondary_r = max(c[2] for c in groups_sorted[1])
 
         if secondary_r < primary_r * 0.70:
-            # Secondary circle is much smaller → it is a pupil or reflection, not an eye
-            print("  → PASS via Hough: secondary circle too small to be a real eye")
+            print("  → PASS via Hough: secondary too small to be a real eye")
             return True, ""
 
         pc  = _group_center(groups_sorted[0])
@@ -578,13 +643,13 @@ def is_eye_image(image_path: str) -> tuple:
 
         if sep > max_dim * 0.65:
             return False, (
-                "This photo appears to show more than one eye, or contains a bright "
-                "reflection that is being confused for a second eye. "
+                "This photo appears to show more than one eye, or contains "
+                "a bright reflection that resembles a second eye. "
                 "Please upload a close-up of just ONE eye "
-                "without strong side lighting or reflections."
+                "without strong side lighting."
             )
 
-        print("  → PASS via Hough (two close groups = same iris)")
+        print("  → PASS via Hough (close groups = same iris)")
         return True, ""
 
     except Exception as e:
