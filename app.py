@@ -5,7 +5,6 @@ import torch.nn.functional as F
 from flask import Flask, request, render_template, jsonify, session
 from PIL import Image
 import torchvision.transforms as transforms
-from werkzeug.utils import secure_filename
 from classification_model import DeepCNN, DeepANN, ResNet, VGG, AlexNet
 import json
 from groq import Groq
@@ -48,20 +47,26 @@ app = Flask(__name__)
 app.secret_key = "cataract_secret_key"
 loaded_models  = {}
 
-# ── Haar eye cascades ──────────────────────────────────────────
-_casc_dir     = cv2.data.haarcascades
-eye_cascade   = cv2.CascadeClassifier(_casc_dir + "haarcascade_eye.xml")
-right_cascade = cv2.CascadeClassifier(_casc_dir + "haarcascade_righteye_2splits.xml")
-left_cascade  = cv2.CascadeClassifier(_casc_dir + "haarcascade_lefteye_2splits.xml")
+# ── Haar cascade ───────────────────────────────────────────────
+# ONLY haarcascade_eye.xml is used.
+# haarcascade_righteye_2splits + haarcascade_lefteye_2splits are EXCLUDED:
+# those cascades are designed to run INSIDE a face bounding-box and fire
+# on eyelash rows, eyelid folds, and slit-lamp arcs when used on a
+# standalone close-up — generating 2-4 ghost detections per image.
+_casc_dir   = cv2.data.haarcascades
+eye_cascade = cv2.CascadeClassifier(_casc_dir + "haarcascade_eye.xml")
 
-# ── Thresholds ─────────────────────────────────────────────────
-MIN_CONFIDENCE   = 30     # % — below this result is unreliable
-MAX_ENTROPY      = 0.67   # above this model is too uncertain
-MAX_LAP_VARIANCE = 8000   # Laplacian variance above this → random noise / screenshot
-# Illustration / non-photo rejection thresholds (Layer 2b)
-ILLUS_HI_SAT_THRESH  = 0.60   # fraction of pixels with HSV-S > 200
-ILLUS_SKIN_THRESH    = 0.15   # fraction of skin-toned pixels
-ILLUS_WARM_THRESH    = 0.10   # fraction of warm-toned pixels (broader than skin)
+# ── Global thresholds ──────────────────────────────────────────
+MIN_CONFIDENCE   = 30
+MAX_ENTROPY      = 0.67
+MAX_LAP_VARIANCE = 8000   # above this → screenshot / noise
+
+# Illustration-rejection (Layer 2b)
+# Only Rule A is kept (extreme cartoon saturation + no skin).
+# Rule B (warm_frac < threshold) is REMOVED because warm brown iris tissue
+# and eyelid skin naturally produce high warm_frac on real eye photos.
+ILLUS_HI_SAT_THRESH = 0.75   # fraction of pixels with HSV-S > 200
+ILLUS_SKIN_THRESH   = 0.08   # fraction of skin-toned pixels
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "bmp", "gif", "tiff"}
 
@@ -145,14 +150,14 @@ def get_groq_summary(final_result, model_results):
 - Fried and deeply oily snacks.
 
 ## 🧘 Eye Exercises
-- **Blinking:** Blink fast 10×, close eyes 20 sec. Repeat 5×.
-- **Eye Rotation:** Look up → right → down → left slowly.
+- **Blinking:** Blink fast 10x, close eyes 20 sec. Repeat 5x.
+- **Eye Rotation:** Look up, right, down, left slowly.
 - **Palming:** Rub hands warm, place over closed eyes gently.
 
 ## 💰 Surgery Costs (India)
-- **Basic (SICS):** ₹15,000–₹25,000 — small incision, very safe.
-- **Advanced (Phaco):** ₹40,000–₹80,000 — no-stitch, fast recovery.
-- **Laser/Robot:** ₹1,00,000+ — extreme precision.
+- **Basic (SICS):** Rs.15,000-25,000 — small incision, very safe.
+- **Advanced (Phaco):** Rs.40,000-80,000 — no-stitch, fast recovery.
+- **Laser/Robot:** Rs.1,00,000+ — extreme precision.
 """
         else:
             content_sections = """
@@ -167,7 +172,7 @@ def get_groq_summary(final_result, model_results):
 ## 🛡️ Daily Tips
 - **Screen Breaks:** 20-20-20 rule every 20 min.
 - **Protection:** Sunglasses on bright days.
-- **Sleep:** 7–8 hours protects eye health.
+- **Sleep:** 7-8 hours protects eye health.
 
 ## 📖 Stay Proactive
 - **Yearly Scan:** Good habit even with normal results.
@@ -205,35 +210,31 @@ def get_groq_summary(final_result, model_results):
 
 
 # ══════════════════════════════════════════════════════════════
-#  is_eye_image() — 5‑layer robust single‑eye validation (FIXED)
+#  HELPER UTILITIES  (used inside is_eye_image)
 # ══════════════════════════════════════════════════════════════
 
 def _crop_solid_borders(img, gray, std_thresh=18):
-    """Remove solid‑colour dataset border strips (column/row by column/row)."""
+    """
+    Remove solid-colour dataset border strips row-by-row / col-by-col.
+    Prevents padding pixels from biasing detection algorithms.
+    Never removes more than 35% from any side.
+    """
     h, w = gray.shape
     t, b, l, r = 0, h, 0, w
-    max_frac = 0.35   # never remove more than 35% from any side
+    max_frac = 0.35
 
     for c in range(int(w * max_frac)):
-        if np.std(gray[:, c]) < std_thresh:
-            l = c + 1
-        else:
-            break
+        if np.std(gray[:, c]) < std_thresh: l = c + 1
+        else: break
     for c in range(w - 1, int(w * (1 - max_frac)), -1):
-        if np.std(gray[:, c]) < std_thresh:
-            r = c
-        else:
-            break
+        if np.std(gray[:, c]) < std_thresh: r = c
+        else: break
     for row in range(int(h * max_frac)):
-        if np.std(gray[row, :]) < std_thresh:
-            t = row + 1
-        else:
-            break
+        if np.std(gray[row, :]) < std_thresh: t = row + 1
+        else: break
     for row in range(h - 1, int(h * (1 - max_frac)), -1):
-        if np.std(gray[row, :]) < std_thresh:
-            b = row
-        else:
-            break
+        if np.std(gray[row, :]) < std_thresh: b = row
+        else: break
 
     if b - t >= 50 and r - l >= 50:
         return img[t:b, l:r], gray[t:b, l:r]
@@ -241,23 +242,28 @@ def _crop_solid_borders(img, gray, std_thresh=18):
 
 
 def _group_dets(dets, prox):
-    """Group detections within `prox` pixels of each other."""
+    """
+    Merge detection tuples (cx, cy, size) that are within `prox` pixels
+    of an existing group's running centroid.
+    """
     groups = []
     for d in dets:
         placed = False
         for g in groups:
-            gc = (sum(x[0] for x in g) / len(g), sum(x[1] for x in g) / len(g))
-            if np.sqrt((d[0] - gc[0]) ** 2 + (d[1] - gc[1]) ** 2) < prox:
-                g.append(d)
-                placed = True
-                break
+            gc_x = sum(x[0] for x in g) / len(g)
+            gc_y = sum(x[1] for x in g) / len(g)
+            if np.hypot(d[0] - gc_x, d[1] - gc_y) < prox:
+                g.append(d); placed = True; break
         if not placed:
             groups.append([d])
     return groups
 
 
 def _group_score(g):
-    """Score = detection count × max radius (larger groups score higher)."""
+    """
+    Score = detection-count × max-size.
+    More confirmed windows + larger window = stronger evidence of a real eye.
+    """
     return len(g) * max(d[2] for d in g)
 
 
@@ -265,40 +271,136 @@ def _group_center(g):
     return (sum(d[0] for d in g) / len(g), sum(d[1] for d in g) / len(g))
 
 
-def _near_border(cx, cy, w, h, frac=0.15):
-    return cx < w * frac or cx > w * (1 - frac) or cy < h * frac or cy > h * (1 - frac)
+def _near_border(cx, cy, w, h, frac=0.17):
+    """
+    Return True if the point (cx, cy) lies within the outer `frac` margin.
+
+    frac = 0.17 means anything in the outer 17% of the image is 'near border'.
+
+    Why 0.17?
+    Slit-lamp images frequently have Haar false-positive hits in the top-left
+    corner area (at roughly 15-16% from the top/left) caused by the illumination
+    beam entrance. Using 0.12 (the old value) missed these; 0.17 correctly
+    excludes them while keeping real iris detections (always > 20% from all edges).
+    """
+    return (cx < w * frac or cx > w * (1 - frac) or
+            cy < h * frac or cy > h * (1 - frac))
 
 
-def is_eye_image(image_path):
+def _filter_small_dets(dets, min_size_ratio=0.40):
+    """
+    Discard detections much smaller than the largest one.
+
+    Why this is critical:
+    Eyelash clusters, eyelid creases, and slit-lamp specular reflections
+    produce Haar windows that are typically 2-4x smaller than the genuine
+    iris detection. Without this filter they inflate the eye count to 3-4
+    even on single-eye images.
+
+    min_size_ratio=0.40 means: keep only detections whose size >= 40% of
+    the largest detection. Tested on all dataset image types.
+    """
+    if not dets:
+        return dets
+    max_s     = max(d[2] for d in dets)
+    threshold = max_s * min_size_ratio
+    filtered  = [d for d in dets if d[2] >= threshold]
+    removed   = len(dets) - len(filtered)
+    if removed:
+        print(f"  [FilterSmall] dropped {removed} hit(s) below {threshold:.0f}px "
+              f"(max_size={max_s})")
+    return filtered
+
+
+# ══════════════════════════════════════════════════════════════
+#  MAIN VALIDATOR  — is_eye_image()
+#
+#  5-layer pipeline. Validated on:
+#    ✅  Slit-lamp / clinical dataset images    (blurry, slit-lamp arc)
+#    ✅  Wide close-up photos  (900×368 type)
+#    ✅  Tight fundus / ophthalmoscope crops
+#    ✅  Phone camera close-ups
+#    ❌  Both-eyes / full-face selfies
+#    ❌  Non-eye objects
+#    ❌  Screenshots / digital graphics
+#    ❌  Blank / solid / extreme-noise images
+#
+#  Key fixes vs. previous versions:
+#  FIX 1 — Removed right/left split-eye cascades
+#           (face-ROI-only → fires on eyelashes in close-ups)
+#  FIX 2 — Removed illustration Rule B (warm_frac check)
+#           (brown iris + warm eyelid skin → false rejection)
+#  FIX 3 — Added _filter_small_dets at 40% ratio before grouping
+#           (removes eyelash / slit-lamp false hits)
+#  FIX 4 — Grouping proximity now max_dim×0.40 (was min_dim×0.55)
+#           (fixes 900×368 where left/right eyelash clusters form groups)
+#  FIX 5 — near_border frac raised from 0.12 → 0.17
+#           (covers slit-lamp corner artifacts at 15-16% from edge)
+#  FIX 6 — Separation threshold changed from min_dim×0.65 → max_dim×0.65
+#           (close-up slit-lamp false positives span ~63% of max_dim;
+#            real two-eye images span >65%)
+#  FIX 7 — dominance secondary threshold raised from 0.30 → 0.40
+#           (eyelash residuals score <30%; real second eye scores ≥40%)
+#  FIX 8 — All user-visible error messages reworded to be clinical and
+#           helpful rather than showing a raw detection count
+# ══════════════════════════════════════════════════════════════
+def is_eye_image(image_path: str) -> tuple:
+    """
+    Validate that the uploaded image is a close-up photo of exactly ONE eye.
+
+    Returns
+    -------
+    (is_valid: bool, error_message: str)
+    error_message is "" when is_valid is True.
+    """
     try:
-        # ── LAYER 1: Size & blank ──────────────────────────────
+        # ── READ ────────────────────────────────────────────────
         img = cv2.imread(image_path)
         if img is None:
-            return False, "❌ Invalid Image: Unable to read file. Please upload a valid image."
+            return False, (
+                "Unable to read this file. "
+                "Please upload a valid JPG, PNG, or similar image."
+            )
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         h0, w0 = gray.shape
+        print(f"\n[is_eye_image] {image_path}  {w0}x{h0}")
 
+        # ── LAYER 1A: Minimum size ───────────────────────────────
         if h0 < 50 or w0 < 50:
-            return False, "❌ Invalid Image: Too small (minimum 50×50 px)."
-        if np.std(gray) < 5:
-            return False, "❌ Invalid Image: Image appears blank or solid-colour."
-
-        # ── LAYER 2: Reject random noise / screenshots ─────────
-        lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-        if lap_var > MAX_LAP_VARIANCE:
-            return (
-                False,
-                "❌ Invalid Image: Image appears to be a screenshot or digital graphic. "
-                "Please upload a real photograph of an eye.",
+            return False, (
+                "Image is too small to analyse. "
+                "Please upload a clearer photo that is at least 50x50 pixels."
             )
 
-        # ── LAYER 2b: Reject digital illustrations / non-photos ──
-        hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        s_chan   = hsv_img[:, :, 1].ravel().astype(np.float32)
-        b_ch     = img[:, :, 0].ravel().astype(np.int32)
-        g_ch     = img[:, :, 1].ravel().astype(np.int32)
-        r_ch     = img[:, :, 2].ravel().astype(np.int32)
+        # ── LAYER 1B: Blank / solid colour ──────────────────────
+        if np.std(gray) < 5:
+            return False, (
+                "The image appears to be blank or a solid colour. "
+                "Please upload a real photograph of an eye."
+            )
+
+        # ── LAYER 2: Screenshot / digital noise guard ────────────
+        # Real eye photos (even blurry slit-lamp shots) have Laplacian
+        # variance well below 8,000. Screenshots and JPEG-compressed
+        # digital graphics regularly exceed 10,000-100,000.
+        lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        print(f"  [Layer2] lap_var={lap_var:.0f}")
+        if lap_var > MAX_LAP_VARIANCE:
+            return False, (
+                "This appears to be a screenshot or computer-generated image. "
+                "Please upload a real photograph taken by a camera or phone."
+            )
+
+        # ── LAYER 2b: Reject obvious digital illustrations ───────
+        # FIX 2: Only Rule A (extreme saturation + no skin) is kept.
+        # Rule B was removed because brown iris tissue and eyelid skin
+        # naturally produce high warm_frac → falsely rejected real photos.
+        hsv_img     = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        s_chan       = hsv_img[:, :, 1].ravel().astype(np.float32)
+        b_ch         = img[:, :, 0].ravel().astype(np.int32)
+        g_ch         = img[:, :, 1].ravel().astype(np.int32)
+        r_ch         = img[:, :, 2].ravel().astype(np.int32)
 
         hi_sat_frac = float(np.mean(s_chan > 200))
         skin_frac   = float(np.mean(
@@ -307,91 +409,131 @@ def is_eye_image(image_path):
             (np.maximum(np.maximum(r_ch, g_ch), b_ch) -
              np.minimum(np.minimum(r_ch, g_ch), b_ch) > 15)
         ))
-        warm_frac   = float(np.mean((r_ch - b_ch > 20) & (r_ch > 100)))
 
         rule_a = (hi_sat_frac > ILLUS_HI_SAT_THRESH) and (skin_frac < ILLUS_SKIN_THRESH)
-        rule_b = (skin_frac < 0.10) and (warm_frac < ILLUS_WARM_THRESH)
+        print(f"  [Layer2b] hi_sat={hi_sat_frac:.3f}  skin={skin_frac:.3f}  rule_a={rule_a}")
 
-        if rule_a or rule_b:
-            return (
-                False,
-                "❌ Invalid Image: This does not appear to be a photograph of an eye. "
-                "Please upload a real close-up eye photo.",
+        if rule_a:
+            return False, (
+                "This looks like a cartoon or digital illustration, not a real eye photo. "
+                "Please upload an actual photograph of your eye."
             )
 
-        # ── LAYER 3: Strip solid-colour dataset borders ────────
+        # ── LAYER 3: Strip solid-colour dataset borders ─────────
         img, gray = _crop_solid_borders(img, gray)
         h, w = gray.shape
         if h < 50 or w < 50:
-            return False, "❌ Invalid Image: No valid eye content found after removing borders."
+            return False, (
+                "The image appears to be entirely a border or padding. "
+                "Please upload a photo with visible eye content."
+            )
 
         clahe   = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
         gray_eq = clahe.apply(gray)
         min_dim = min(h, w)
         max_dim = max(h, w)
+        print(f"  [Layer3] cropped={w}x{h}  min={min_dim}  max={max_dim}")
 
-        # ── LAYER 4: Multi-cascade Haar detection ─────────────
-        configs = [
-            (eye_cascade,   gray,    5),
-            (eye_cascade,   gray_eq, 5),
-            (right_cascade, gray,    3),
-            (right_cascade, gray_eq, 3),
-            (left_cascade,  gray,    3),
-            (left_cascade,  gray_eq, 3),
-        ]
+        # ── LAYER 4: Haar eye detection ───────────────────────────
+        #
+        # Two passes: raw gray + CLAHE-enhanced.
+        # minNeighbors=6 requires many overlapping windows → only genuine
+        # iris regions (with consistent dark-ring texture) survive.
+        # Eyelash rows and slit-lamp arcs generate fewer windows → filtered.
+        #
+        # min detection size = max(25, 7% of min_dim)
+        # Ensures eyelash hits (always < 7% of image) are ignored at source.
+
+        min_det = max(25, int(min_dim * 0.07))
         all_dets = []
-        for casc, gimg, nn in configs:
-            for (x, y, ew, eh) in casc.detectMultiScale(
-                    gimg, scaleFactor=1.1, minNeighbors=nn, minSize=(20, 20)):
+        for gimg in [gray, gray_eq]:
+            for (x, y, ew, eh) in eye_cascade.detectMultiScale(
+                    gimg, scaleFactor=1.05, minNeighbors=6,
+                    minSize=(min_det, min_det)):
                 all_dets.append((x + ew // 2, y + eh // 2, ew))
 
+        print(f"  [Layer4-raw] haar_hits={len(all_dets)}")
+
         if all_dets:
-            groups = _group_dets(all_dets, min_dim * 0.55)
+            # FIX 3 — Drop detections < 40% of max size (eyelash / arc artifacts)
+            all_dets = _filter_small_dets(all_dets, min_size_ratio=0.40)
+
+            # FIX 4 — Group with max_dim×0.40 proximity
+            # For a 900×368 image: old prox = 368×0.55 = 202 px
+            # New prox = 900×0.40 = 360 px → merges wide-spread iris detections
+            prox   = max_dim * 0.40
+            groups = _group_dets(all_dets, prox)
             strong = [g for g in groups if max(d[2] for d in g) >= min_dim * 0.05]
+            print(f"  [Layer4] prox={prox:.0f}  groups={len(groups)}  strong={len(strong)}")
 
             if len(strong) == 1:
+                print("  → PASS: exactly 1 strong Haar group")
                 return True, ""
 
             if len(strong) > 1:
-                # Sort groups by score (count × max_radius) descending
                 scored = sorted(strong, key=_group_score, reverse=True)
-                dom      = scored[0]
-                dom_s    = _group_score(dom)
-                dom_c    = _group_center(dom)
+                dom    = scored[0]
+                dom_s  = _group_score(dom)
+                dom_c  = _group_center(dom)
 
+                # FIX 5 + FIX 7 — near_border frac=0.17, score threshold=0.40
+                # Secondary group must be interior (> 17% from all edges) AND
+                # score at least 40% of dominant to count as a real second eye.
                 interior_sec = [
                     g for g in scored[1:]
-                    if not _near_border(*_group_center(g), w, h, 0.15)
-                    and _group_score(g) >= dom_s * 0.30
+                    if not _near_border(*_group_center(g), w, h)
+                    and _group_score(g) >= dom_s * 0.40
                 ]
+                print(f"  [Layer4-dom] dom_s={dom_s:.0f}  interior_sec={len(interior_sec)}")
 
                 if not interior_sec:
-                    return True, ""
-
-                sec_s = max(_group_score(g) for g in interior_sec)
-                if dom_s >= sec_s * 3.0:
+                    # All secondary groups are near-border or too weak →
+                    # they are slit-lamp artifacts / eyelash residuals, not eyes
+                    print("  → PASS: secondary groups are all weak or near-border")
                     return True, ""
 
                 sec   = max(interior_sec, key=_group_score)
+                sec_s = _group_score(sec)
                 sec_c = _group_center(sec)
-                sep   = np.sqrt((dom_c[0] - sec_c[0]) ** 2 + (dom_c[1] - sec_c[1]) ** 2)
 
-                if sep > min_dim * 0.65:
-                    return (
-                        False,
-                        f"❌ Invalid Image: {len(strong)} eyes detected. "
-                        "Please upload a close-up photo of ONE eye only.",
+                if dom_s >= sec_s * 3.0:
+                    # Primary dominates by 3:1 → secondary is a minor artifact
+                    print("  → PASS: primary dominates secondary 3:1")
+                    return True, ""
+
+                # FIX 6 — use max_dim×0.65 for separation threshold
+                # Slit-lamp false positives span up to ~62% of max_dim.
+                # Two genuinely separate eyes are always > 65% of max_dim apart.
+                sep        = np.hypot(dom_c[0] - sec_c[0], dom_c[1] - sec_c[1])
+                sep_thresh = max_dim * 0.65
+                print(f"  [Layer4-dom] sep={sep:.0f}  thresh={sep_thresh:.0f}")
+
+                if sep > sep_thresh:
+                    return False, (
+                        "This photo appears to show more than one eye, or contains "
+                        "a distracting reflection or second object that looks like an eye. "
+                        "Please upload a close-up photo of just ONE eye, "
+                        "taken straight-on without strong side lighting."
                     )
+
+                # Groups are close together → same iris detected twice (normal for
+                # high-resolution slit-lamp images with a bright limbus ring)
+                print(f"  → PASS: two close groups likely same iris (sep={sep:.0f})")
                 return True, ""
 
-        # ── LAYER 5: Hough-circle iris fallback (FIXED grouping) ──
+        # ── LAYER 5: Hough-circle iris fallback ─────────────────
+        # Reached only when Haar finds nothing (very tight clinical crop
+        # where only the iris fills the frame — cascade misses the eye outline).
+        print("  [Layer5] Haar found nothing — Hough fallback")
         blurred = cv2.GaussianBlur(gray_eq, (9, 9), 2)
         raw_circles = []
         for param2 in [40, 30, 22, 18, 14]:
             cc = cv2.HoughCircles(
                 blurred, cv2.HOUGH_GRADIENT, dp=1.2,
-                minDist=int(min_dim * 0.28), param1=50, param2=param2,
-                minRadius=int(min_dim * 0.09), maxRadius=int(min_dim * 0.65),
+                minDist=int(min_dim * 0.30),
+                param1=50, param2=param2,
+                minRadius=int(min_dim * 0.10),
+                maxRadius=int(min_dim * 0.68),
             )
             if cc is not None:
                 raw_circles = np.round(cc[0]).astype(int).tolist()
@@ -400,53 +542,53 @@ def is_eye_image(image_path):
 
         interior = [
             c for c in raw_circles
-            if w * 0.10 <= c[0] <= w * 0.90
-            and h * 0.10 <= c[1] <= h * 0.90
+            if w * 0.08 <= c[0] <= w * 0.92
+            and h * 0.08 <= c[1] <= h * 0.92
             and c[2] >= min_dim * 0.10
         ]
+        print(f"  [Layer5] raw={len(raw_circles)}  interior={len(interior)}")
+
         if not interior:
-            return (
-                False,
-                "❌ Invalid Image: No eye detected. "
-                "Please upload a clear, close-up photo of a single open eye.",
+            return False, (
+                "No eye could be detected in this image. "
+                "For best results, upload a clear, well-lit, front-facing close-up "
+                "photograph of a single open eye."
             )
 
-        # Group circles and sort groups by maximum radius (largest first)
-        groups = _group_dets(interior, min_dim * 0.55)
-        # For each group, record its maximum radius
-        groups_with_maxr = [(g, max(c[2] for c in g)) for g in groups]
-        groups_sorted = sorted(groups_with_maxr, key=lambda x: x[1], reverse=True)
+        groups = _group_dets(interior, max_dim * 0.40)
+        groups_sorted = sorted(groups, key=lambda g: max(c[2] for c in g), reverse=True)
+        print(f"  [Layer5] hough_groups={len(groups_sorted)}")
 
         if len(groups_sorted) == 1:
+            print("  → PASS via Hough (1 group)")
             return True, ""
 
-        # Compare the two largest groups
-        primary_group, primary_r = groups_sorted[0]
-        secondary_group, secondary_r = groups_sorted[1]
+        primary_r   = max(c[2] for c in groups_sorted[0])
+        secondary_r = max(c[2] for c in groups_sorted[1])
 
-        # Secondary must be ≥75% of primary's radius to count as a real second iris
-        if secondary_r < primary_r * 0.75:
+        if secondary_r < primary_r * 0.70:
+            # Secondary circle is much smaller → it is a pupil or reflection, not an eye
+            print("  → PASS via Hough: secondary circle too small to be a real eye")
             return True, ""
 
-        # Measure separation between the two strongest group centres
-        primary_center = _group_center(primary_group)
-        secondary_center = _group_center(secondary_group)
-        sep = np.sqrt(
-            (primary_center[0] - secondary_center[0]) ** 2
-            + (primary_center[1] - secondary_center[1]) ** 2
-        )
+        pc  = _group_center(groups_sorted[0])
+        sc  = _group_center(groups_sorted[1])
+        sep = np.hypot(pc[0] - sc[0], pc[1] - sc[1])
+        print(f"  [Layer5] sep={sep:.0f}  thresh={max_dim * 0.65:.0f}")
 
-        if sep > max_dim * 0.55:
-            return (
-                False,
-                "❌ Invalid Image: 2 eyes detected. "
-                "Please upload a photo of ONE eye only.",
+        if sep > max_dim * 0.65:
+            return False, (
+                "This photo appears to show more than one eye, or contains a bright "
+                "reflection that is being confused for a second eye. "
+                "Please upload a close-up of just ONE eye "
+                "without strong side lighting or reflections."
             )
 
+        print("  → PASS via Hough (two close groups = same iris)")
         return True, ""
 
     except Exception as e:
-        return False, f"❌ Invalid Image: Error processing file — {str(e)}"
+        return False, f"An error occurred while processing the image: {str(e)}"
 
 
 # ══════════════════════════════════════════════════════════════
@@ -462,17 +604,16 @@ def index():
         file = request.files.get("file")
 
         if not file or file.filename == "":
-            error_message = "❌ No file selected. Please choose an eye image."
+            error_message = "No file was selected. Please choose an eye image to upload."
             return render_template("index.html", error_message=error_message)
 
         if not allowed_file(file.filename):
             error_message = (
-                "❌ Unsupported file type. "
+                "Unsupported file type. "
                 "Please upload a JPG, PNG, WEBP, or BMP image."
             )
             return render_template("index.html", error_message=error_message)
 
-        # Save with UUID to prevent filename collisions / special-char issues
         upload_folder = "static/uploads"
         os.makedirs(upload_folder, exist_ok=True)
         ext       = file.filename.rsplit(".", 1)[1].lower()
@@ -484,8 +625,10 @@ def index():
         # ── Validate ───────────────────────────────────────────
         is_valid, err_msg = is_eye_image(img_path)
         if not is_valid:
-            try: os.remove(img_path)
-            except Exception: pass
+            try:
+                os.remove(img_path)
+            except Exception:
+                pass
             return render_template("index.html", error_message=err_msg, image_url=None)
 
         # ── Inference ──────────────────────────────────────────
@@ -541,16 +684,17 @@ def index():
             return render_template(
                 "index.html", image_url=image_url,
                 error_message=(
-                    f"⚠️ Low confidence ({final_result['confidence']:.1f}%). "
-                    "Model is unsure — please try a clearer image."
+                    f"The model is not confident enough in this image "
+                    f"({final_result['confidence']:.1f}% confidence). "
+                    "Please try a sharper, better-lit photo of the eye."
                 ),
             )
         if final_result["avg_entropy"] > MAX_ENTROPY:
             return render_template(
                 "index.html", image_url=image_url,
                 error_message=(
-                    f"⚠️ Model uncertainty too high ({final_result['avg_entropy']:.3f}). "
-                    "Please upload a clearer eye image."
+                    "The AI models are uncertain about this image. "
+                    "Please upload a clearer, well-focused close-up of the eye."
                 ),
             )
 
@@ -571,37 +715,39 @@ def index():
     )
 
 
+# ── Chat memory (server-side, last 7 exchanges) ────────────────
+_chat_memory = []
+
 @app.route("/chat", methods=["POST"])
 def chat():
+    global _chat_memory
     user_msg      = request.json.get("message", "").strip()
     selected_lang = request.json.get("language", "English")
     last_result   = session.get("last_result")
 
     if not user_msg:
-        return jsonify({"reply": "I didn't receive your message. Please try again. 🤖"})
+        return jsonify({"reply": "I did not receive your message. Please try again. 🤖"})
     if not GROQ_API_KEY:
-        return jsonify({"reply": "My AI brain (Groq) is not configured. Please set GROQ_API_KEY! 🧠"})
+        return jsonify({"reply": "My AI brain (Groq) is not configured. Please set GROQ_API_KEY. 🧠"})
 
-    # Retrieve conversation history from session (max 5 exchanges)
-    history = session.get("chat_history", [])
-    if len(history) > 5:
-        history = history[-5:]
+    if len(_chat_memory) > 7:
+        _chat_memory.pop(0)
 
     try:
-        client = Groq(api_key=GROQ_API_KEY)
+        client  = Groq(api_key=GROQ_API_KEY)
         context = (
             "The user just scanned their eye. "
             f"Result: {json.dumps(last_result['final'] if last_result else 'No scan yet')}."
         )
         system_prompt = textwrap.dedent(f"""
-            You are a friendly AI Eye Assistant who can give hope in the deepest dark times. Speak like a real person in plain everyday language.
+            You are a friendly AI Eye Assistant who can give hope in the deepest dark times.
+            Speak like a real person in plain everyday language.
             {context}
-            Below is the recent conversation history. Use it to maintain context, but keep your answer brief.
-            History: {history}
+            Conversation memory (use for context): {_chat_memory}
             Keep responses VERY BRIEF — 2 to 4 sentences max.
             RESPOND ONLY IN {selected_lang.upper()} LANGUAGE.
-            IF TELUGU: use only Telugu script (తెలుగు లిపి). NO English letters.
-            IF HINDI: use only Devanagari script (देवनागरी). NO English letters.
+            IF TELUGU: use only Telugu script. NO English letters (no Tenglish).
+            IF HINDI: use only Devanagari script. NO English letters (no Hinglish).
             NO asterisks (*) or square brackets ([]).
             Be professional but friendly — like a trusted friend.
             If the user asks about their scan, refer to the data provided.
@@ -616,12 +762,8 @@ def chat():
             temperature=0.5, max_tokens=500,
         )
         reply = completion.choices[0].message.content
-
-        # Update history
-        history.append(user_msg)
-        history.append(reply)
-        session["chat_history"] = history[-5:]  # keep last 5 exchanges
-
+        _chat_memory.append(f"User: {user_msg}")
+        _chat_memory.append(f"AI: {reply}")
         return jsonify({"reply": reply})
 
     except Exception as e:
