@@ -38,7 +38,7 @@ def main():
                     count += 1
 
                     # flush every 10 rows
-                    if count % 10 == 0:
+                    if count % 5 == 0:
                         writer.writerows(buffer)
                         buffer.clear()
         # write any remaining rows
