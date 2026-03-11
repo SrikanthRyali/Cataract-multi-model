@@ -615,7 +615,6 @@
         const raw = (summaryEl.textContent || summaryEl.innerText).trim();
         if (raw) summaryEl.innerHTML = md.render(raw.split('\n').map(l => l.trim()).join('\n'));
     }
-
     /* ── Chat panel toggle ── */
     let chatOpen = false;
     function toggleChat() {
