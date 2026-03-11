@@ -33,7 +33,6 @@
             min-height: 100dvh;
         }
 
-        /* ── Glass ── */
         .glass {
             background: rgba(255,255,255,0.76);
             backdrop-filter: blur(22px);
@@ -68,11 +67,6 @@
         .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(13,148,136,0.4); }
         .btn-primary:active { transform: scale(0.97); }
 
-        /* ════════════════════════════════════════
-           CHAT WIDGET — bottom-right floating panel
-           ════════════════════════════════════════ */
-
-        /* FAB pill — looks like Chrome's "Customise Chrome" */
         #chat-fab {
             position: fixed;
             bottom: 1.25rem;
@@ -110,7 +104,6 @@
             white-space: nowrap;
         }
 
-        /* Chat panel */
         #chat-panel {
             position: fixed;
             bottom: 5rem;
@@ -135,7 +128,6 @@
             pointer-events: all;
         }
 
-        /* Mobile: panel takes more height */
         @media (max-width: 480px) {
             #chat-panel {
                 bottom: 5.5rem;
@@ -151,7 +143,6 @@
             }
         }
 
-        /* Typing dots */
         .dot {
             width: 6px; height: 6px;
             background: #94a3b8;
@@ -166,7 +157,6 @@
             40%         { transform: translateY(-5px); }
         }
 
-        /* ── Animations ── */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(22px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -197,7 +187,6 @@
         .float-anim   { animation: floatY 3.2s ease-in-out infinite; }
         .msg-anim     { animation: msgIn 0.25s ease both; }
 
-        /* ── Upload zone ── */
         #drop-zone {
             transition: border-color 0.25s, background 0.25s, transform 0.2s;
         }
@@ -207,11 +196,9 @@
             transform: scale(1.005);
         }
 
-        /* ── Card hover ── */
         .card-lift { transition: transform 0.25s, box-shadow 0.25s; }
         .card-lift:hover { transform: translateY(-3px); box-shadow: 0 18px 48px rgba(13,148,136,0.14); }
 
-        /* ── Nav links ── */
         .nav-link {
             position: relative;
             color: var(--muted);
@@ -232,7 +219,6 @@
         .nav-link:hover { color: var(--teal); }
         .nav-link:hover::after { right: 0; }
 
-        /* ── Section badge ── */
         .badge {
             display: inline-flex; align-items: center; gap: 0.4rem;
             font-size: 0.68rem; font-weight: 700;
@@ -244,7 +230,6 @@
             border-radius: 9999px;
         }
 
-        /* ── AI Summary markdown ── */
         .md-body { line-height: 1.7; color: #334155; font-size: 0.875rem; }
         .md-body h2 {
             font-family: 'Sora', sans-serif;
@@ -270,14 +255,12 @@
         .md-body li::before { content: "💡"; position: absolute; left: 0.7rem; top: 0.55rem; }
         .md-body strong { color: var(--ink); }
 
-        /* ── Confidence bar ── */
         .conf-fill {
             height: 100%; border-radius: 9999px;
             animation: confIn 1.3s cubic-bezier(0.22,1,0.36,1) both;
             animation-delay: 0.3s;
         }
 
-        /* ── Loading overlay ── */
         #loading-overlay {
             display: none;
             position: fixed; inset: 0;
@@ -296,7 +279,6 @@
             animation: spin 0.85s linear infinite;
         }
 
-        /* ── Error shake ── */
         @keyframes shake {
             0%,100% { transform: translateX(0); }
             20%,60% { transform: translateX(-5px); }
@@ -304,7 +286,6 @@
         }
         .shake { animation: shake 0.45s ease both; }
 
-        /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
@@ -313,13 +294,10 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════
-     FULL-WIDTH MAIN CONTENT
-═══════════════════════════════════════════════════════ -->
 <main>
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 pt-5 pb-28">
 
-    <!-- ── Navbar ── -->
+    <!-- Navbar -->
     <nav class="glass rounded-2xl px-4 sm:px-7 py-3.5 mb-10 flex items-center justify-between shadow-sm anim-0">
         <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0"
@@ -338,7 +316,7 @@
         </div>
     </nav>
 
-    <!-- ── Hero ── -->
+    <!-- Hero -->
     <header class="text-center mb-10 sm:mb-14 anim-1">
         <div class="badge mb-5">
             <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
@@ -353,7 +331,7 @@
         </p>
     </header>
 
-    <!-- ── Upload Card ── -->
+    <!-- Upload Card -->
     <section class="glass rounded-3xl shadow-xl p-2 mb-8 anim-2">
         <div class="bg-white/45 rounded-[1.4rem] p-5 sm:p-8 lg:p-10">
             <form action="/" method="POST" enctype="multipart/form-data" id="main-upload-form">
@@ -386,7 +364,7 @@
                             style="font-size:clamp(1.15rem,3.5vw,1.55rem)">Upload Eye Image</h3>
                         <p class="text-slate-400 text-sm sm:text-base">Single eye only · JPG / PNG / WEBP</p>
                         <p class="text-teal-500 text-xs sm:text-sm font-semibold mt-2.5">
-                            Tap to browse &nbsp;·&nbsp; 
+                            Tap to browse &nbsp;·&nbsp;
                         </p>
                     </div>
                 </div>
@@ -409,7 +387,7 @@
     </section>
 
     {% if prediction_data %}
-    <!-- ── Results ── -->
+    <!-- Results -->
     <div class="space-y-6 anim-3">
 
         <!-- Verdict + Model Logs -->
@@ -490,7 +468,7 @@
     </div>
     {% endif %}
 
-    <!-- ── Info Sections ── -->
+    <!-- Info Sections -->
     <div class="mt-16 space-y-4 anim-5">
         <section id="about" class="glass rounded-2xl p-6 sm:p-8 card-lift">
             <h3 class="font-display font-bold text-slate-900 text-base mb-3 flex items-center gap-2">
@@ -511,7 +489,7 @@
             <h3 class="font-display font-bold text-slate-900 text-base mb-3 flex items-center gap-2">
                 <span class="text-blue-500">❓</span> Help
             </h3>
-            <p class="text-slate-600 text-sm leading-relaxed"><strong>Upload:</strong> click here to browserand upload a image of one open single eye. Images showing  unrelated objects are rejected.</p>
+            <p class="text-slate-600 text-sm leading-relaxed"><strong>Upload:</strong> click here to browse and upload an image of one open single eye. Images showing unrelated objects are rejected.</p>
             <p class="text-slate-600 text-sm leading-relaxed mt-2"><strong>Chat:</strong> click the <strong>"Medical AI"</strong> button at the bottom-right corner to open the assistant panel. Switch reply language from the dropdown in the chat header.</p>
         </section>
     </div>
@@ -535,11 +513,7 @@
 </main>
 
 
-<!-- ═══════════════════════════════════════════════════════
-     FLOATING CHAT WIDGET  (bottom-right, always on top)
-═══════════════════════════════════════════════════════ -->
-
-<!-- Chat panel (pops up above FAB) -->
+<!-- FLOATING CHAT WIDGET -->
 <div id="chat-panel" class="glass shadow-2xl">
 
     <!-- Panel header -->
@@ -559,7 +533,6 @@
                 </select>
             </div>
         </div>
-        <!-- Close X -->
         <button onclick="toggleChat()" aria-label="Close chat"
             class="w-7 h-7 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-400 flex items-center justify-center text-slate-400 transition-colors text-xs font-bold">
             ✕
@@ -588,16 +561,13 @@
     </form>
 </div>
 
-<!-- FAB pill button -->
+<!-- FAB -->
 <button id="chat-fab" onclick="toggleChat()" aria-label="Open Medical AI chat">
     <div class="fab-avatar text-white">👁️</div>
     <span class="fab-label">Medical AI</span>
 </button>
 
-
-<!-- ═══════════════════════════════════════════════════════
-     LOADING OVERLAY
-═══════════════════════════════════════════════════════ -->
+<!-- LOADING OVERLAY -->
 <div id="loading-overlay">
     <div class="glass rounded-3xl px-10 sm:px-14 py-10 flex flex-col items-center shadow-2xl text-center mx-4 w-full max-w-xs">
         <div class="spinner mb-5"></div>
@@ -608,13 +578,27 @@
 
 
 <script>
-    /* ── Markdown render ── */
-    const md = window.markdownit({ html: true, linkify: true, typographer: true });
-    const summaryEl = document.getElementById('groq-summary-text');
-    if (summaryEl) {
-        const raw = (summaryEl.textContent || summaryEl.innerText).trim();
-        if (raw) summaryEl.innerHTML = md.render(raw.split('\n').map(l => l.trim()).join('\n'));
+    /* ── FIX 1: PRG — replace POST history entry with GET so reload won't resubmit ── */
+    if (window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname);
     }
+
+    /* ── FIX 2: Markdown render with null + library guard ── */
+    try {
+        const summaryEl = document.getElementById('groq-summary-text');
+        if (summaryEl && typeof window.markdownit === 'function') {
+            const mdParser = window.markdownit({ html: true, linkify: true, typographer: true });
+            const raw = (summaryEl.textContent || summaryEl.innerText || '').trim();
+            if (raw) {
+                summaryEl.innerHTML = mdParser.render(
+                    raw.split('\n').map(l => l.trim()).join('\n')
+                );
+            }
+        }
+    } catch (err) {
+        console.warn('Markdown render skipped:', err);
+    }
+
     /* ── Chat panel toggle ── */
     let chatOpen = false;
     function toggleChat() {
@@ -625,70 +609,111 @@
 
     /* ── File preview ── */
     function previewFile(e) {
-        if (!e.target.files[0]) return;
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
         const reader = new FileReader();
-        reader.onload = () => {
-            document.getElementById('image-preview').src = reader.result;
-            document.getElementById('preview-container').classList.remove('hidden');
-            document.getElementById('upload-instruction').classList.add('hidden');
+        reader.onload = function(ev) {
+            const preview = document.getElementById('image-preview');
+            const container = document.getElementById('preview-container');
+            const instruction = document.getElementById('upload-instruction');
             const btn = document.getElementById('submit-btn');
-            btn.classList.remove('hidden');
-            btn.style.animation = 'fadeUp 0.4s ease both';
+            if (preview) preview.src = ev.target.result;
+            if (container) container.classList.remove('hidden');
+            if (instruction) instruction.classList.add('hidden');
+            if (btn) {
+                btn.classList.remove('hidden');
+                btn.style.animation = 'fadeUp 0.4s ease both';
+            }
         };
-        reader.readAsDataURL(e.target.files[0]);
+        reader.readAsDataURL(file);
     }
 
-    /* ── Upload → loading overlay ── */
-    document.getElementById('main-upload-form').onsubmit = () => {
-        document.getElementById('loading-overlay').style.display = 'flex';
-    };
+    /* ── FIX 3: Upload form — hide overlay on page show (back/forward cache) ── */
+    const uploadForm = document.getElementById('main-upload-form');
+    const overlay    = document.getElementById('loading-overlay');
 
-    /* ── Drag & drop ── */
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function() {
+            if (overlay) overlay.style.display = 'flex';
+        });
+    }
+
+    /* Hide overlay if page is restored from bfcache (back button) */
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted && overlay) overlay.style.display = 'none';
+    });
+
+    /* ── FIX 4: Drag & drop — added preventDefault on 'drop' to avoid browser opening file ── */
     const dz = document.getElementById('drop-zone');
-    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag-over'); }));
-    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, () => dz.classList.remove('drag-over')));
+    if (dz) {
+        ['dragenter', 'dragover'].forEach(function(ev) {
+            dz.addEventListener(ev, function(e) {
+                e.preventDefault();
+                dz.classList.add('drag-over');
+            });
+        });
+
+        dz.addEventListener('dragleave', function() {
+            dz.classList.remove('drag-over');
+        });
+
+        dz.addEventListener('drop', function(e) {
+            e.preventDefault();                          /* was missing — caused browser file-open */
+            dz.classList.remove('drag-over');
+            const fileInput = document.getElementById('file-input');
+            if (e.dataTransfer && e.dataTransfer.files.length && fileInput) {
+                /* Transfer dropped file into the real input so the form submits it */
+                const dt = new DataTransfer();
+                dt.items.add(e.dataTransfer.files[0]);
+                fileInput.files = dt.files;
+                fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    }
 
     /* ── Chat ── */
     const chatForm  = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
     const chatBox   = document.getElementById('chat-messages');
 
-    chatForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const msg  = chatInput.value.trim();
-        const lang = document.getElementById('chat-lang').value;
-        if (!msg) return;
+    if (chatForm) {
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msg  = chatInput.value.trim();
+            const langEl = document.getElementById('chat-lang');
+            const lang = langEl ? langEl.value : 'English';
+            if (!msg) return;
 
-        chatInput.disabled    = true;
-        chatInput.placeholder = 'AI is thinking…';
-        addMsg(msg, 'user');
-        chatInput.value = '';
+            chatInput.disabled    = true;
+            chatInput.placeholder = 'AI is thinking…';
+            addMsg(msg, 'user');
+            chatInput.value = '';
 
-        /* typing indicator */
-        const typing = document.createElement('div');
-        typing.className = 'msg-anim mr-4 bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex gap-1.5 items-center';
-        typing.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
-        chatBox.appendChild(typing);
-        chatBox.scrollTop = chatBox.scrollHeight;
+            const typing = document.createElement('div');
+            typing.className = 'msg-anim mr-4 bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex gap-1.5 items-center';
+            typing.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+            chatBox.appendChild(typing);
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-        try {
-            const res  = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg, language: lang })
-            });
-            const data = await res.json();
-            typing.remove();
-            addMsg(data.reply, 'ai');
-        } catch {
-            typing.remove();
-            addMsg('Connection error. Please try again. ⚠️', 'ai');
-        } finally {
-            chatInput.disabled    = false;
-            chatInput.placeholder = 'Ask me anything…';
-            chatInput.focus();
-        }
-    };
+            try {
+                const res  = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, language: lang })
+                });
+                const data = await res.json();
+                typing.remove();
+                addMsg(data.reply, 'ai');
+            } catch (err) {
+                typing.remove();
+                addMsg('Connection error. Please try again. ⚠️', 'ai');
+            } finally {
+                chatInput.disabled    = false;
+                chatInput.placeholder = 'Ask me anything…';
+                chatInput.focus();
+            }
+        });
+    }
 
     function addMsg(text, side) {
         const div = document.createElement('div');
@@ -698,7 +723,7 @@
         } else {
             div.className = 'msg-anim mr-4 bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-100 text-sm text-slate-700 shadow-sm';
         }
-        div.innerHTML = `<p class="leading-relaxed">${text}</p>`;
+        div.innerHTML = '<p class="leading-relaxed">' + text + '</p>';
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
