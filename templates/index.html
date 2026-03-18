@@ -141,14 +141,7 @@
         .rv-3 { animation-delay: .30s; }
         .rv-4 { animation-delay: .42s; }
 
-        /* ── Heatmap scan line ── */
-        .heatmap-wrap { position:relative; overflow:hidden; border-radius:.875rem; }
-        .scan-line {
-            position:absolute; left:0; right:0; height:2px; top:0;
-            background: linear-gradient(90deg,transparent 0%,rgba(14,165,233,.9) 50%,transparent 100%);
-            animation: scanDown 2.2s .8s ease-in-out 3;
-        }
-        @keyframes scanDown { 0%{top:0%;opacity:1} 90%{top:100%;opacity:1} 100%{top:100%;opacity:0} }
+        /* Scan-line CSS removed — heatmap feature deprecated */
 
         /* ── Result-ready toast ── */
         #result-toast {
@@ -236,10 +229,7 @@
         #drop-zone{transition:border-color .25s,background .25s,transform .2s}
         #drop-zone:hover,#drop-zone.drag-over{border-color:var(--teal);background:rgba(13,148,136,.035);transform:scale(1.005)}
 
-        /* Image compare */
-        .img-compare{overflow:hidden;border-radius:.875rem;background:#0f172a;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
-        .img-compare img{width:100%;height:100%;object-fit:cover;display:block}
-        .legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block;flex-shrink:0}
+        /* img-compare and legend-dot removed — heatmap feature deprecated */
 
         /* Markdown */
         .md-body{line-height:1.75;color:#334155;font-size:.9rem}
@@ -439,40 +429,45 @@
         </div><!-- /row1 -->
 
 
-        <!-- ── ROW 2 : Heatmap ── -->
-        {% if prediction_data.heatmap_url %}
+        <!-- ── ROW 2 : Scanned Eye Image ── -->
         <section class="glass rounded-3xl p-7 lg:p-10 shadow-xl card-lift results-reveal rv-2">
+
+            <!-- Section header -->
             <div class="flex items-center gap-4 mb-7">
                 <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
-                     style="width:clamp(2.8rem,6vw,3.5rem);height:clamp(2.8rem,6vw,3.5rem);font-size:clamp(1.1rem,3vw,1.5rem);background:linear-gradient(135deg,#7c3aed,#2563eb)">🧠</div>
+                     style="width:clamp(2.8rem,6vw,3.5rem);height:clamp(2.8rem,6vw,3.5rem);font-size:clamp(1.1rem,3vw,1.5rem);background:linear-gradient(135deg,#0d9488,#0ea5e9)">👁️</div>
                 <div>
-                    <p class="font-display font-bold text-slate-900 leading-tight" style="font-size:clamp(1rem,3vw,1.4rem)">AI Attention Map</p>
-                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-violet-500 mt-0.5">Grad-CAM · Best Model Focus</p>
+                    <p class="font-display font-bold text-slate-900 leading-tight" style="font-size:clamp(1rem,3vw,1.4rem)">Scanned Eye Image</p>
+                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-teal-500 mt-0.5">Submitted for Analysis · AI Processed</p>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4 lg:gap-8 mb-5">
-                <div>
-                    <p class="text-xs lg:text-sm font-bold uppercase tracking-widest text-slate-400 text-center mb-3">Original</p>
-                    <div class="img-compare"><img src="{{ image_url }}" alt="Original"></div>
-                </div>
-                <div>
-                    <p class="text-xs lg:text-sm font-bold uppercase tracking-widest text-violet-500 text-center mb-3">AI Focus Zones</p>
-                    <div class="img-compare heatmap-wrap" style="box-shadow:0 0 0 2px rgba(124,58,237,.3)">
-                        <img src="{{ prediction_data.heatmap_url }}" alt="Heatmap">
-                        <div class="scan-line"></div>
+
+            <!-- Centred image -->
+            <div class="flex justify-center">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/60"
+                     style="max-width:420px; width:100%">
+                    <img src="{{ image_url }}" alt="Uploaded eye image"
+                         class="w-full h-auto block object-cover">
+                    <!-- Verdict ribbon overlay at the bottom of the image -->
+                    <div class="absolute bottom-0 left-0 right-0 px-4 py-2.5 flex items-center justify-between"
+                         style="background:rgba(15,23,42,0.68);backdrop-filter:blur(10px)">
+                        <span class="text-white font-display font-bold text-sm">
+                            {% if prediction_data.final.prediction == 'Cataract' %}🚨 Cataract Detected{% else %}✨ Normal Eye{% endif %}
+                        </span>
+                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full
+                            {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-500 text-white{% else %}bg-teal-500 text-white{% endif %}">
+                            {{ prediction_data.final.confidence }}% confident
+                        </span>
                     </div>
                 </div>
             </div>
-            <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
-                <span class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Attention:</span>
-                <span class="flex items-center gap-1.5 text-xs lg:text-sm text-slate-500 font-semibold"><span class="legend-dot" style="background:#2563eb"></span>Low</span>
-                <span class="flex items-center gap-1.5 text-xs lg:text-sm text-slate-500 font-semibold"><span class="legend-dot" style="background:#10b981"></span>Medium</span>
-                <span class="flex items-center gap-1.5 text-xs lg:text-sm text-slate-500 font-semibold"><span class="legend-dot" style="background:#f59e0b"></span>High</span>
-                <span class="flex items-center gap-1.5 text-xs lg:text-sm text-slate-500 font-semibold"><span class="legend-dot" style="background:#ef4444"></span>Very High</span>
-                <span class="ml-auto text-xs text-slate-400 hidden sm:inline">Warm = most influential for the prediction</span>
-            </div>
+
+            <!-- Supporting note -->
+            <p class="text-center text-xs text-slate-400 font-medium mt-4">
+                This is the image the AI models analysed. The clinical indicators below are measured from this photo.
+            </p>
+
         </section>
-        {% endif %}
 
 
         <!-- ── ROW 3 : Clinical Feature Analysis ── -->
