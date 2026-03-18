@@ -48,45 +48,19 @@ app.secret_key = "cataract_secret_key"
 loaded_models  = {}
 
 # ── Haar cascade ───────────────────────────────────────────────
-# ONLY haarcascade_eye.xml is used.
-# haarcascade_righteye_2splits + haarcascade_lefteye_2splits are EXCLUDED:
-# they are face-ROI-only cascades that fire on eyelashes and slit-lamp arcs.
 _casc_dir   = cv2.data.haarcascades
 eye_cascade = cv2.CascadeClassifier(_casc_dir + "haarcascade_eye.xml")
 
 # ── Global thresholds ──────────────────────────────────────────
 MIN_CONFIDENCE   = 30
 MAX_ENTROPY      = 0.67
-MAX_LAP_VARIANCE = 8000    # above → screenshot / noise
+MAX_LAP_VARIANCE = 8000
 
-# Illustration-rejection (Layer 2b) — Rule A only
 ILLUS_HI_SAT_THRESH = 0.75
 ILLUS_SKIN_THRESH   = 0.08
 
-# Non-eye / bright-background rejection (Layer 2c)
-# ─────────────────────────────────────────────────────────────────────────────
-# Real eye close-ups (slit-lamp, phone camera, fundus) NEVER have a large
-# white/bright background — the image is dominated by iris + sclera tissue.
-#
-# Non-eye studio photos (hands, pills, charts, test cards) commonly have
-# >35% pure-white background pixels because the subject was photographed
-# on a light-box or white sheet.
-#
-# Measured values:
-#   hand.jpg  white_bg=0.707   hand.webp white_bg=0.648
-#   All eye images tested      white_bg < 0.05
-#
-# Threshold 0.35 gives a comfortable margin between the two populations.
-WHITE_BG_THRESHOLD = 0.35   # fraction of (R>235, G>235, B>235) pixels
-
-# Hough-anatomy gate (Layer 5b)
-# ─────────────────────────────────────────────────────────────────────────────
-# When Haar finds nothing and we rely on Hough circles, we add an additional
-# check: for every candidate circle, the image region within that circle must
-# NOT be uniformly very bright.  A real iris is always darker than 200 on
-# average (even a white cataract has a dark iris ring).  A palm/finger joint
-# is almost always > 180 average brightness.
-HOUGH_CIRCLE_MAX_MEAN = 185  # mean brightness inside circle must be <= this
+WHITE_BG_THRESHOLD  = 0.35
+HOUGH_CIRCLE_MAX_MEAN = 185
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "bmp", "gif", "tiff"}
 
@@ -237,10 +211,6 @@ def get_groq_summary(final_result, model_results):
 # ══════════════════════════════════════════════════════════════
 
 def _crop_solid_borders(img, gray, std_thresh=18):
-    """
-    Remove solid-colour dataset border strips row-by-row / col-by-col.
-    Never removes more than 35% from any side.
-    """
     h, w = gray.shape
     t, b, l, r = 0, h, 0, w
     max_frac = 0.35
@@ -264,9 +234,6 @@ def _crop_solid_borders(img, gray, std_thresh=18):
 
 
 def _group_dets(dets, prox):
-    """
-    Merge detection tuples (cx, cy, size) within `prox` pixels of each other.
-    """
     groups = []
     for d in dets:
         placed = False
@@ -289,19 +256,11 @@ def _group_center(g):
 
 
 def _near_border(cx, cy, w, h, frac=0.17):
-    """
-    True if (cx, cy) lies within the outer 17% margin.
-    17% covers slit-lamp corner beam artifacts (land at ~15-16% from edge).
-    """
     return (cx < w * frac or cx > w * (1 - frac) or
             cy < h * frac or cy > h * (1 - frac))
 
 
 def _filter_small_dets(dets, min_size_ratio=0.40):
-    """
-    Drop detections whose size < 40% of the largest.
-    Removes eyelash rows, eyelid creases, and slit-lamp arc artifacts.
-    """
     if not dets:
         return dets
     max_s     = max(d[2] for d in dets)
@@ -315,10 +274,6 @@ def _filter_small_dets(dets, min_size_ratio=0.40):
 
 
 def _circle_interior_mean(gray, cx, cy, radius):
-    """
-    Return the mean pixel brightness inside a circular region.
-    Used to verify that a Hough circle contains dark iris tissue.
-    """
     h, w = gray.shape
     Y, X = np.ogrid[:h, :w]
     mask = (X - cx) ** 2 + (Y - cy) ** 2 <= radius ** 2
@@ -327,51 +282,215 @@ def _circle_interior_mean(gray, cx, cy, radius):
 
 
 # ══════════════════════════════════════════════════════════════
-#  MAIN VALIDATOR  — is_eye_image()
-#
-#  Layer summary
-#  ─────────────
-#  LAYER 1  — Minimum size + blank/solid check
-#  LAYER 2  — Laplacian upper bound (screenshots / pure noise)
-#  LAYER 2b — Cartoon/illustration rejection (extreme HSV saturation)
-#  LAYER 2c — ★ NEW: White-background / non-eye object rejection
-#              Hands, pills, charts, test cards etc. photographed on
-#              a light-box or white sheet have white_bg_frac > 0.35.
-#              All real eye images tested have white_bg_frac < 0.05.
-#  LAYER 3  — Strip solid-colour dataset border padding
-#  LAYER 4  — Multi-pass Haar eye cascade with:
-#               • Size filter (drops eyelash / arc hits < 40% of max)
-#               • max_dim-based grouping proximity
-#               • near_border frac = 0.17 (slit-lamp corner exclusion)
-#               • Dominance + separation checks for multi-group cases
-#  LAYER 5  — Hough-circle iris fallback (tight clinical crops only)
-#               • Anatomy gate: every candidate circle must have mean
-#                 brightness <= HOUGH_CIRCLE_MAX_MEAN (185)
-#                 ★ NEW: rejects hands whose palm/knuckle circles are
-#                 uniformly bright (mean 200-250) unlike iris (mean 60-150)
-#
-#  Validated acceptance:
-#    ✅  Slit-lamp images (blurry, with illumination arc)
-#    ✅  Wide close-up photos (900×368 type)
-#    ✅  Fundus / ophthalmoscope crops
-#    ✅  Phone camera close-ups
-#    ✅  All 9 test dataset images
-#
-#  Validated rejection:
-#    ❌  Hand photos (white background, bright Hough circles)
-#    ❌  Both-eyes / full-face selfies
-#    ❌  Screenshots / digital graphics
-#    ❌  Cartoons / illustrations
-#    ❌  Blank / solid / extreme-noise images
+#  VISUAL FEATURE ANALYSIS  (NEW)
 # ══════════════════════════════════════════════════════════════
-def is_eye_image(image_path: str) -> tuple:
+
+def analyze_eye_features(image_path: str) -> dict:
     """
-    Validate that the uploaded image is a close-up photograph of ONE eye.
-    Returns (is_valid: bool, error_message: str).
-    error_message is "" when is_valid is True.
+    Extract four cataract-relevant visual metrics from the eye image.
+
+    Metrics returned (all 0–100 scale):
+      pupil_brightness — mean brightness of central pupil region.
+                         High (>55) = white/cloudy pupil = cataract sign.
+      opacity_score    — fraction of near-white pixels in central region.
+                         High (>40) = lens opacity = cataract sign.
+      iris_contrast    — brightness difference between iris ring and pupil.
+                         Low (<25) = reduced iris–pupil boundary = cataract sign.
+      light_scatter    — diffuse-reflection indicator derived from pupil
+                         brightness and texture uniformity.
+                         High (>50) = scattered light = cataract sign.
     """
     try:
-        # ── READ ────────────────────────────────────────────────
+        img = cv2.imread(image_path)
+        if img is None:
+            return {}
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        h, w = gray.shape
+        cx, cy = w // 2, h // 2
+
+        # Adaptive radii: pupil ~ 18% of min_dim, iris ring out to 38%
+        r_pupil = max(10, int(min(h, w) * 0.18))
+        r_iris  = max(20, int(min(h, w) * 0.38))
+
+        # Build circular masks
+        Y, X = np.ogrid[:h, :w]
+        pupil_mask = ((X - cx) ** 2 + (Y - cy) ** 2) <= r_pupil ** 2
+        iris_mask  = (((X - cx) ** 2 + (Y - cy) ** 2) <= r_iris  ** 2) & ~pupil_mask
+
+        pupil_px = gray[pupil_mask]
+        iris_px  = gray[iris_mask]
+
+        # ── 1. Pupil brightness (0–100) ──────────────────────────
+        pupil_brightness = (float(np.mean(pupil_px)) / 255.0 * 100
+                            if pupil_px.size > 0 else 0.0)
+
+        # ── 2. Lens opacity: % near-white pixels in pupil zone ───
+        if pupil_px.size > 0:
+            b_p = img[:, :, 0][pupil_mask].astype(float)
+            g_p = img[:, :, 1][pupil_mask].astype(float)
+            r_p = img[:, :, 2][pupil_mask].astype(float)
+            opacity_score = float(
+                np.mean((r_p > 155) & (g_p > 145) & (b_p > 135))
+            ) * 100
+        else:
+            opacity_score = 0.0
+
+        # ── 3. Iris contrast: brightness difference iris vs pupil ─
+        if pupil_px.size > 0 and iris_px.size > 0:
+            diff = abs(float(np.mean(iris_px)) - float(np.mean(pupil_px)))
+            iris_contrast = min(100.0, diff / 255.0 * 200.0)
+        else:
+            iris_contrast = 50.0
+
+        # ── 4. Light scatter: bright + uniform center = diffuse ───
+        if pupil_px.size > 0:
+            std_val = float(np.std(pupil_px))
+            # Low std (uniform) in a bright region → high scatter
+            uniformity = max(0.0, 1.0 - std_val / 80.0)
+            light_scatter = min(100.0, uniformity * pupil_brightness)
+        else:
+            light_scatter = 0.0
+
+        return {
+            "pupil_brightness": round(pupil_brightness, 1),
+            "opacity_score":    round(opacity_score,    1),
+            "iris_contrast":    round(iris_contrast,    1),
+            "light_scatter":    round(light_scatter,    1),
+        }
+
+    except Exception as e:
+        print(f"  [analyze_eye_features] error: {e}")
+        return {}
+
+
+# ── Grad-CAM helpers ───────────────────────────────────────────
+
+def generate_feature_heatmap(image_path: str, output_path: str):
+    """
+    Fallback brightness-based opacity heatmap when Grad-CAM is unavailable
+    (e.g., model has no Conv2d layers).  Highlights bright central regions
+    using a Gaussian-weighted brightness map.
+    """
+    try:
+        img  = cv2.imread(image_path)
+        if img is None:
+            return None
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        h, w = gray.shape
+        cx, cy = w // 2, h // 2
+        sigma  = min(h, w) * 0.30
+
+        Y, X  = np.ogrid[:h, :w]
+        gauss = np.exp(-((X - cx) ** 2 + (Y - cy) ** 2) / (2 * sigma ** 2)
+                       ).astype(np.float32)
+
+        feat = gray.astype(np.float32) / 255.0 * gauss
+        feat = cv2.GaussianBlur(feat, (21, 21), 0)
+        if feat.max() > 0:
+            feat = feat / feat.max()
+
+        hm      = cv2.applyColorMap((feat * 255).astype(np.uint8), cv2.COLORMAP_JET)
+        blended = cv2.addWeighted(img, 0.55, hm, 0.45, 0)
+        cv2.imwrite(output_path, blended)
+        return output_path
+    except Exception as e:
+        print(f"  [feature_heatmap] error: {e}")
+        return None
+
+
+def generate_gradcam(model, input_tensor, target_class_idx: int,
+                     img_path: str, output_path: str):
+    """
+    Produce a Grad-CAM attention heatmap overlaid on the original image.
+
+    Algorithm:
+      1. Register a forward hook on the LAST Conv2d layer to capture
+         its output activation map.
+      2. Call retain_grad() on that activation so gradients are stored.
+      3. Forward pass → compute class score → backward pass.
+      4. Average-pool gradients over spatial dims → channel weights.
+      5. Weight-sum activations, ReLU, resize, overlay as JET colormap.
+
+    Falls back to brightness heatmap if:
+      - No Conv2d layer is found in the model.
+      - The backward pass fails for any reason.
+    """
+    model.eval()
+
+    # Find the last Conv2d layer
+    last_conv = None
+    for module in model.modules():
+        if isinstance(module, torch.nn.Conv2d):
+            last_conv = module
+
+    if last_conv is None:
+        print("  [GradCAM] no Conv2d found — using brightness fallback")
+        return generate_feature_heatmap(img_path, output_path)
+
+    captured = {}
+
+    def fwd_hook(m, inp, out):
+        captured["act"] = out
+        out.retain_grad()   # keep grad on non-leaf activation tensor
+
+    handle = last_conv.register_forward_hook(fwd_hook)
+
+    try:
+        # Fresh forward outside torch.no_grad() so the graph is alive
+        inp    = input_tensor.detach().clone()
+        output = model(inp)
+        handle.remove()
+
+        if "act" not in captured:
+            return generate_feature_heatmap(img_path, output_path)
+
+        model.zero_grad()
+        score = output[0, target_class_idx]
+        score.backward()
+
+        act  = captured["act"].detach().cpu().numpy()[0]   # (C, H, W)
+        grad = captured["act"].grad
+
+        if grad is None:
+            print("  [GradCAM] grad is None — using brightness fallback")
+            return generate_feature_heatmap(img_path, output_path)
+
+        grads   = grad.detach().cpu().numpy()[0]           # (C, H, W)
+        weights = np.mean(grads, axis=(1, 2))              # (C,)
+        cam     = np.einsum("c,chw->hw", weights, act)    # (H, W)
+        cam     = np.maximum(cam, 0)                       # ReLU
+
+        if cam.max() == 0:
+            return generate_feature_heatmap(img_path, output_path)
+
+        cam /= cam.max()
+
+        img_cv  = cv2.imread(img_path)
+        if img_cv is None:
+            return None
+        h_img, w_img = img_cv.shape[:2]
+        cam_up  = cv2.resize(cam, (w_img, h_img))
+        hm_img  = cv2.applyColorMap((cam_up * 255).astype(np.uint8), cv2.COLORMAP_JET)
+        blended = cv2.addWeighted(img_cv, 0.55, hm_img, 0.45, 0)
+        cv2.imwrite(output_path, blended)
+        print("  [GradCAM] heatmap saved OK")
+        return output_path
+
+    except Exception as e:
+        print(f"  [GradCAM] error: {e}")
+        try:
+            handle.remove()
+        except Exception:
+            pass
+        return generate_feature_heatmap(img_path, output_path)
+
+
+# ══════════════════════════════════════════════════════════════
+#  MAIN VALIDATOR  — is_eye_image()
+# ══════════════════════════════════════════════════════════════
+def is_eye_image(image_path: str) -> tuple:
+    try:
         img = cv2.imread(image_path)
         if img is None:
             return False, (
@@ -383,21 +502,18 @@ def is_eye_image(image_path: str) -> tuple:
         h0, w0 = gray.shape
         print(f"\n[is_eye_image] {image_path}  {w0}x{h0}")
 
-        # ── LAYER 1A: Minimum size ───────────────────────────────
         if h0 < 50 or w0 < 50:
             return False, (
                 "Image is too small to analyse. "
                 "Please upload a photo that is at least 50x50 pixels."
             )
 
-        # ── LAYER 1B: Blank / solid colour ──────────────────────
         if np.std(gray) < 5:
             return False, (
                 "The image appears to be blank or a solid colour. "
                 "Please upload a real photograph of an eye."
             )
 
-        # ── LAYER 2: Screenshot / digital noise guard ────────────
         lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
         print(f"  [Layer2] lap_var={lap_var:.0f}")
         if lap_var > MAX_LAP_VARIANCE:
@@ -406,7 +522,6 @@ def is_eye_image(image_path: str) -> tuple:
                 "Please upload a real photograph taken by a camera or phone."
             )
 
-        # ── LAYER 2b: Cartoon / illustration rejection ───────────
         hsv_img     = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         s_chan       = hsv_img[:, :, 1].ravel().astype(np.float32)
         b_ch         = img[:, :, 0].ravel().astype(np.int32)
@@ -429,27 +544,6 @@ def is_eye_image(image_path: str) -> tuple:
                 "Please upload an actual photograph of your eye."
             )
 
-        # ── LAYER 2c: White-background / non-eye object rejection ─
-        #
-        # WHY THIS LAYER EXISTS
-        # ─────────────────────
-        # Photographs of hands, pills, ear charts, and other objects are
-        # commonly taken on a white or bright background (light-box, paper).
-        # These images pass all previous layers because:
-        #   • Their Laplacian variance is normal (not a screenshot)
-        #   • They have real skin tones (rule_b was already removed)
-        #   • Haar finds no eyes (no false positive here — correct!)
-        #   • Hough finds circles in palm lines / knuckle creases and passes
-        #
-        # A real eye close-up NEVER has a large white background because:
-        #   • Slit-lamp images: dark background, bright iris ring
-        #   • Phone close-ups: skin fills the frame around the eye
-        #   • Fundus / ophthalmoscope: uniformly dark background
-        #
-        # MEASURED VALUES (R>235, G>235, B>235 pixel fraction):
-        #   hand.jpg   = 0.707    hand.webp = 0.648
-        #   All 9 eye test images < 0.05
-        #   Threshold  = 0.35  (comfortable midpoint)
         white_frac = float(np.mean(
             (r_ch > 235) & (g_ch > 235) & (b_ch > 235)
         ))
@@ -463,7 +557,6 @@ def is_eye_image(image_path: str) -> tuple:
                 "Please upload a real close-up photograph of your eye."
             )
 
-        # ── LAYER 3: Strip solid-colour dataset borders ─────────
         img, gray = _crop_solid_borders(img, gray)
         h, w = gray.shape
         if h < 50 or w < 50:
@@ -478,7 +571,6 @@ def is_eye_image(image_path: str) -> tuple:
         max_dim = max(h, w)
         print(f"  [Layer3] cropped={w}x{h}  min_dim={min_dim}  max_dim={max_dim}")
 
-        # ── LAYER 4: Haar eye detection ───────────────────────────
         min_det  = max(25, int(min_dim * 0.07))
         all_dets = []
         for gimg in [gray, gray_eq]:
@@ -541,8 +633,6 @@ def is_eye_image(image_path: str) -> tuple:
                 print(f"  → PASS: two close groups = same iris (sep={sep:.0f})")
                 return True, ""
 
-        # ── LAYER 5: Hough-circle iris fallback ─────────────────
-        # Reached only when Haar finds nothing (very tight clinical crop).
         print("  [Layer5] Haar empty — Hough fallback")
         blurred = cv2.GaussianBlur(gray_eq, (9, 9), 2)
         raw_circles = []
@@ -574,31 +664,6 @@ def is_eye_image(image_path: str) -> tuple:
                 "photograph of a single open eye."
             )
 
-        # ── LAYER 5b: Hough anatomy gate ★ NEW ──────────────────
-        #
-        # WHY THIS CHECK EXISTS
-        # ──────────────────────
-        # If Layer 2c (white background) somehow passes a non-eye image,
-        # this is the final safety net before we accept a Hough result.
-        #
-        # A real iris is always dark tissue:
-        #   • Normal iris: mean brightness 60-140
-        #   • White cataract: mean brightness 120-170 (still has dark ring)
-        #   • Average across all eye images: < 185
-        #
-        # A palm / knuckle / finger joint:
-        #   • Always bright skin + white background
-        #   • Mean brightness inside Hough circle: 190-250
-        #
-        # We compute the mean brightness inside EACH candidate circle.
-        # If ALL circles are too bright → not an eye → reject.
-        # If at least ONE circle has a sufficiently dark interior → accept.
-        #
-        # Threshold: HOUGH_CIRCLE_MAX_MEAN = 185
-        # Measured:  hand.jpg circles → 170, 221, 229, 250
-        #            hand.webp circles → 198, 207, 212, 226
-        #            eye images  → 56–175 (at least one circle always qualifies)
-
         dark_circles = []
         for c in interior:
             cx, cy, cr = int(c[0]), int(c[1]), int(c[2])
@@ -616,7 +681,6 @@ def is_eye_image(image_path: str) -> tuple:
                 "Please upload a real close-up photograph of your eye."
             )
 
-        # Continue with only the valid dark-interior circles
         interior = dark_circles
 
         groups = _group_dets(interior, max_dim * 0.40)
@@ -763,12 +827,35 @@ def index():
                 ),
             )
 
+        # ── Visual feature analysis (NEW) ──────────────────────
+        print("  [VisualFeatures] analyzing eye characteristics…")
+        eye_features = analyze_eye_features(img_path)
+        print(f"  [VisualFeatures] {eye_features}")
+
+        # ── Grad-CAM heatmap (NEW) ─────────────────────────────
+        heatmap_url = None
+        if model_results:
+            # Use the most confident model for Grad-CAM
+            best_m      = max(model_results, key=lambda x: x["confidence"])
+            best_mdl    = get_model(best_m["model"])
+            if best_mdl:
+                hm_path    = os.path.join(upload_folder, f"hm_{safe_name}")
+                target_cls = 0 if final_pred == "Cataract" else 1
+                hm_result  = generate_gradcam(
+                    best_mdl, input_tensor, target_cls, img_path, hm_path
+                )
+                if hm_result:
+                    heatmap_url = "/" + hm_path
+                    print(f"  [GradCAM] heatmap_url={heatmap_url}")
+
         # ── Generate LLM report ────────────────────────────────
         summary = get_groq_summary(final_result, model_results)
         prediction_data = {
-            "final":      final_result,
-            "individual": model_results,
-            "summary":    summary,
+            "final":        final_result,
+            "individual":   model_results,
+            "summary":      summary,
+            "eye_features": eye_features,     # NEW
+            "heatmap_url":  heatmap_url,       # NEW
         }
         session["last_result"] = prediction_data
 
