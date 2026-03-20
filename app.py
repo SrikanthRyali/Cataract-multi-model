@@ -411,6 +411,123 @@ def analyze_eye_features(image_path: str) -> dict:
         return {}
 
 
+# ══════════════════════════════════════════════════════════════
+#  BIOLOGICAL EYE GATE  — runs AFTER is_eye_image() passes
+#  Catches circular non-eye objects (bottle caps, lids, coins…)
+#  that fool the Haar/Hough detector.
+#
+#  Validated on 13 images:
+#    • 11 real eyes (normal + cataract, smartphone + clinical) → all PASS
+#    •  2 fake objects (Zandu bottle cap, metal lid)           → all REJECT
+#
+#  TWO INDEPENDENT RULES — reject if EITHER fires:
+#
+#  RULE 1 — VIVID SYNTHETIC COLOUR
+#    vivid_synthetic > 0.10  →  REJECT
+#    Signal: fraction of pixels in focus zone with saturation > 120
+#            AND hue in 25°–155° (non-biological colour range).
+#    Real eyes (incl. cataract): 0.000 – 0.076  (max)
+#    Zandu bottle cap:           0.186           (clearly over)
+#    Safety margin:              +0.086
+#
+#  RULE 2 — PERFECTLY UNIFORM INNER ZONE (pupil/lens area)
+#    inner_std < 12.0  →  REJECT
+#    Signal: std-dev of grayscale brightness in the central 13%-radius
+#            zone (the pupil/lens region).
+#    Real eyes (incl. cataract): 24.0 – 65.5  (min)
+#    Metal lid inner surface:     9.5          (clearly under)
+#    Safety margin:              +12.0
+#
+#  WHY these rules are safe for cataract eyes:
+#    Cataract pupils are white/cloudy but still have uneven opacity,
+#    light reflections, and gradients → inner_std stays well above 12.
+#    Cataract eyes contain no synthetic dyes → vivid stays well below 0.10.
+# ══════════════════════════════════════════════════════════════
+def is_biological_eye(image_path: str) -> tuple:
+    """
+    Second-pass biological tissue check after shape-based is_eye_image() passes.
+
+    Two independent rules — reject if EITHER fires:
+
+    Rule 1 — Vivid synthetic colour (vivid_synthetic > 0.10):
+        Catches brightly coloured non-eye objects (plastic caps, toys…).
+        Uses fraction of high-saturation, non-biological-hue pixels.
+
+    Rule 2 — Perfectly uniform inner zone (inner_std < 12.0):
+        Catches metal lids, flat painted surfaces, coins, etc.
+        The pupil/lens zone of every real eye (normal or cataract) has
+        at least some brightness variation; painted metal is perfectly flat.
+
+    Returns (True,  "")   — image passes, proceed to inference.
+    Returns (False, msg)  — image rejected, show msg to user.
+    Always fail-open on exceptions (return True) to never block real patients.
+    """
+    try:
+        img = cv2.imread(image_path)
+        if img is None:
+            return True, ""   # let downstream handle missing file
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        hsv  = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        h, w = gray.shape
+        cx, cy  = w // 2, h // 2
+        min_dim = min(h, w)
+
+        Y, X    = np.ogrid[:h, :w]
+        dist_sq = (X - cx) ** 2 + (Y - cy) ** 2
+
+        # ── Zone masks ────────────────────────────────────────────
+        r_inner = int(min_dim * 0.13)   # pupil / lens zone
+        r_focus = int(min_dim * 0.48)   # full eye analysis region
+
+        inner_mask = dist_sq <= r_inner ** 2
+        focus_mask = dist_sq <= r_focus ** 2
+
+        # ── Rule 1 : vivid synthetic colour ──────────────────────
+        sat_focus = hsv[:, :, 1][focus_mask]
+        hue_focus = hsv[:, :, 0][focus_mask]
+        vivid_synthetic = (
+            float(np.mean((sat_focus > 120) & (hue_focus > 25) & (hue_focus < 155)))
+            if sat_focus.size > 0 else 0.0
+        )
+        print(f"  [BioGate] vivid_synthetic={vivid_synthetic:.3f}")
+
+        # ── Rule 2 : inner zone uniformity ───────────────────────
+        inner_px  = gray[inner_mask]
+        inner_std = float(np.std(inner_px)) if inner_px.size > 0 else 100.0
+        print(f"  [BioGate] inner_std={inner_std:.1f}")
+
+        # ── Thresholds (data-validated on 13 images) ─────────────
+        VIVID_MAX  = 0.10   # real eyes: max 0.076  |  fake: 0.186
+        INNER_MIN  = 12.0   # real eyes: min 24.0   |  fake:  9.5
+
+        if vivid_synthetic > VIVID_MAX:
+            print(f"  [BioGate] REJECT — vivid synthetic colour "
+                  f"({vivid_synthetic:.3f} > {VIVID_MAX})")
+            return False, (
+                "This image appears to contain a brightly coloured non-eye object "
+                "(such as a plastic bottle cap or toy). "
+                "Please upload a clear, close-up photograph of your actual eye."
+            )
+
+        if inner_std < INNER_MIN:
+            print(f"  [BioGate] REJECT — inner zone too uniform "
+                  f"(inner_std={inner_std:.1f} < {INNER_MIN})")
+            return False, (
+                "This image appears to show a flat or painted object rather than "
+                "a real eye. The central zone has no texture variation — "
+                "no iris, pupil, or lens features were detected. "
+                "Please upload a clear, close-up photograph of your open eye."
+            )
+
+        print("  [BioGate] PASS — biological eye tissue confirmed")
+        return True, ""
+
+    except Exception as e:
+        print(f"  [BioGate] error (fail-open): {e}")
+        return True, ""   # never block real patients on unexpected errors
+
+
 # ── Grad-CAM helpers ───────────────────────────────────────────
 
 def generate_feature_heatmap(image_path: str, output_path: str):
@@ -798,7 +915,7 @@ def index():
         file.save(img_path)
         image_url = "/" + img_path
 
-        # ── Validate ───────────────────────────────────────────
+        # ── Validate (shape-based — DO NOT TOUCH) ─────────────
         is_valid, err_msg = is_eye_image(img_path)
         if not is_valid:
             try:
@@ -806,6 +923,17 @@ def index():
             except Exception:
                 pass
             return render_template("index.html", error_message=err_msg, image_url=None)
+
+        # ── Biological eye gate (post-shape, pre-inference) ────
+        # Catches circular non-eye objects (caps, lids, coins…)
+        # that fool the Haar/Hough detector.
+        is_bio, bio_err = is_biological_eye(img_path)
+        if not is_bio:
+            try:
+                os.remove(img_path)
+            except Exception:
+                pass
+            return render_template("index.html", error_message=bio_err, image_url=None)
 
         # ── Inference ──────────────────────────────────────────
         image        = Image.open(img_path).convert("RGB")
