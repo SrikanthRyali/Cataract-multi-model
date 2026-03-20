@@ -52,12 +52,14 @@ _casc_dir   = cv2.data.haarcascades
 eye_cascade = cv2.CascadeClassifier(_casc_dir + "haarcascade_eye.xml")
 
 # ── Global thresholds ──────────────────────────────────────────
-MIN_CONFIDENCE        = 30
-MAX_ENTROPY           = 0.67
-MAX_LAP_VARIANCE      = 8000
-ILLUS_HI_SAT_THRESH   = 0.75
-ILLUS_SKIN_THRESH     = 0.08
-WHITE_BG_THRESHOLD    = 0.35
+MIN_CONFIDENCE   = 30
+MAX_ENTROPY      = 0.67
+MAX_LAP_VARIANCE = 8000
+
+ILLUS_HI_SAT_THRESH = 0.75
+ILLUS_SKIN_THRESH   = 0.08
+
+WHITE_BG_THRESHOLD  = 0.35
 HOUGH_CIRCLE_MAX_MEAN = 185
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "bmp", "gif", "tiff"}
@@ -205,6 +207,53 @@ def get_groq_summary(final_result, model_results):
 
 
 # ══════════════════════════════════════════════════════════════
+#  NEW ① Three-tier explanation
+# ══════════════════════════════════════════════════════════════
+def get_cataract_explanation(prediction):
+    if prediction != "Cataract":
+        return {"simple": "", "technical": "", "ai_model": ""}
+
+    simple = (
+        "Yes, this image shows typical cataract signs.\n\n"
+        "How we identify cataract from the image:\n\n"
+        "1️⃣  White / cloudy pupil\n"
+        "    Normally the pupil looks black because light enters the eye freely.\n"
+        "    In cataract images the pupil area appears milky white, meaning the lens is opaque.\n\n"
+        "2️⃣  Loss of transparency\n"
+        "    A healthy eye lens is perfectly clear.\n"
+        "    Here the centre looks foggy / cloudy — a major cataract indicator.\n\n"
+        "3️⃣  Diffuse light reflection\n"
+        "    Light reflection spreads across the cloudy lens instead of appearing sharp.\n\n"
+        "✔  These visual features are common in mature cataracts."
+    )
+    technical = (
+        "In ophthalmology images, cataract is identified by lens opacity patterns.\n\n"
+        "Key image features visible:\n\n"
+        "• Lens Opacification — the central region appears white due to protein aggregation.\n"
+        "• Reduced contrast — the iris–pupil boundary becomes less distinct.\n"
+        "• Scattered illumination — light reflection spreads due to lost transparency.\n"
+        "• Central opacity — characteristic of nuclear or mature cataract stages.\n\n"
+        "These are the exact patterns CNN models learn during supervised training."
+    )
+    ai_model = (
+        "CNN detects cataract using texture and intensity patterns.\n\n"
+        "Features extracted:\n"
+        "• High pixel-intensity cluster in the pupil region\n"
+        "• Reduced dark area (black pupil disappears)\n"
+        "• Low edge contrast between iris and lens boundary\n"
+        "• Texture irregularity in central lens region\n\n"
+        "Feature map activations:\n"
+        "  Feature 1 → opacity pattern\n"
+        "  Feature 2 → brightness distribution\n"
+        "  Feature 3 → texture irregularity\n"
+        "  Feature 4 → edge degradation\n\n"
+        "Pipeline: Image → Preprocessing → CNN layers → FC layer → Softmax → Cataract/Normal\n\n"
+        "Ensemble (DeepCNN / VGG / ResNet / AlexNet / DeepANN) vote independently; majority decides."
+    )
+    return {"simple": simple, "technical": technical, "ai_model": ai_model}
+
+
+# ══════════════════════════════════════════════════════════════
 #  HELPER UTILITIES
 # ══════════════════════════════════════════════════════════════
 
@@ -212,6 +261,7 @@ def _crop_solid_borders(img, gray, std_thresh=18):
     h, w = gray.shape
     t, b, l, r = 0, h, 0, w
     max_frac = 0.35
+
     for c in range(int(w * max_frac)):
         if np.std(gray[:, c]) < std_thresh: l = c + 1
         else: break
@@ -224,6 +274,7 @@ def _crop_solid_borders(img, gray, std_thresh=18):
     for row in range(h - 1, int(h * (1 - max_frac)), -1):
         if np.std(gray[row, :]) < std_thresh: b = row
         else: break
+
     if b - t >= 50 and r - l >= 50:
         return img[t:b, l:r], gray[t:b, l:r]
     return img, gray
@@ -278,132 +329,23 @@ def _circle_interior_mean(gray, cx, cy, radius):
 
 
 # ══════════════════════════════════════════════════════════════
-#  EYE REGION CROP  ← THE FIX
-#
-#  Strategy (in priority order):
-#  1. Re-run Haar cascade on the image — if it finds the eye,
-#     use its bounding box (most accurate).
-#  2. If Haar finds nothing, try Hough circles — use the
-#     largest dark circle's centre as the eye centre.
-#  3. If both fail, fall back to centre crop (remove outer 20%/25%).
-#
-#  Returns:
-#    cropped_img  (numpy BGR array)  — the tight eye-only region
-#    crop_box     (x1,y1,x2,y2)     — coordinates in the ORIGINAL image
-#
-#  The crop is padded by PAD_FACTOR so the iris ring is fully
-#  included but eyebrows / cheeks are excluded.
-# ══════════════════════════════════════════════════════════════
-PAD_FACTOR = 1.4   # how much larger than the detected eye box to keep
-
-
-def crop_to_eye_region(img_path: str):
-    """
-    Detect the eye and return a tight crop around it.
-
-    Returns (cropped_bgr_array, (x1,y1,x2,y2)) on success,
-    or (None, None) if the image cannot be read.
-    """
-    img = cv2.imread(img_path)
-    if img is None:
-        return None, None
-
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    h, w = gray.shape
-
-    clahe   = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    gray_eq = clahe.apply(gray)
-    min_dim = min(h, w)
-    min_det = max(25, int(min_dim * 0.07))
-
-    # ── Strategy 1: Haar cascade ──────────────────────────────
-    best_box = None
-    best_score = 0
-
-    for gimg in [gray, gray_eq]:
-        dets = eye_cascade.detectMultiScale(
-            gimg, scaleFactor=1.05, minNeighbors=6,
-            minSize=(min_det, min_det)
-        )
-        if len(dets) == 0:
-            continue
-        for (ex, ey, ew, eh) in dets:
-            score = ew * eh          # larger = better
-            if score > best_score:
-                best_score = score
-                best_box   = (ex, ey, ew, eh)
-
-    if best_box is not None:
-        ex, ey, ew, eh = best_box
-        # Centre of detected eye box
-        cx = ex + ew // 2
-        cy = ey + eh // 2
-        # Radius = half the larger dimension of the detection × pad
-        radius = int(max(ew, eh) / 2 * PAD_FACTOR)
-        print(f"  [CropEye] Haar → cx={cx} cy={cy} r={radius}")
-
-    else:
-        # ── Strategy 2: Hough circles ─────────────────────────
-        blurred = cv2.GaussianBlur(gray_eq, (9, 9), 2)
-        found_circle = None
-        for param2 in [40, 30, 22, 18, 14]:
-            cc = cv2.HoughCircles(
-                blurred, cv2.HOUGH_GRADIENT, dp=1.2,
-                minDist=int(min_dim * 0.30),
-                param1=50, param2=param2,
-                minRadius=int(min_dim * 0.10),
-                maxRadius=int(min_dim * 0.68),
-            )
-            if cc is not None:
-                circles = np.round(cc[0]).astype(int).tolist()
-                # Pick the darkest (most iris-like) interior circle
-                dark = [(c, _circle_interior_mean(gray, c[0], c[1], c[2]))
-                        for c in circles
-                        if w*0.08 <= c[0] <= w*0.92
-                        and h*0.08 <= c[1] <= h*0.92]
-                dark = [(c, m) for c, m in dark if m <= HOUGH_CIRCLE_MAX_MEAN]
-                if dark:
-                    # use the circle with the smallest (darkest) mean
-                    found_circle = min(dark, key=lambda x: x[1])[0]
-                    break
-
-        if found_circle is not None:
-            cx, cy, cr = found_circle
-            radius     = int(cr * PAD_FACTOR)
-            print(f"  [CropEye] Hough → cx={cx} cy={cy} r={radius}")
-        else:
-            # ── Strategy 3: Centre crop fallback ──────────────
-            cx, cy   = w // 2, h // 2
-            radius   = int(min(h, w) * 0.38)
-            print(f"  [CropEye] Fallback centre crop cx={cx} cy={cy} r={radius}")
-
-    # ── Build bounding box, clamped to image boundaries ───────
-    x1 = max(0, cx - radius)
-    y1 = max(0, cy - radius)
-    x2 = min(w, cx + radius)
-    y2 = min(h, cy + radius)
-
-    # Safety: ensure the crop is not degenerate
-    if (x2 - x1) < 30 or (y2 - y1) < 30:
-        # Fall back to the middle 60%
-        x1 = int(w * 0.20); x2 = int(w * 0.80)
-        y1 = int(h * 0.20); y2 = int(h * 0.80)
-        print("  [CropEye] degenerate box → using 20-80% fallback")
-
-    cropped = img[y1:y2, x1:x2]
-    print(f"  [CropEye] final box ({x1},{y1})→({x2},{y2})  "
-          f"size={x2-x1}×{y2-y1}")
-    return cropped, (x1, y1, x2, y2)
-
-
-# ══════════════════════════════════════════════════════════════
 #  VISUAL FEATURE ANALYSIS
 # ══════════════════════════════════════════════════════════════
 
 def analyze_eye_features(image_path: str) -> dict:
     """
-    Extract four cataract-relevant visual metrics.
-    Runs on the CROPPED eye image for accuracy.
+    Extract four cataract-relevant visual metrics from the eye image.
+
+    Metrics returned (all 0–100 scale):
+      pupil_brightness — mean brightness of central pupil region.
+                         High (>55) = white/cloudy pupil = cataract sign.
+      opacity_score    — fraction of near-white pixels in central region.
+                         High (>40) = lens opacity = cataract sign.
+      iris_contrast    — brightness difference between iris ring and pupil.
+                         Low (<25) = reduced iris–pupil boundary = cataract sign.
+      light_scatter    — diffuse-reflection indicator derived from pupil
+                         brightness and texture uniformity.
+                         High (>50) = scattered light = cataract sign.
     """
     try:
         img = cv2.imread(image_path)
@@ -414,9 +356,11 @@ def analyze_eye_features(image_path: str) -> dict:
         h, w = gray.shape
         cx, cy = w // 2, h // 2
 
+        # Adaptive radii: pupil ~ 18% of min_dim, iris ring out to 38%
         r_pupil = max(10, int(min(h, w) * 0.18))
         r_iris  = max(20, int(min(h, w) * 0.38))
 
+        # Build circular masks
         Y, X = np.ogrid[:h, :w]
         pupil_mask = ((X - cx) ** 2 + (Y - cy) ** 2) <= r_pupil ** 2
         iris_mask  = (((X - cx) ** 2 + (Y - cy) ** 2) <= r_iris  ** 2) & ~pupil_mask
@@ -424,9 +368,11 @@ def analyze_eye_features(image_path: str) -> dict:
         pupil_px = gray[pupil_mask]
         iris_px  = gray[iris_mask]
 
+        # ── 1. Pupil brightness (0–100) ──────────────────────────
         pupil_brightness = (float(np.mean(pupil_px)) / 255.0 * 100
                             if pupil_px.size > 0 else 0.0)
 
+        # ── 2. Lens opacity: % near-white pixels in pupil zone ───
         if pupil_px.size > 0:
             b_p = img[:, :, 0][pupil_mask].astype(float)
             g_p = img[:, :, 1][pupil_mask].astype(float)
@@ -437,15 +383,18 @@ def analyze_eye_features(image_path: str) -> dict:
         else:
             opacity_score = 0.0
 
+        # ── 3. Iris contrast: brightness difference iris vs pupil ─
         if pupil_px.size > 0 and iris_px.size > 0:
             diff = abs(float(np.mean(iris_px)) - float(np.mean(pupil_px)))
             iris_contrast = min(100.0, diff / 255.0 * 200.0)
         else:
             iris_contrast = 50.0
 
+        # ── 4. Light scatter: bright + uniform center = diffuse ───
         if pupil_px.size > 0:
-            std_val      = float(np.std(pupil_px))
-            uniformity   = max(0.0, 1.0 - std_val / 80.0)
+            std_val = float(np.std(pupil_px))
+            # Low std (uniform) in a bright region → high scatter
+            uniformity = max(0.0, 1.0 - std_val / 80.0)
             light_scatter = min(100.0, uniformity * pupil_brightness)
         else:
             light_scatter = 0.0
@@ -462,12 +411,14 @@ def analyze_eye_features(image_path: str) -> dict:
         return {}
 
 
-# ══════════════════════════════════════════════════════════════
-#  GRAD-CAM
-# ══════════════════════════════════════════════════════════════
+# ── Grad-CAM helpers ───────────────────────────────────────────
 
 def generate_feature_heatmap(image_path: str, output_path: str):
-    """Fallback: Gaussian-weighted brightness map on the cropped eye."""
+    """
+    Fallback brightness-based opacity heatmap when Grad-CAM is unavailable
+    (e.g., model has no Conv2d layers).  Highlights bright central regions
+    using a Gaussian-weighted brightness map.
+    """
     try:
         img  = cv2.imread(image_path)
         if img is None:
@@ -498,29 +449,42 @@ def generate_feature_heatmap(image_path: str, output_path: str):
 def generate_gradcam(model, input_tensor, target_class_idx: int,
                      img_path: str, output_path: str):
     """
-    Grad-CAM on the CROPPED eye image.
-    img_path here is the path to the already-cropped file.
+    Produce a Grad-CAM attention heatmap overlaid on the original image.
+
+    Algorithm:
+      1. Register a forward hook on the LAST Conv2d layer to capture
+         its output activation map.
+      2. Call retain_grad() on that activation so gradients are stored.
+      3. Forward pass → compute class score → backward pass.
+      4. Average-pool gradients over spatial dims → channel weights.
+      5. Weight-sum activations, ReLU, resize, overlay as JET colormap.
+
+    Falls back to brightness heatmap if:
+      - No Conv2d layer is found in the model.
+      - The backward pass fails for any reason.
     """
     model.eval()
 
+    # Find the last Conv2d layer
     last_conv = None
     for module in model.modules():
         if isinstance(module, torch.nn.Conv2d):
             last_conv = module
 
     if last_conv is None:
-        print("  [GradCAM] no Conv2d — brightness fallback")
+        print("  [GradCAM] no Conv2d found — using brightness fallback")
         return generate_feature_heatmap(img_path, output_path)
 
     captured = {}
 
     def fwd_hook(m, inp, out):
         captured["act"] = out
-        out.retain_grad()
+        out.retain_grad()   # keep grad on non-leaf activation tensor
 
     handle = last_conv.register_forward_hook(fwd_hook)
 
     try:
+        # Fresh forward outside torch.no_grad() so the graph is alive
         inp    = input_tensor.detach().clone()
         output = model(inp)
         handle.remove()
@@ -532,25 +496,24 @@ def generate_gradcam(model, input_tensor, target_class_idx: int,
         score = output[0, target_class_idx]
         score.backward()
 
-        act  = captured["act"].detach().cpu().numpy()[0]
+        act  = captured["act"].detach().cpu().numpy()[0]   # (C, H, W)
         grad = captured["act"].grad
 
         if grad is None:
-            print("  [GradCAM] grad is None — brightness fallback")
+            print("  [GradCAM] grad is None — using brightness fallback")
             return generate_feature_heatmap(img_path, output_path)
 
-        grads   = grad.detach().cpu().numpy()[0]
-        weights = np.mean(grads, axis=(1, 2))
-        cam     = np.einsum("c,chw->hw", weights, act)
-        cam     = np.maximum(cam, 0)
+        grads   = grad.detach().cpu().numpy()[0]           # (C, H, W)
+        weights = np.mean(grads, axis=(1, 2))              # (C,)
+        cam     = np.einsum("c,chw->hw", weights, act)    # (H, W)
+        cam     = np.maximum(cam, 0)                       # ReLU
 
         if cam.max() == 0:
             return generate_feature_heatmap(img_path, output_path)
 
         cam /= cam.max()
 
-        # Overlay on the CROPPED image
-        img_cv = cv2.imread(img_path)
+        img_cv  = cv2.imread(img_path)
         if img_cv is None:
             return None
         h_img, w_img = img_cv.shape[:2]
@@ -571,7 +534,7 @@ def generate_gradcam(model, input_tensor, target_class_idx: int,
 
 
 # ══════════════════════════════════════════════════════════════
-#  MAIN VALIDATOR  — is_eye_image()
+#  MAIN VALIDATOR  — is_eye_image()   ← DO NOT TOUCH
 # ══════════════════════════════════════════════════════════════
 def is_eye_image(image_path: str) -> tuple:
     try:
@@ -606,11 +569,11 @@ def is_eye_image(image_path: str) -> tuple:
                 "Please upload a real photograph taken by a camera or phone."
             )
 
-        hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        s_chan  = hsv_img[:, :, 1].ravel().astype(np.float32)
-        b_ch    = img[:, :, 0].ravel().astype(np.int32)
-        g_ch    = img[:, :, 1].ravel().astype(np.int32)
-        r_ch    = img[:, :, 2].ravel().astype(np.int32)
+        hsv_img     = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        s_chan       = hsv_img[:, :, 1].ravel().astype(np.float32)
+        b_ch         = img[:, :, 0].ravel().astype(np.int32)
+        g_ch         = img[:, :, 1].ravel().astype(np.int32)
+        r_ch         = img[:, :, 2].ravel().astype(np.int32)
 
         hi_sat_frac = float(np.mean(s_chan > 200))
         skin_frac   = float(np.mean(
@@ -833,9 +796,9 @@ def index():
         safe_name = f"{uuid.uuid4().hex}.{ext}"
         img_path  = os.path.join(upload_folder, safe_name)
         file.save(img_path)
-        image_url = "/" + img_path   # original image shown in UI
+        image_url = "/" + img_path
 
-        # ── Step 1: Validate the full image ───────────────────
+        # ── Validate ───────────────────────────────────────────
         is_valid, err_msg = is_eye_image(img_path)
         if not is_valid:
             try:
@@ -844,27 +807,8 @@ def index():
                 pass
             return render_template("index.html", error_message=err_msg, image_url=None)
 
-        # ── Step 2: Crop to eye region ────────────────────────
-        # Save the cropped version as a separate file.
-        # All downstream AI work (inference, feature analysis, heatmap)
-        # uses ONLY this cropped file so the model cannot "cheat" by
-        # looking at skin, eyebrows or background.
-        cropped_name = f"crop_{safe_name}"
-        crop_path    = os.path.join(upload_folder, cropped_name)
-
-        cropped_img, crop_box = crop_to_eye_region(img_path)
-
-        if cropped_img is not None and cropped_img.size > 0:
-            cv2.imwrite(crop_path, cropped_img)
-            inference_path = crop_path   # ← models see only this
-            print(f"  [Route] using cropped image for inference: {crop_path}")
-        else:
-            # If crop failed for any reason, fall back to original
-            inference_path = img_path
-            print("  [Route] crop failed — using original for inference")
-
-        # ── Step 3: Inference on the CROPPED image ────────────
-        image        = Image.open(inference_path).convert("RGB")
+        # ── Inference ──────────────────────────────────────────
+        image        = Image.open(img_path).convert("RGB")
         input_tensor = transform(image).unsqueeze(0)
 
         model_results  = []
@@ -893,7 +837,7 @@ def index():
                 })
                 (cataract_votes if pred == "Cataract" else normal_votes).append(conf)
 
-        # ── Step 4: Aggregate ──────────────────────────────────
+        # ── Aggregate ──────────────────────────────────────────
         cataract_count = len(cataract_votes)
         normal_count   = len(normal_votes)
         final_pred     = "Cataract" if cataract_count > normal_count else "Normal"
@@ -911,7 +855,7 @@ def index():
             "avg_entropy":    round(avg_entropy, 4),
         }
 
-        # ── Step 5: Quality gates ──────────────────────────────
+        # ── Quality gates ──────────────────────────────────────
         if final_result["confidence"] < MIN_CONFIDENCE:
             return render_template(
                 "index.html", image_url=image_url,
@@ -930,37 +874,39 @@ def index():
                 ),
             )
 
-        # ── Step 6: Visual feature analysis on CROPPED image ──
+        # ── Visual feature analysis ────────────────────────────
         print("  [VisualFeatures] analyzing eye characteristics…")
-        eye_features = analyze_eye_features(inference_path)
+        eye_features = analyze_eye_features(img_path)
         print(f"  [VisualFeatures] {eye_features}")
 
-        # ── Step 7: Grad-CAM on CROPPED image ─────────────────
+        # ── Grad-CAM heatmap ───────────────────────────────────
         heatmap_url = None
         if model_results:
-            best_m   = max(model_results, key=lambda x: x["confidence"])
-            best_mdl = get_model(best_m["model"])
+            best_m      = max(model_results, key=lambda x: x["confidence"])
+            best_mdl    = get_model(best_m["model"])
             if best_mdl:
-                hm_path   = os.path.join(upload_folder, f"hm_{safe_name}")
+                hm_path    = os.path.join(upload_folder, f"hm_{safe_name}")
                 target_cls = 0 if final_pred == "Cataract" else 1
-                # Pass inference_path (cropped) so the heatmap is drawn
-                # on the tight eye crop — no skin/background distractions
-                hm_result = generate_gradcam(
-                    best_mdl, input_tensor, target_cls,
-                    inference_path, hm_path          # ← cropped path
+                hm_result  = generate_gradcam(
+                    best_mdl, input_tensor, target_cls, img_path, hm_path
                 )
                 if hm_result:
                     heatmap_url = "/" + hm_path
                     print(f"  [GradCAM] heatmap_url={heatmap_url}")
 
-        # ── Step 8: LLM report ────────────────────────────────
+        # ── Generate LLM report ────────────────────────────────
         summary = get_groq_summary(final_result, model_results)
+
+        # ── Three-tier explanation (NEW) ───────────────────────
+        explanation = get_cataract_explanation(final_pred)
+
         prediction_data = {
             "final":        final_result,
             "individual":   model_results,
             "summary":      summary,
             "eye_features": eye_features,
             "heatmap_url":  heatmap_url,
+            "explanation":  explanation,   # ← NEW
         }
         session["last_result"] = prediction_data
 
@@ -972,7 +918,7 @@ def index():
     )
 
 
-# ── Chat ───────────────────────────────────────────────────────
+# ── Chat memory (server-side, last 7 exchanges) ────────────────
 _chat_memory = []
 
 @app.route("/chat", methods=["POST"])
