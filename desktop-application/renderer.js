@@ -18,20 +18,11 @@ const subpageOverlay = document.getElementById('subpage-overlay');
 const btnCloseSettings = document.getElementById('btn-close-settings');
 const saveSettings = document.getElementById('save-settings');
 const groqApiKeyInput = document.getElementById('groq-api-key');
-const hfTokenInput = document.getElementById('hf-token');
 const toast = document.getElementById('result-toast');
 
 let currentImageBase64 = null;
 let groqApiKey = '';
-let hfToken = '';
-
-const MODELS = [
-    { name: 'ResNet', id: 'Srikanth22MH1A42C6/cataract-classification-resnet' },
-    { name: 'VGG-16', id: 'Srikanth22MH1A42C6/cataract-classification-vgg' },
-    { name: 'AlexNet', id: 'Srikanth22MH1A42C6/cataract-classification-alexnet' },
-    { name: 'DeepCNN', id: 'Srikanth22MH1A42C6/cataract-classification-deepcnn' },
-    { name: 'DeepANN', id: 'Srikanth22MH1A42C6/cataract-classification-deepann' }
-];
+const DEFAULT_SPACE_ID = 'Srikanth22MH1A42C6/models-api';
 
 // UI Interactions
 btnSettings.onclick = () => subpageOverlay.style.display = 'flex';
@@ -39,7 +30,6 @@ btnCloseSettings.onclick = () => subpageOverlay.style.display = 'none';
 
 saveSettings.onclick = () => {
     groqApiKey = groqApiKeyInput.value;
-    hfToken = hfTokenInput.value;
     subpageOverlay.style.display = 'none';
 };
 
@@ -60,8 +50,8 @@ fileInput.onchange = (e) => {
 
 predictBtn.onclick = async () => {
     if (!currentImageBase64) return;
-    if (!groqApiKey || !hfToken) {
-        alert("Please set Groq and Hugging Face keys in Settings first.");
+    if (!groqApiKey) {
+        alert("Please set your Groq API Key in Settings first.");
         subpageOverlay.style.display = 'flex';
         return;
     }
@@ -70,54 +60,56 @@ predictBtn.onclick = async () => {
     resultsContainer.style.display = 'none';
     
     try {
-        const imageData = currentImageBase64.split(',')[1];
-        const binaryData = Uint8Array.from(atob(imageData), c => c.charCodeAt(0));
-
-        let modelResults = [];
-        let cataractVotes = 0;
-        let normalVotes = 0;
-
-        for (const model of MODELS) {
-            loadingStatus.innerText = `Consulting ${model.name}...`;
-            try {
-                // Call Hf Inference API
-                const result = await window.api.huggingface.inference(model.id, null, binaryData, hfToken);
-                
-                // Assuming result format: [{ label: 'Cataract', score: 0.9 }, { label: 'Normal', score: 0.1 }]
-                const topLabel = result[0].label;
-                const topScore = (result[0].score * 100).toFixed(2);
-                
-                modelResults.push({ model: model.name, prediction: topLabel, confidence: topScore });
-                if (topLabel === 'Cataract') cataractVotes++;
-                else normalVotes++;
-            } catch (err) {
-                console.error(`Error with model ${model.name}:`, err);
-                modelResults.push({ model: model.name, prediction: 'Error', confidence: 0 });
-            }
-        }
-
-        const finalPred = cataractVotes >= normalVotes ? 'Cataract' : 'Normal';
-        const avgConfidence = (modelResults
-            .filter(m => m.prediction === finalPred)
-            .reduce((acc, curr) => acc + parseFloat(curr.confidence), 0) / (finalPred === 'Cataract' ? cataractVotes : normalVotes) || 0).toFixed(2);
-
-        updateUI(finalPred, avgConfidence, modelResults);
-
-        // Call Groq for Summary
-        loadingStatus.innerText = "Generating AI Clinical Report...";
-        const findings = `Diagnosis: ${finalPred}, Confidence: ${avgConfidence}%, Model Support: ${cataractVotes}/5 models agreed.`;
-        const summary = await window.api.groq.summarize(findings, groqApiKey);
+        loadingStatus.innerText = "Connecting to Neural Ensemble Space...";
         
+        // Calling the Gradio Space API
+        // Gradio predict [image, groq_key] -> returns result, votes, individual_str, summary, simple, technical, heatmap
+        const resultData = await window.api.huggingface.predict(DEFAULT_SPACE_ID, currentImageBase64, groqApiKey);
+        
+        // Parsing Gradio results
+        // 0: Final Pred String
+        // 1: Votes String
+        // 2: Individual Results String
+        // 3: AI Summary
+        // 4: Simple Explanation
+        // 5: Technical Explanation
+        // 6: Heatmap source
+
+        const predMatch = resultData[0].match(/Prediction:\s*(Cataract|Normal)\s*\(([\d.]+)%\)/i);
+        const finalPred = predMatch ? predMatch[1] : 'Normal';
+        const confidence = predMatch ? predMatch[2] : '0';
+        const aiSummary = resultData[3];
+        const individualStr = resultData[2];
+
+        // Format individual results for the UI
+        const individualResults = individualStr.split('\n').filter(l => l.includes(':')).map(line => {
+            const parts = line.split(':');
+            const modelName = parts[0].trim();
+            const predParts = parts[1].match(/(Cataract|Normal)\s*\(([\d.]+)%\)/i);
+            return {
+                model: modelName,
+                prediction: predParts ? predParts[1] : 'Normal',
+                confidence: predParts ? predParts[2] : '0'
+            };
+        });
+
+        updateUI(finalPred, confidence, individualResults);
+
+        // Update AI Report
         const md = window.markdownit();
-        aiReportContent.innerHTML = md.render(summary);
+        aiReportContent.innerHTML = md.render(aiSummary || "No report generated.");
 
         loadingOverlay.style.display = 'none';
         resultsContainer.style.display = 'block';
-        showToast(finalPred, avgConfidence);
+        showToast(finalPred, confidence);
         
     } catch (err) {
-        console.error("Analysis Error:", err);
-        alert("An error occurred during analysis. Check console for details.");
+        if (err.message && err.message.includes('timeout')) {
+            alert("Connection error: The Hugging Face Space might be sleeping. I've sent a 'wake up' signal. Please try again in 10-20 seconds.");
+        } else {
+            console.error("Analysis Error:", err);
+            alert("An error occurred during analysis: " + (err.response?.data?.error || err.message));
+        }
         loadingOverlay.style.display = 'none';
     }
 };
