@@ -1,0 +1,24 @@
+{
+  "name": "cataract-detection-desktop",
+  "version": "1.0.0",
+  "description": "Cataract Detection AI Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "cataract",
+    "ai",
+    "electron",
+    "medical"
+  ],
+  "author": "Antigravity",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
