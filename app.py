@@ -25,7 +25,6 @@ load_dotenv()
 # ── Config ─────────────────────────────────────────────────────
 HF_REPO_ID   = "Srikanth22MH1A42C6/cataract-classification"   # ← your HuggingFace repo
 MODEL_DIR    = "models"                                         # local cache folder
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 UPLOAD_FOLDER = "static/uploads"
 
 # ── Classes ────────────────────────────────────────────────────
@@ -315,11 +314,13 @@ def api_list_models():
 # ══════════════════════════════════════════════════════════════
 #  GROQ LLM SUMMARY
 # ══════════════════════════════════════════════════════════════
-def get_groq_summary(final_result, model_results):
-    if not GROQ_API_KEY:
-        return "Groq API Key not configured. Please set the GROQ_API_KEY environment variable."
+def get_groq_summary(final_result, model_results, api_key=None):
+    if not api_key:
+        api_key = os.environ.get("GROQ_API_KEY", "")
+    if not api_key:
+        return "Groq API Key not provided. Please provide it in the request."
     try:
-        client    = Groq(api_key=GROQ_API_KEY)
+        client    = Groq(api_key=api_key)
         base_data = (
             f"- Diagnosis: {final_result['prediction']}\n"
             f"- Confidence: {final_result['confidence']:.2f}%\n"
@@ -819,6 +820,8 @@ def index():
         file.save(img_path)
         image_url = "/" + img_path
 
+        groq_api_key = request.form.get("groq_api_key")
+
         is_valid, err_msg = is_eye_image(img_path)
         if not is_valid:
             try: os.remove(img_path)
@@ -886,7 +889,7 @@ def index():
                 if hm_result:
                     heatmap_url = "/" + hm_path
 
-        summary     = get_groq_summary(final_result, model_results)
+        summary     = get_groq_summary(final_result, model_results, groq_api_key)
         explanation = get_cataract_explanation(final_pred)
 
         prediction_data = {
@@ -917,12 +920,13 @@ def index():
 def chat():
     user_msg      = request.json.get("message", "").strip()
     selected_lang = request.json.get("language", "English")
+    api_key       = request.json.get("api_key")
     last_result   = session.get("last_result")
 
     if not user_msg:
         return jsonify({"reply": "I did not receive your message. Please try again."})
-    if not GROQ_API_KEY:
-        return jsonify({"reply": "AI brain (Groq) is not configured. Please set GROQ_API_KEY."})
+    if not api_key:
+        return jsonify({"reply": "API key is required for AI chat."})
 
     # Per-user chat memory in session (not global)
     chat_memory = session.get("chat_memory", [])
@@ -935,7 +939,7 @@ def chat():
         return jsonify({"reply": "Chat limit reached for this session. Please refresh to start a new session."})
 
     try:
-        client  = Groq(api_key=GROQ_API_KEY)
+        client  = Groq(api_key=api_key)
         context = (
             "The user just scanned their eye. "
             f"Result: {json.dumps(last_result['final'] if last_result else 'No scan yet')}."
