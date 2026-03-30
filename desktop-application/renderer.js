@@ -1,3 +1,5 @@
+// App Initialization
+window.dragEvent = (e) => e.preventDefault();
 const fileInput = document.getElementById('file-input');
 const imagePreview = document.getElementById('image-preview');
 const previewContainer = document.getElementById('preview-container');
@@ -19,14 +21,16 @@ const btnCloseSettings = document.getElementById('btn-close-settings');
 const saveSettings = document.getElementById('save-settings');
 const groqApiKeyInput = document.getElementById('groq-api-key');
 const toast = document.getElementById('result-toast');
+const subpageBackdrop = document.getElementById('subpage-backdrop');
 
 let currentImageBase64 = null;
 let groqApiKey = '';
-const DEFAULT_SPACE_ID = 'Srikanth22MH1A42C6/model-api';
+const DEFAULT_SPACE_ID = 'Srikanth22MH1A42C6/model-api-2';
 
 // UI Interactions
 btnSettings.onclick = () => subpageOverlay.style.display = 'flex';
 btnCloseSettings.onclick = () => subpageOverlay.style.display = 'none';
+subpageBackdrop.onclick = () => subpageOverlay.style.display = 'none';
 
 saveSettings.onclick = () => {
     groqApiKey = groqApiKeyInput.value;
@@ -60,11 +64,15 @@ predictBtn.onclick = async () => {
     resultsContainer.style.display = 'none';
     
     try {
-        loadingStatus.innerText = "Connecting to Neural Ensemble Space...";
+        // Calling the Gradio Space API via official client
+        const resultData = await window.api.huggingface.call(DEFAULT_SPACE_ID, '/predict_ensemble', {
+            image: currentImageBase64,
+            groq_api_key: groqApiKey || ""
+        });
         
-        // Calling the Gradio Space API
-        // Gradio predict [image, groq_key] -> returns result, votes, individual_str, summary, simple, technical, heatmap
-        const resultData = await window.api.huggingface.predict(DEFAULT_SPACE_ID, currentImageBase64, groqApiKey);
+        if (!resultData || !Array.isArray(resultData)) {
+            throw new Error("Invalid or empty response from model ensemble. Please check your internet connection.");
+        }
         
         // Parsing Gradio results
         // 0: Final Pred String
