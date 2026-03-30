@@ -935,4 +935,4 @@ with gr.Blocks(title="Cataract Detection AI") as demo:
             )
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(ssr_mode=False)

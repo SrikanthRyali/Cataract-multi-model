@@ -22,7 +22,7 @@ const toast = document.getElementById('result-toast');
 
 let currentImageBase64 = null;
 let groqApiKey = '';
-const DEFAULT_SPACE_ID = 'Srikanth22MH1A42C6/models-api';
+const DEFAULT_SPACE_ID = 'Srikanth22MH1A42C6/model-api';
 
 // UI Interactions
 btnSettings.onclick = () => subpageOverlay.style.display = 'flex';
