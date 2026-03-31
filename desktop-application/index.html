@@ -171,6 +171,19 @@
         }
 
         #results-container { display: none; }
+
+        /* AI Report Style (Markdown) */
+        .md-body { line-height: 1.8; font-size: 1.02rem; }
+        .md-body h1, .md-body h2, .md-body h3 { font-family: 'Sora', sans-serif; font-weight: 800; color: var(--ink); margin-top: 1.8rem; margin-bottom: 0.8rem; }
+        .md-body h1 { font-size: 2rem; }
+        .md-body h2 { font-size: 1.6rem; border-bottom: 2px solid rgba(13,148,136,.1); padding-bottom: .4rem; }
+        .md-body h3 { font-size: 1.3rem; color: var(--teal); }
+        .md-body p { margin-bottom: 1.2rem; }
+        .md-body ul, .md-body ol { margin-left: 1.6rem; margin-bottom: 1.2rem; }
+        .md-body li { margin-bottom: 0.6rem; list-style-type: disc; }
+        .md-body li::marker { color: var(--teal); font-weight: bold; }
+        .md-body strong { color: var(--teal); font-weight: 700; }
+        .md-body blockquote { border-left: 4px solid var(--teal); padding: 0.5rem 1.2rem; background: rgba(13,148,136,0.05); border-radius: 0 0.8rem 0.8rem 0; color: var(--muted); font-style: italic; margin: 1.5rem 0; }
     </style>
 </head>
 <body>
@@ -283,8 +296,99 @@
             </div>
         </div>
 
+        <!-- ROW 2 : Clinical Metrics (NEW - 1:1 Parity) -->
+        <section id="metrics-root" class="hidden results-reveal">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
+                     style="width:3.5rem;height:3.5rem;font-size:1.5rem;background:linear-gradient(135deg,#0d9488,#0ea5e9)">🔬</div>
+                <div>
+                    <p class="font-display font-bold text-slate-900 leading-tight text-[22px]">Clinical Feature Analysis</p>
+                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-teal-500 mt-1">4 Indicators · Image-Level Metrics</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                <!-- Card 1: Pupil Brightness -->
+                <div class="feat-card feat-card-teal shadow-lg">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl leading-none">⚫</span>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Pupil<br>Brightness</p>
+                    </div>
+                    <div id="pupil-brightness-value" class="feat-value text-teal-600">--%</div>
+                    <div class="feat-bar-track"><div id="pupil-brightness-bar" class="feat-bar-fill bg-teal-500" style="width:0%"></div></div>
+                </div>
+                <!-- Card 2: Lens Opacity -->
+                <div class="feat-card feat-card-teal shadow-lg">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl leading-none">🌫️</span>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Lens<br>Opacity</p>
+                    </div>
+                    <div id="opacity-score-value" class="feat-value text-teal-600">--%</div>
+                    <div class="feat-bar-track"><div id="opacity-score-bar" class="feat-bar-fill bg-teal-500" style="width:0%"></div></div>
+                </div>
+                <!-- Card 3: Iris Contrast -->
+                <div class="feat-card feat-card-teal shadow-lg">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl leading-none">👁️</span>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Iris<br>Contrast</p>
+                    </div>
+                    <div id="iris-contrast-value" class="feat-value text-teal-600">--%</div>
+                    <div class="feat-bar-track"><div id="iris-contrast-bar" class="feat-bar-fill bg-teal-500" style="width:0%"></div></div>
+                </div>
+                <!-- Card 4: Light Scatter -->
+                <div class="feat-card feat-card-teal shadow-lg">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl leading-none">💡</span>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Light<br>Scatter</p>
+                    </div>
+                    <div id="light-scatter-value" class="feat-value text-teal-600">--%</div>
+                    <div class="feat-bar-track"><div id="light-scatter-bar" class="feat-bar-fill bg-teal-500" style="width:0%"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROW 3 : Diagnostic Heatmap (NEW - 1:1 Parity) -->
+        <section id="heatmap-root" class="hidden glass rounded-3xl p-10 shadow-xl card-lift results-reveal">
+            <div class="flex items-center gap-4 mb-7">
+                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
+                     style="width:3.5rem;height:3.5rem;font-size:1.5rem;background:linear-gradient(135deg,#e11d48,#fb7185)">🔥</div>
+                <div>
+                    <h2 class="font-display font-bold text-slate-900 text-2xl">Diagnostic Heatmap</h2>
+                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-rose-500 mt-1">AI Attention Areas (Grad-CAM)</p>
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/60" style="max-width:480px; width:100%">
+                    <img id="heatmap-image" src="#" alt="Feature Analysis Heatmap" class="w-full h-auto block object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROW 4 : Explanations (NEW - 1:1 Parity) -->
+        <section id="explanation-root" class="hidden glass rounded-3xl p-10 shadow-xl card-lift results-reveal">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
+                     style="width:3.5rem;height:3.5rem;font-size:1.5rem;background:linear-gradient(135deg,#7c3aed,#2563eb)">🧠</div>
+                <div>
+                    <h2 class="font-display font-bold text-slate-900 text-2xl">Why This Was Found</h2>
+                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-violet-500 mt-1">Multi-Tier Clinical Perspective</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-2 mb-6 bg-slate-50 p-1.5 rounded-full w-fit">
+                <button id="tab-simple"    class="px-6 py-2.5 rounded-full text-xs font-bold transition-all bg-white shadow-sm text-slate-800">😊 Simple</button>
+                <button id="tab-technical" class="px-6 py-2.5 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-600">🔬 Technical</button>
+                <button id="tab-aimodel"   class="px-6 py-2.5 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-600">🤖 AI Model</button>
+            </div>
+
+            <div id="simple-explanation"    class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100 text-[15px] text-slate-700 leading-relaxed whitespace-pre-line">--</div>
+            <div id="technical-explanation"  class="hidden bg-slate-50/50 rounded-2xl p-6 border border-slate-100 text-[15px] text-slate-700 leading-relaxed whitespace-pre-line">--</div>
+            <div id="aimodel-explanation"   class="hidden bg-slate-50/50 rounded-2xl p-6 border border-slate-100 text-[15px] text-slate-700 leading-relaxed whitespace-pre-line">--</div>
+        </section>
+
         <!-- ROW 5 : AI Report -->
-        <section class="glass rounded-3xl p-7 sm:p-10 lg:p-14 shadow-xl card-lift">
+        <section class="glass rounded-3xl p-7 sm:p-10 lg:p-14 shadow-xl card-lift results-reveal">
             <div class="flex items-center gap-5 mb-8 pb-7 border-b border-slate-100/80">
                 <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xl"
                      style="width:4rem; height:4rem; background:linear-gradient(135deg,#0d9488,#2563eb)">

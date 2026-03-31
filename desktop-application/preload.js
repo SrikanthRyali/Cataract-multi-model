@@ -1,34 +1,17 @@
-const { contextBridge } = require('electron');
-
-// We use dynamic import for @gradio/client because it is an ESM-only package
-let gradioClient = null;
+const { contextBridge, ipcRenderer } = require('electron');
 
 try {
   contextBridge.exposeInMainWorld('api', {
     huggingface: {
       /**
-       * Call a Gradio Space using the official @gradio/client
+       * Call a Gradio Space via the Main Process (standard IPC approach)
        * @param {string} spaceId - The HF Space ID
        * @param {string} apiName - The named endpoint (e.g., '/predict_ensemble')
        * @param {object} payload - Object containing input data (e.g., { image, groq_api_key })
        */
       call: async (spaceId, apiName, payload) => {
-        console.log(`Gradio Client Call: ${spaceId} [Endpoint: ${apiName}]`);
-        
-        try {
-          if (!gradioClient) {
-            const { Client } = await import('@gradio/client');
-            gradioClient = await Client.connect(spaceId);
-          }
-          
-          // Official client handles polling, SSE, and versioning automatically
-          const result = await gradioClient.predict(apiName, payload);
-          console.log("Gradio Result Object:", result);
-          return result.data;
-        } catch (error) {
-          console.error(`Gradio Client Error:`, error.message);
-          throw error;
-        }
+        console.log(`IPC Gradio Call: ${spaceId} [Endpoint: ${apiName}]`);
+        return await ipcRenderer.invoke('gradio-call', { spaceId, apiName, payload });
       }
     },
     groq: {
