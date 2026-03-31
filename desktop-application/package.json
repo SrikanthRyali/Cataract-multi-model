@@ -4,7 +4,22 @@
   "description": "Cataract Detection AI Desktop Application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "pack": "electron-builder --dir"
+  },
+  "build": {
+    "appId": "com.srikanth.cataracthub",
+    "productName": "Cataract Hub",
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "directories": {
+      "output": "release"
+    }
   },
   "keywords": [
     "cataract",
@@ -20,6 +35,7 @@
     "form-data": "^4.0.0"
   },
   "devDependencies": {
-    "electron": "^28.0.0"
+    "electron": "^28.0.0",
+    "electron-builder": "^26.8.1"
   }
 }

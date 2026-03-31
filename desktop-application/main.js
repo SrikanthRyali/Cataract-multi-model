@@ -6,6 +6,7 @@ function createWindow() {
     width: 1280,
     height: 900,
     title: "Cataract Hub — Clinical Eye Analysis",
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -13,6 +14,7 @@ function createWindow() {
     }
   });
 
+  win.setMenu(null);
   win.loadFile('index.html');
   // win.webContents.openDevTools();
 }
