@@ -15,7 +15,10 @@ try {
       }
     },
     groq: {
-      summarize: async (findings, apiKey) => {
+      /**
+       * Exact Prompt Parity Summarizer (as used in app.py logic)
+       */
+      summarize: async (prompt, apiKey) => {
         const url = 'https://api.groq.com/openai/v1/chat/completions';
         try {
           const response = await fetch(url, {
@@ -28,34 +31,63 @@ try {
               model: "llama-3.3-70b-versatile",
               messages: [
                 {
-                  role: "system",
-                  content: "You are a friendly AI Eye Assistant. Analyze the provided cataract screening findings and provide a clinical report."
-                },
-                {
                   role: "user",
-                  content: findings
+                  content: prompt
                 }
               ],
               temperature: 0.0,
-              max_tokens: 1500,
+              max_tokens: 2000,
             })
           });
           
-          if (!response.ok) {
-            const errBody = await response.text();
-            throw new Error(`Groq HTTP ${response.status}: ${errBody}`);
-          }
-          
+          if (!response.ok) throw new Error(`Groq API Error: ${response.status}`);
           const result = await response.json();
           return result.choices[0].message.content;
         } catch (error) {
-            console.error('Groq API Error:', error.message);
+            console.error('Groq Summarize Error:', error.message);
+            throw error;
+        }
+      },
+      /**
+       * Medical AI Chat Assistant (Multilingual)
+       */
+      chat: async (userText, language, apiKey) => {
+        const url = 'https://api.groq.com/openai/v1/chat/completions';
+        const systemPrompt = `You are a helpful Medical Assistant specialized in Cataract. 
+Respond in ${language}. 
+Use simple, caring language. 
+If the user asks about surgery, mention that Ayushman Bharat offers free treatment in India. 
+Always advise consulting a real ophthalmologist.`;
+
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: "llama-3.3-70b-versatile",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userText }
+              ],
+              temperature: 0.7,
+              max_tokens: 1000,
+            })
+          });
+          
+          if (!response.ok) throw new Error(`Groq API Error: ${response.status}`);
+          const result = await response.json();
+          return result.choices[0].message.content;
+        } catch (error) {
+            console.error('Groq Chat Error:', error.message);
             throw error;
         }
       }
     }
   });
-  console.log("Preload script: @gradio/client bridge ready.");
+  console.log("Cataract Hub: Preload Bridge Synchronized.");
 } catch (err) {
-  console.error("Preload script: Fatal initialization error:", err);
+  console.error("Preload script Error:", err);
 }

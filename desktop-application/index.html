@@ -1,33 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Cataract Hub — Clinical Eye Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --teal:  #0d9488;
-            --sky:   #0ea5e9;
-            --blue:  #2563eb;
-            --rose:  #e11d48;
+            --teal: #0d9488;
+            --sky: #0ea5e9;
+            --blue: #2563eb;
+            --rose: #e11d48;
             --amber: #d97706;
-            --violet:#7c3aed;
-            --ink:   #0f172a;
+            --violet: #7c3aed;
+            --ink: #0f172a;
             --muted: #64748b;
         }
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             font-family: 'DM Sans', sans-serif;
             background: #f0fdf9;
             background-image:
-                radial-gradient(ellipse 80% 55% at 0%   0%,   #ccfbf1 0%, transparent 60%),
+                radial-gradient(ellipse 80% 55% at 0% 0%, #ccfbf1 0%, transparent 60%),
                 radial-gradient(ellipse 65% 55% at 100% 100%, #dbeafe 0%, transparent 60%),
-                radial-gradient(ellipse 45% 45% at 55%  45%,  #f0f9ff 0%, transparent 70%);
+                radial-gradient(ellipse 45% 45% at 55% 45%, #f0f9ff 0%, transparent 70%);
             background-attachment: fixed;
             color: var(--ink);
             overflow-x: hidden;
@@ -35,421 +48,1515 @@
         }
 
         .glass {
-            background: rgba(255,255,255,0.80);
+            background: rgba(255, 255, 255, 0.80);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
-        .font-display { font-family: 'Sora', sans-serif; }
+
+        .font-display {
+            font-family: 'Sora', sans-serif;
+        }
+
         .text-gradient {
             background: linear-gradient(135deg, var(--teal) 0%, var(--sky) 50%, var(--blue) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         .btn-primary {
             background: linear-gradient(135deg, var(--teal) 0%, var(--sky) 55%, var(--blue) 100%);
-            color: white; font-family: 'Sora',sans-serif; font-weight: 700;
-            overflow: hidden; transition: transform .3s, box-shadow .3s;
+            color: white;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            overflow: hidden;
+            transition: transform .3s, box-shadow .3s;
         }
-        .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(13,148,136,.4); }
-        .btn-primary:active { transform: scale(.97); }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(13, 148, 136, .4);
+        }
+
+        .btn-primary:active {
+            transform: scale(.97);
+        }
 
         .nav-link {
-            position: relative; color: var(--muted); font-weight: 600;
-            font-size: .83rem; text-decoration: none; transition: color .2s;
-            cursor: pointer; background: none; border: none; padding: 0;
+            position: relative;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: .83rem;
+            text-decoration: none;
+            transition: color .2s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
         }
+
         .nav-link::after {
-            content: ''; position: absolute; bottom: -3px; left: 0; right: 100%;
-            height: 2px; background: var(--teal); border-radius: 1px; transition: right .25s;
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 100%;
+            height: 2px;
+            background: var(--teal);
+            border-radius: 1px;
+            transition: right .25s;
         }
-        .nav-link:hover { color: var(--teal); }
-        .nav-link:hover::after { right: 0; }
+
+        .nav-link:hover {
+            color: var(--teal);
+        }
+
+        .nav-link:hover::after {
+            right: 0;
+        }
 
         .badge {
-            display: inline-flex; align-items: center; gap: .4rem;
-            font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
-            color: var(--teal); background: rgba(13,148,136,.08);
-            border: 1px solid rgba(13,148,136,.2); padding: .28rem .85rem; border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--teal);
+            background: rgba(13, 148, 136, .08);
+            border: 1px solid rgba(13, 148, 136, .2);
+            padding: .28rem .85rem;
+            border-radius: 9999px;
         }
 
-        .feat-tag { display: inline-flex; align-items: center; gap: .35rem; font-size: .7rem; font-weight: 700; padding: .3rem .8rem; border-radius: 9999px; }
-        .feat-tag-warn  { background:rgba(225,29,72,.08);  border:1px solid rgba(225,29,72,.25);  color:#be123c; }
-        .feat-tag-ok    { background:rgba(13,148,136,.08); border:1px solid rgba(13,148,136,.25); color:#0d9488; }
-        .feat-tag-amber { background:rgba(217,119,6,.08);  border:1px solid rgba(217,119,6,.25);  color:#b45309; }
+        .feat-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .7rem;
+            font-weight: 700;
+            padding: .3rem .8rem;
+            border-radius: 9999px;
+        }
 
-        .card-lift { transition: transform .25s, box-shadow .25s; }
-        .card-lift:hover { transform: translateY(-4px); box-shadow: 0 22px 56px rgba(13,148,136,.13); }
+        .feat-tag-warn {
+            background: rgba(225, 29, 72, .08);
+            border: 1px solid rgba(225, 29, 72, .25);
+            color: #be123c;
+        }
+
+        .feat-tag-ok {
+            background: rgba(13, 148, 136, .08);
+            border: 1px solid rgba(13, 148, 136, .25);
+            color: #0d9488;
+        }
+
+        .feat-tag-amber {
+            background: rgba(217, 119, 6, .08);
+            border: 1px solid rgba(217, 119, 6, .25);
+            color: #b45309;
+        }
+
+        .card-lift {
+            transition: transform .25s, box-shadow .25s;
+        }
+
+        .card-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 22px 56px rgba(13, 148, 136, .13);
+        }
 
         .feat-card {
-            background: rgba(255,255,255,.88);
-            border: 1px solid rgba(255,255,255,.6);
+            background: rgba(255, 255, 255, .88);
+            border: 1px solid rgba(255, 255, 255, .6);
             border-radius: 1.5rem;
             padding: 1.6rem 1.4rem;
-            display: flex; flex-direction: column; gap: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
             transition: transform .25s, box-shadow .25s;
-            position: relative; overflow: hidden;
+            position: relative;
+            overflow: hidden;
         }
-        .feat-card:hover { transform: translateY(-6px); box-shadow: 0 28px 64px rgba(0,0,0,.12); }
+
+        .feat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 28px 64px rgba(0, 0, 0, .12);
+        }
+
         .feat-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 100%;
-            height: 3px; border-radius: 99px; transition: right .55s ease;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 100%;
+            height: 3px;
+            border-radius: 99px;
+            transition: right .55s ease;
         }
-        .feat-card:hover::before { right: 0; }
-        .feat-card-rose::before  { background: var(--rose); }
-        .feat-card-teal::before  { background: var(--teal); }
-        .feat-card-amber::before { background: var(--amber); }
+
+        .feat-card:hover::before {
+            right: 0;
+        }
+
+        .feat-card-rose::before {
+            background: var(--rose);
+        }
+
+        .feat-card-teal::before {
+            background: var(--teal);
+        }
+
+        .feat-card-amber::before {
+            background: var(--amber);
+        }
 
         .feat-value {
-            font-family: 'Sora', sans-serif; font-weight: 800;
-            font-size: clamp(1.6rem, 2.6vw, 2.6rem); line-height: 1;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.6rem, 2.6vw, 2.6rem);
+            line-height: 1;
             white-space: nowrap;
         }
 
-        .feat-bar-track { width:100%; background:#e2e8f0; border-radius:9999px; overflow:hidden; height:10px; }
-        .feat-bar-fill  { height:100%; border-radius:9999px; transition: width 1s ease; }
-
-        .metric-pointer {
-            display: inline-flex; align-items: center; gap: .3rem;
-            font-size: .75rem; font-weight: 700;
-            padding: .2rem .65rem; border-radius: 9999px;
+        .feat-bar-track {
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 10px;
         }
 
-        .results-reveal { animation: revealUp .65s cubic-bezier(.22,1,.36,1) both; }
-        @keyframes revealUp { from{opacity:0;transform:translateY(34px) scale(.985)} to{opacity:1;transform:translateY(0) scale(1)} }
+        .feat-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 1s ease;
+        }
+
+        .metric-pointer {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            font-size: .75rem;
+            font-weight: 700;
+            padding: .2rem .65rem;
+            border-radius: 9999px;
+        }
+
+        .arrow-pulse {
+            display: inline-block;
+            animation: arrowBounce 1.4s 1.8s ease-in-out infinite;
+        }
+
+        @keyframes arrowBounce {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-4px)
+            }
+        }
+
+        .results-reveal {
+            animation: revealUp .65s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        @keyframes revealUp {
+            from {
+                opacity: 0;
+                transform: translateY(34px) scale(.985)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
+        }
 
         #result-toast {
-            position: fixed; top: 1.2rem; left: 50%; transform: translateX(-50%);
+            position: fixed;
+            top: 1.2rem;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 400;
-            display: none; align-items: center; gap: .75rem;
-            background: rgba(15,23,42,.92); backdrop-filter:blur(20px);
-            border: 1px solid rgba(255,255,255,.12);
-            padding: .7rem 1.4rem; border-radius: 9999px;
-            box-shadow: 0 12px 40px rgba(0,0,0,.3);
+            display: none;
+            align-items: center;
+            gap: .75rem;
+            background: rgba(15, 23, 42, .92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, .12);
+            padding: .7rem 1.4rem;
+            border-radius: 9999px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .3);
+        }
+
+        .toast-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: toastPulse 1s ease infinite;
+        }
+
+        @keyframes toastPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .6;
+                transform: scale(1.4)
+            }
+        }
+
+        @keyframes verdictGlowNormal {
+            0% {
+                box-shadow: 0 0 0 0 rgba(13, 148, 136, .35)
+            }
+
+            70% {
+                box-shadow: 0 0 0 16px rgba(13, 148, 136, 0)
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(13, 148, 136, 0)
+            }
+        }
+
+        @keyframes verdictGlowRose {
+            0% {
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, .35)
+            }
+
+            70% {
+                box-shadow: 0 0 0 16px rgba(225, 29, 72, 0)
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0)
+            }
+        }
+
+        .verdict-glow-normal {
+            animation: verdictGlowNormal 2.2s .5s ease infinite;
+        }
+
+        .verdict-glow-cataract {
+            animation: verdictGlowRose 2.2s .5s ease infinite;
+        }
+
+        /* ── FAB & Chat ── */
+        #chat-fab {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .55rem 1.1rem .55rem .55rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 20px rgba(13, 148, 136, .35);
+            background: white;
+            transition: transform .22s, box-shadow .22s;
+            user-select: none;
+        }
+
+        #chat-fab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(13, 148, 136, .45);
+        }
+
+        #chat-fab .fab-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #0d9488, #2563eb);
+            animation: pulseGlow 2.5s ease infinite;
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(13, 148, 136, .5)
+            }
+
+            60% {
+                box-shadow: 0 0 0 8px rgba(13, 148, 136, 0)
+            }
+        }
+
+        #chat-fab .fab-label {
+            font-family: 'Sora', sans-serif;
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        #chat-panel {
+            position: fixed;
+            bottom: 5rem;
+            right: 1.25rem;
+            width: min(360px, calc(100vw - 2rem));
+            height: min(520px, calc(100dvh - 7rem));
+            z-index: 199;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, .2), 0 4px 16px rgba(15, 23, 42, .1);
+            transform: scale(.85) translateY(20px);
+            transform-origin: bottom right;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), opacity .25s ease;
+        }
+
+        #chat-panel.open {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
+            animation: dotBounce 1.2s ease-in-out infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: .18s
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: .36s
+        }
+
+        @keyframes dotBounce {
+
+            0%,
+            80%,
+            100% {
+                transform: translateY(0)
+            }
+
+            40% {
+                transform: translateY(-5px)
+            }
+        }
+
+        .msg-anim {
+            animation: msgIn .25s ease both;
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px) scale(.97)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
+        }
+
+        /* ── Drawer & Subpages ── */
+        #subpage-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            display: none;
+            align-items: stretch;
+        }
+
+        #subpage-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, .55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        #subpage-drawer {
+            position: relative;
+            z-index: 1;
+            margin-left: auto;
+            width: min(640px, 100vw);
+            height: 100dvh;
+            background: #ffffff;
+            overflow-y: auto;
+            box-shadow: -24px 0 80px rgba(15, 23, 42, .18);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1.1rem 1.6rem;
+            background: rgba(255, 255, 255, .95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(226, 232, 240, .7);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .drawer-tab-bar {
+            display: flex;
+            gap: .3rem;
+            background: #f1f5f9;
+            border-radius: 9999px;
+            padding: .25rem;
+        }
+
+        .drawer-tab {
+            padding: .4rem .9rem;
+            border-radius: 9999px;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: .72rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            transition: all .22s;
+        }
+
+        .drawer-tab.active {
+            background: white;
+            color: var(--ink);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        }
+
+        .drawer-close {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: #f1f5f9;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .18s, color .18s;
+        }
+
+        .drawer-close:hover {
+            background: #fee2e2;
+            color: var(--rose);
+        }
+
+        .drawer-page {
+            display: none;
+            padding: 2rem 1.6rem 3rem;
+            flex-direction: column;
+            gap: 1.6rem;
+        }
+
+        .drawer-page.active {
+            display: flex;
+            animation: revealUp .35s ease both;
+        }
+
+        /* ── NEW SYNC STYLES ── */
+        .about-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 1.4rem;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(13, 148, 136, .25) 0%, transparent 70%);
+            top: -80px;
+            right: -80px;
+        }
+
+        .about-stat {
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 1rem;
+            padding: 1.1rem;
+            text-align: center;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .about-stat-num {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 1.8rem;
+            line-height: 1;
+            background: linear-gradient(135deg, #2dd4bf, #38bdf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .about-stat-label {
+            font-size: .68rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            margin-top: .3rem;
+        }
+
+        .info-block {
+            display: flex;
+            gap: 1.1rem;
+            align-items: flex-start;
+        }
+
+        .info-icon {
+            width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .tech-group-label {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: .68rem;
+            text-transform: uppercase;
+            letter-spacing: .15em;
+            color: var(--teal);
+            margin-bottom: .85rem;
+            margin-top: .5rem;
+        }
+
+        .tech-chip {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: .85rem;
+            padding: .8rem 1rem;
+            transition: border-color .2s, box-shadow .2s, transform .2s;
+        }
+
+        .tech-chip:hover {
+            border-color: rgba(13, 148, 136, .4);
+            box-shadow: 0 4px 16px rgba(13, 148, 136, .1);
+            transform: translateX(3px);
+        }
+
+        .tech-chip-icon {
+            width: 2.4rem;
+            height: 2.4rem;
+            border-radius: .6rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .tech-chip-name {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: .85rem;
+            color: var(--ink);
+            margin-bottom: .05rem;
+        }
+
+        .tech-chip-desc {
+            font-size: .72rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .tech-chip-badge {
+            margin-left: auto;
+            font-size: .62rem;
+            font-weight: 700;
+            padding: .2rem .6rem;
+            border-radius: 9999px;
+            white-space: nowrap;
+        }
+
+        .help-step {
+            display: flex;
+            gap: 1.3rem;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-num {
+            width: 1.8rem;
+            height: 1.8rem;
+            border-radius: 50%;
+            background: var(--ink);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: .75rem;
+            flex-shrink: 0;
+            margin-top: .15rem;
+        }
+
+        .faq-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .faq-q {
+            padding: .9rem 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: .85rem;
+        }
+
+        .faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .3s ease;
+            font-size: .82rem;
+            color: var(--muted);
+            line-height: 1.7;
+            padding: 0 1.1rem;
+        }
+
+        .faq-item.open .faq-a {
+            max-height: 300px;
+            padding: .2rem 1.1rem .9rem;
+        }
+
+        .faq-arrow {
+            transition: transform .3s;
+        }
+
+        .faq-item.open .faq-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* ── Markdown ── */
+        .md-body {
+            line-height: 1.75;
+            color: #334155;
+            font-size: .9rem;
+        }
+
+        .md-body h2 {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 1.5rem 0 .75rem;
+            padding-left: .85rem;
+            border-left: 4px solid var(--teal);
+        }
+
+        .md-body li {
+            position: relative;
+            background: white;
+            padding: .65rem 1rem .65rem 2.5rem;
+            border-radius: .75rem;
+            border-left: 3px solid var(--teal);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .04);
+            font-size: .84rem;
+            margin-bottom: .6rem;
+        }
+
+        .md-body li::before {
+            content: "💡";
+            position: absolute;
+            left: .7rem;
+            top: .6rem;
+        }
+
+        /* ── Explanations ── */
+        .exp-tab-bar {
+            display: flex;
+            gap: .35rem;
+            background: #f1f5f9;
+            border-radius: 9999px;
+            padding: .25rem;
+            width: fit-content;
+        }
+
+        .exp-tab {
+            padding: .38rem .9rem;
+            border-radius: 9999px;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: .7rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            transition: all .2s;
+        }
+
+        .exp-tab.active {
+            background: white;
+            color: var(--ink);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        }
+
+        .exp-panel {
+            display: none;
+        }
+
+        .exp-panel.active {
+            display: block;
+            animation: revealUp .3s ease both;
         }
 
         #loading-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(15,23,42,.45); backdrop-filter: blur(22px);
-            z-index: 500; flex-direction: column; align-items: center; justify-content: center;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .45);
+            backdrop-filter: blur(22px);
+            z-index: 500;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
+
         .spinner {
-            width: 52px; height: 52px;
-            border: 4px solid rgba(13,148,136,.18);
-            border-top-color: var(--teal); border-radius: 50%;
-            animation: spin .85s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Subpage Overlay */
-        #subpage-overlay {
-            position: fixed; inset: 0; z-index: 300;
-            display: none; align-items: stretch;
-        }
-        #subpage-backdrop {
-            position: absolute; inset: 0;
-            background: rgba(15,23,42,.45); backdrop-filter: blur(6px);
-            z-index: 10;
-        }
-        #subpage-drawer {
-            position: relative; z-index: 20; margin-left: auto;
-            width: min(540px, 100vw); height: 100dvh;
-            background: #ffffff; overflow-y: auto;
-            display: flex; flex-direction: column;
-            box-shadow: -24px 0 80px rgba(15,23,42,.15);
+            width: 52px;
+            height: 52px;
+            border: 4px solid rgba(13, 148, 136, .18);
+            border-top-color: var(--teal);
+            border-radius: 50%;
+            animation: spin .85s linear infinite
         }
 
-        .settings-input {
-            width: 100%; padding: 0.75rem 1rem;
-            border: 1px solid #e2e8f0; border-radius: 0.75rem;
-            background: #f8fafc; font-family: 'DM Sans', sans-serif;
-            font-size: 0.9rem; transition: border-color 0.2s;
-        }
-        .settings-input:focus {
-            outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
         }
 
-        #results-container { display: none; }
+        #results-root {
+            display: none;
+        }
 
-        /* AI Report Style (Markdown) */
-        .md-body { line-height: 1.8; font-size: 1.02rem; }
-        .md-body h1, .md-body h2, .md-body h3 { font-family: 'Sora', sans-serif; font-weight: 800; color: var(--ink); margin-top: 1.8rem; margin-bottom: 0.8rem; }
-        .md-body h1 { font-size: 2rem; }
-        .md-body h2 { font-size: 1.6rem; border-bottom: 2px solid rgba(13,148,136,.1); padding-bottom: .4rem; }
-        .md-body h3 { font-size: 1.3rem; color: var(--teal); }
-        .md-body p { margin-bottom: 1.2rem; }
-        .md-body ul, .md-body ol { margin-left: 1.6rem; margin-bottom: 1.2rem; }
-        .md-body li { margin-bottom: 0.6rem; list-style-type: disc; }
-        .md-body li::marker { color: var(--teal); font-weight: bold; }
-        .md-body strong { color: var(--teal); font-weight: 700; }
-        .md-body blockquote { border-left: 4px solid var(--teal); padding: 0.5rem 1.2rem; background: rgba(13,148,136,0.05); border-radius: 0 0.8rem 0.8rem 0; color: var(--muted); font-style: italic; margin: 1.5rem 0; }
+        #image-preview-container {
+            display: none;
+        }
+
+        #drop-zone {
+            transition: border-color .25s, background .25s, transform .2s;
+        }
+
+        #drop-zone:hover,
+        #drop-zone.drag-over {
+            border-color: var(--teal);
+            background: rgba(13, 148, 136, .035);
+            transform: scale(1.005);
+        }
     </style>
 </head>
+
 <body>
 
-<!-- Loading Overlay -->
-<div id="loading-overlay">
-    <div class="spinner mb-4"></div>
-    <p class="text-white font-display font-bold">Analyzing Eye Scans...</p>
-    <p id="loading-status" class="text-teal-200 text-sm mt-2">Connecting to Neural Models</p>
-</div>
+    <main>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 pt-5 pb-28">
 
-<!-- Result Toast -->
-<div id="result-toast">
-    <span class="toast-dot bg-teal-400" id="toast-indicator"></span>
-    <p class="text-white font-display text-sm font-bold" id="toast-text">Analysis Complete</p>
-</div>
-
-<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 pt-5 pb-28">
-
-    <!-- Navbar -->
-    <nav class="glass rounded-2xl px-4 sm:px-7 py-3.5 mb-10 flex items-center justify-between shadow-sm">
-        <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0"
-                 style="background:linear-gradient(135deg,#0d9488,#2563eb)">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-            </div>
-            <span class="font-display font-bold text-slate-800 text-[15px]">Cataract Hub Desktop</span>
-        </div>
-        <div class="flex items-center gap-5 sm:gap-7">
-            <button class="nav-link" id="btn-settings">Settings</button>
-            <button class="nav-link" id="btn-help">Help</button>
-        </div>
-    </nav>
-
-    <!-- Hero -->
-    <header class="text-center mb-10 sm:mb-14">
-        <div class="badge mb-5">
-            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
-            AI Eye Screening
-        </div>
-        <h1 class="font-display font-extrabold text-slate-900 leading-[1.07] tracking-tight mb-3"
-            style="font-size:clamp(2.2rem,7vw,4rem)">
-            Cataract <span class="text-gradient">Hub</span>
-        </h1>
-        <p class="text-slate-400 font-medium" style="font-size:clamp(.9rem,2.5vw,1.1rem)">
-            Upload a single eye image for instant AI-powered analysis
-        </p>
-    </header>
-
-    <!-- Upload Card -->
-    <section class="glass rounded-3xl shadow-xl p-2 mb-10">
-        <div class="bg-white/45 rounded-[1.4rem] p-5 sm:p-8 lg:p-10">
-            <div id="drop-zone" class="relative border-2 border-dashed border-slate-200 rounded-2xl p-10 sm:p-14 lg:p-20 text-center cursor-pointer">
-                <input type="file" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" accept="image/*">
-                <div id="preview-container" class="hidden flex justify-center mb-6">
-                    <div class="p-2 glass rounded-2xl shadow-xl inline-block">
-                        <img id="image-preview" src="#" alt="Preview" class="max-h-56 sm:max-h-80 rounded-xl border border-white/80 object-contain">
-                    </div>
-                </div>
-                <div id="upload-instruction">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center shadow-inner"
-                         style="background:linear-gradient(135deg,#f0fdf9,#e0f2fe)">
-                        <svg class="text-teal-500 w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <!-- Navbar -->
+            <nav class="glass rounded-2xl px-4 sm:px-7 py-3.5 mb-10 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0"
+                        style="background:linear-gradient(135deg,#0d9488,#2563eb)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                     </div>
-                    <h3 class="font-display font-bold text-slate-800 mb-2" style="font-size:clamp(1.15rem,3.5vw,1.55rem)">Upload Eye Image</h3>
-                    <p class="text-slate-400 text-sm sm:text-base">Single eye only · JPG / PNG / WEBP</p>
-                    <p class="text-teal-500 text-xs sm:text-sm font-semibold mt-2.5">Click to choose image</p>
+                    <span class="font-display font-bold text-slate-800 text-[15px]">Cataract Hub</span>
                 </div>
-            </div>
-            <button id="predict-btn"
-                class="btn-primary w-full mt-5 py-4 sm:py-5 rounded-2xl text-sm sm:text-base font-bold shadow-xl hidden">
-                ✦ &nbsp;Start Neural Analysis
-            </button>
-        </div>
-    </section>
+                <div class="flex items-center gap-5 sm:gap-7">
+                    <button class="nav-link" onclick="openSubpage('about')">About</button>
+                    <button class="nav-link hidden sm:inline" onclick="openSubpage('tech')">Tech Stack</button>
+                    <button class="nav-link" onclick="openSubpage('help')">Help</button>
+                </div>
+            </nav>
 
-    <!-- Results Section -->
-    <div id="results-container" class="space-y-8">
-        
-        <!-- ROW 1 : Verdict + Model Logs -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 results-reveal">
-            
-            <!-- Verdict -->
-            <div id="verdict-card" class="glass rounded-3xl p-8 lg:p-12 flex flex-col items-center justify-center text-center shadow-xl card-lift">
-                <p class="text-[10px] font-bold uppercase tracking-[.3em] text-slate-400 mb-6">Eye Condition</p>
-                <div id="verdict-icon" class="rounded-3xl flex items-center justify-center mb-5 shadow-lg" style="width:7rem; height:7rem; font-size:3.2rem">
-                    ✨
+            <!-- Hero -->
+            <header class="text-center mb-10 sm:mb-14">
+                <div class="badge mb-5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+                    AI Eye Screening
                 </div>
-                <h2 id="verdict-text" class="font-display font-extrabold mb-2" style="font-size:3.8rem">Normal</h2>
-                <p class="text-slate-500 font-medium mb-6">
-                    Confidence: <strong id="confidence-text" class="text-slate-800" style="font-size:1.8rem">0%</strong>
+                <h1 class="font-display font-extrabold text-slate-900 leading-[1.07] tracking-tight mb-3"
+                    style="font-size:clamp(2.2rem,7vw,4rem)">
+                    Cataract <span class="text-gradient">Hub</span>
+                </h1>
+                <p class="text-slate-400 font-medium" style="font-size:clamp(.9rem,2.5vw,1.1rem)">
+                    Upload a single eye image for instant AI-powered analysis
                 </p>
-                <div class="w-full bg-slate-100 rounded-full overflow-hidden shadow-inner" style="height:14px">
-                    <div id="confidence-bar" class="h-full bg-teal-500" style="width: 0%"></div>
+            </header>
+
+            <!-- Upload Card -->
+            <section class="glass rounded-3xl shadow-xl p-2 mb-10">
+                <div class="bg-white/45 rounded-[1.4rem] p-5 sm:p-8 lg:p-10">
+                    <div id="drop-zone"
+                        class="relative border-2 border-dashed border-slate-200 rounded-2xl p-10 sm:p-14 lg:p-20 text-center cursor-pointer">
+                        <input type="file" id="file-input"
+                            class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" accept="image/*">
+                        <div id="image-preview-container" class="flex justify-center mb-6">
+                            <div class="p-2 glass rounded-2xl shadow-xl inline-block">
+                                <img id="image-preview" src="#" alt="Preview"
+                                    class="max-h-56 sm:max-h-80 rounded-xl border border-white/80 object-contain">
+                            </div>
+                        </div>
+                        <div id="upload-instruction">
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center shadow-inner"
+                                style="background:linear-gradient(135deg,#f0fdf9,#e0f2fe)">
+                                <svg class="text-teal-500 w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor"
+                                    stroke-width="1.75" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-display font-bold text-slate-800 mb-2"
+                                style="font-size:clamp(1.15rem,3.5vw,1.55rem)">Upload Eye Image</h3>
+                            <p class="text-slate-400 text-sm sm:text-base">Single eye only · JPG / PNG / WEBP</p>
+                            <p class="text-teal-500 text-xs sm:text-sm font-semibold mt-2.5">Click or drag image here
+                            </p>
+                        </div>
+                    </div>
+                    <button id="predict-btn"
+                        class="btn-primary w-full mt-5 py-4 sm:py-5 rounded-2xl text-sm sm:text-base font-bold shadow-xl hidden"
+                        style="letter-spacing:.02em">✦ &nbsp;Start Vision Analysis</button>
+
+                    <!-- Photographic Guide -->
+                    <div class="mt-10 pt-8 border-t border-slate-100/60">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-xl shadow-sm border border-teal-100/50">
+                                📸</div>
+                            <h4 class="font-display font-bold text-slate-800 text-lg">How to Take a Clear Eye Photo</h4>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                            <div class="flex items-start gap-3 group">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">
+                                    ✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Sit in a bright place
+                                    (near window)</p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">
+                                    ✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Keep your phone steady</p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">
+                                    ✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Bring camera close to eye
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">
+                                    ✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Ensure only one eye is
+                                    visible</p>
+                            </div>
+                        </div>
+                        <div
+                            class="mt-8 p-4 rounded-2xl bg-amber-50/50 border border-amber-100 flex items-center gap-4">
+                            <div
+                                class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xl shrink-0 shadow-sm">
+                                ⚠️</div>
+                            <p class="text-sm font-bold text-amber-800 leading-snug">Clear photos ensure correct
+                                results.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Root -->
+            <div id="results-root" class="space-y-8">
+
+                <!-- ROW 1 : Verdict + Model Logs -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 results-reveal">
+                    <div id="verdict-card"
+                        class="glass rounded-3xl p-8 lg:p-12 flex flex-col items-center justify-center text-center shadow-xl card-lift">
+                        <p class="text-[10px] font-bold uppercase tracking-[.3em] text-slate-400 mb-6">Eye Condition</p>
+                        <div id="verdict-icon-container"
+                            class="rounded-3xl flex items-center justify-center mb-5 shadow-lg"
+                            style="width:7rem;height:7rem;font-size:3.2rem">✨</div>
+                        <h2 id="verdict-text" class="font-display font-extrabold mb-2" style="font-size:3.8rem">Normal
+                        </h2>
+                        <p class="text-slate-500 font-medium mb-6">Confidence: <strong id="confidence-text"
+                                class="text-slate-800" style="font-size:1.8rem">0%</strong></p>
+                        <div class="w-full bg-slate-100 rounded-full overflow-hidden shadow-inner" style="height:14px">
+                            <div id="confidence-bar" class="h-full bg-teal-500" style="width:0%"></div>
+                        </div>
+                        <div id="feature-tags" class="mt-5 flex flex-wrap gap-2 justify-center"></div>
+                        <div id="verdict-disclaimer"
+                            class="hidden mt-5 w-full p-4 rounded-xl bg-rose-50 border border-rose-100 text-sm font-semibold text-rose-600">
+                            ⚕️ Consult a real eye doctor before taking medical steps.
+                        </div>
+                    </div>
+                    <div class="glass rounded-3xl p-8 lg:p-10 shadow-xl card-lift">
+                        <p class="text-[10px] font-bold uppercase tracking-[.3em] text-slate-400 mb-6">Model
+                            Intelligence</p>
+                        <div id="model-intelligence-list" class="space-y-3 overflow-y-auto pr-1"
+                            style="max-height:380px"></div>
+                    </div>
+                </div>
+
+                <!-- ROW 2 : Scanned Image -->
+                <section class="glass rounded-3xl p-7 lg:p-10 shadow-xl card-lift results-reveal">
+                    <div class="flex items-center gap-4 mb-7">
+                        <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
+                            style="width:3.5rem;height:3.5rem;font-size:1.5rem;background:linear-gradient(135deg,#0d9488,#0ea5e9)">
+                            👁️</div>
+                        <div>
+                            <p class="font-display font-bold text-slate-900 leading-tight text-xl">Scanned Eye Image</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/60"
+                            style="max-width:420px;width:100%">
+                            <img id="scanned-image" src="#" class="w-full h-auto block object-cover">
+                            <!-- Diagnostic Overlays -->
+                            <div class="absolute bottom-4 left-4 right-4 flex flex-col gap-2">
+                                <div id="image-overlay-verdict"
+                                    class="glass px-3 py-1.5 rounded-lg text-xs font-bold text-slate-800 shadow-sm w-fit blur-bg-md">
+                                    --</div>
+                                <div id="image-overlay-conf"
+                                    class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold text-white shadow-sm w-fit">
+                                    --</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ROW 3 : Feature Analysis -->
+                <section class="results-reveal">
+                    <div id="metrics-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5"></div>
+                    <div id="metrics-summary-banner"
+                        class="mt-5 p-4 lg:p-5 rounded-2xl border text-sm lg:text-base font-medium leading-relaxed">
+                    </div>
+                </section>
+
+                <!-- ROW 4 : Explanations -->
+                <section class="glass rounded-3xl p-7 sm:p-10 shadow-xl card-lift results-reveal rv-4">
+                    <div class="exp-tab-bar mb-5">
+                        <button class="exp-tab active" onclick="showExpTab('simple',this)">😊 Simple</button>
+                        <button class="exp-tab" onclick="showExpTab('technical',this)">🔬 Technical</button>
+                        <button class="exp-tab" onclick="showExpTab('ai_model',this)">🤖 AI / Model</button>
+                    </div>
+                    <div id="exp-simple"
+                        class="exp-panel active bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 whitespace-pre-line">
+                        --</div>
+                    <div id="exp-technical"
+                        class="exp-panel bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 whitespace-pre-line">
+                        --</div>
+                    <div id="exp-ai_model"
+                        class="exp-panel bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 whitespace-pre-line font-mono">
+                        --</div>
+                </section>
+
+                <!-- ── ROW 5 : AI Report ── -->
+                <section class="glass rounded-3xl p-7 sm:p-10 lg:p-14 shadow-xl card-lift results-reveal rv-5">
+                    <div class="flex items-center gap-5 mb-8 pb-7 border-b border-slate-100/80">
+                        <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xl"
+                            style="width:clamp(3rem,7vw,4rem);height:clamp(3rem,7vw,4rem);background:linear-gradient(135deg,#0d9488,#2563eb)">
+                            <svg style="width:46%;height:46%" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="font-display font-extrabold text-slate-900 leading-tight"
+                                style="font-size:clamp(1.4rem,4vw,2.5rem)">AI Report</h2>
+                            <p class="text-teal-600 text-[12px] font-bold uppercase tracking-[.2em] mt-1">Verified by
+                                Llama-3.3 · 70B</p>
+                        </div>
+                    </div>
+                    <div id="ai-report-content" class="md-body leading-relaxed text-slate-700">Generating report...</div>
+                </section>
+
+            </div>
+
+            <footer class="mt-20 text-center pb-24">
+                <p class="font-display font-bold text-slate-400 text-[11px] uppercase tracking-widest mb-2">Cataract
+                    Intelligence Hub Desktop</p>
+                <p class="text-slate-400/60 text-[11px] max-w-sm mx-auto leading-relaxed">Screening aid only — does not
+                    replace medical advice.</p>
+            </footer>
+        </div>
+    </main>
+
+    <!-- Subpage Drawer (Full Direct Port) -->
+    <div id="subpage-overlay">
+        <div id="subpage-backdrop" onclick="closeSubpage()"></div>
+        <div id="subpage-drawer">
+            <div class="drawer-header">
+                <div class="drawer-tab-bar">
+                    <button class="drawer-tab active" onclick="switchDrawerTab('about',this)">About</button>
+                    <button class="drawer-tab" onclick="switchDrawerTab('tech',this)">Tech Stack</button>
+                    <button class="drawer-tab" onclick="switchDrawerTab('help',this)">Help</button>
+                    <button class="drawer-tab" onclick="switchDrawerTab('config',this)">Config</button>
+                </div>
+                <button class="drawer-close" onclick="closeSubpage()">✕</button>
+            </div>
+
+            <!-- ── ABOUT (Direct Port) ── -->
+            <div class="drawer-page active" id="dp-about">
+                <div class="about-hero">
+                    <div style="position:relative;z-index:1">
+                        <div
+                            style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(13,148,136,.2);border:1px solid rgba(13,148,136,.35);border-radius:9999px;padding:.3rem .9rem;margin-bottom:1.1rem">
+                            <span
+                                style="width:.4rem;height:.4rem;border-radius:50%;background:#2dd4bf;display:inline-block"></span>
+                            <span
+                                style="font-family:'Sora',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#2dd4bf">AI
+                                Eye Screening</span>
+                        </div>
+                        <h2
+                            style="font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(1.4rem,4vw,2rem);color:white;line-height:1.15;margin-bottom:.6rem">
+                            Automated Cataract<br>Detection System</h2>
+                        <p style="font-size:.85rem;color:#94a3b8;line-height:1.7;max-width:420px">An AI-powered
+                            screening tool that analyzes eye images in real time to detect cataract — making early
+                            detection accessible to everyone.</p>
+                        <div style="display:flex;gap:.75rem;margin-top:1.4rem;flex-wrap:wrap">
+                            <div class="about-stat">
+                                <div class="about-stat-num">5</div>
+                                <div class="about-stat-label">AI Models</div>
+                            </div>
+                            <div class="about-stat">
+                                <div class="about-stat-num">70B</div>
+                                <div class="about-stat-label">LLM Params</div>
+                            </div>
+                            <div class="about-stat">
+                                <div class="about-stat-num">4</div>
+                                <div class="about-stat-label">Indicators</div>
+                            </div>
+                            <div class="about-stat">
+                                <div class="about-stat-num">∞</div>
+                                <div class="about-stat-label">Free Use</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-block">
+                    <div class="info-icon"
+                        style="background:linear-gradient(135deg,rgba(13,148,136,.15),rgba(14,165,233,.15))">🎯</div>
+                    <div>
+                        <p
+                            style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">
+                            Purpose</p>
+                        <p style="font-size:.82rem;color:#64748b;line-height:1.7">This app gives a quick AI screening to
+                            identify whether an uploaded eye image shows signs of cataract or looks normal.
+                            Five trained models (DeepCNN, DeepANN, ResNet, VGG, AlexNet) vote for a consensus-based
+                            answer, ensuring reliable
+                            results.
+                    </div>
+                </div>
+                <div class="info-block">
+                    <div class="info-icon"
+                        style="background:linear-gradient(135deg,rgba(225,29,72,.12),rgba(249,115,22,.12))">⚕️</div>
+                    <div>
+                        <p
+                            style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">
+                            Medical Disclaimer</p>
+                        <p style="font-size:.82rem;color:#64748b;line-height:1.7">Intended as a screening aid — <strong
+                                style="color:#be123c">not a medical diagnosis</strong>. If flagged, please consult an
+                            ophthalmologist.</p>
+                    </div>
+                </div>
+                <div class="info-block">
+                    <div class="info-icon"
+                        style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(37,99,235,.12))">🏫</div>
+                    <div>
+                        <p
+                            style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">
+                            Academic Project</p>
+                        <p style="font-size:.82rem;color:#64748b;line-height:1.7">Built by Batch D13 — ACET, Dept of
+                            CSE-AIML. Guided by Mr. M.V.R. Narasimha Rao.</p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="badge">Ryali Srikanth</span><span class="badge">P. Gowri Shankar</span><span
+                                class="badge">K. Mani Charan</span><span class="badge">J. Sivarama Krishna</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Model Info -->
-            <div class="glass rounded-3xl p-8 lg:p-10 shadow-xl card-lift">
-                <p class="text-[10px] font-bold uppercase tracking-[.3em] text-slate-400 mb-6">Neural Ensemble Feedback</p>
-                <div id="model-list" class="space-y-3 overflow-y-auto pr-1" style="max-height:380px">
-                    <!-- Dynamic Model Items -->
+            <!-- ── TECH STACK (Direct Port) ── -->
+            <div class="drawer-page" id="dp-tech">
+                <p class="tech-group-label">Backend & ML</p>
+                <div class="space-y-2">
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(225,29,72,.1)">🔥</div>
+                        <div>
+                            <div class="tech-chip-name">PyTorch</div>
+                            <div class="tech-chip-desc">CNN model loading & inference</div>
+                        </div><span class="tech-chip-badge bg-rose-50 text-rose-600">Core ML</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(13,148,136,.1)">🌶️</div>
+                        <div>
+                            <div class="tech-chip-name">Hugging Face</div>
+                            <div class="tech-chip-desc">Gradio API & Backend integration</div>
+                        </div><span class="tech-chip-badge bg-teal-50 text-teal-600">Backend</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(14,165,233,.1)">🐍</div>
+                        <div>
+                            <div class="tech-chip-name">Python</div>
+                            <div class="tech-chip-desc">Core inference pipeline logic</div>
+                        </div><span class="tech-chip-badge bg-sky-50 text-sky-600">Language</span>
+                    </div>
+                </div>
+                <p class="tech-group-label">Vision & AI</p>
+                <div class="space-y-2">
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(217,119,6,.1)">👁️</div>
+                        <div>
+                            <div class="tech-chip-name">OpenCV</div>
+                            <div class="tech-chip-desc">Validation & clinical feature extraction</div>
+                        </div><span class="tech-chip-badge bg-amber-50 text-amber-600">Vision</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(124,58,237,.1)">🤖</div>
+                        <div>
+                            <div class="tech-chip-name">Groq Llama-3</div>
+                            <div class="tech-chip-desc">Diagnostic synthesis & Chat AI</div>
+                        </div><span class="tech-chip-badge bg-violet-50 text-violet-600">LLM</span>
+                    </div>
+                </div>
+                <p class="tech-group-label">AI Models (Ensemble)</p>
+                <div class="space-y-2">
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(13,148,136,.1)">🧠</div>
+                        <div>
+                            <div class="tech-chip-name">DeepCNN</div>
+                            <div class="tech-chip-desc">Primary custom feature extractor</div>
+                        </div><span class="tech-chip-badge bg-teal-50 text-teal-600">Custom</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(37,99,235,.1)">🔗</div>
+                        <div>
+                            <div class="tech-chip-name">ResNet</div>
+                            <div class="tech-chip-desc">Deep residual feature analysis</div>
+                        </div><span class="tech-chip-badge bg-blue-50 text-blue-600">Transfer</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(124,58,237,.1)">🏗️</div>
+                        <div>
+                            <div class="tech-chip-name">VGG</div>
+                            <div class="tech-chip-desc">Texture pattern recognition</div>
+                        </div><span class="tech-chip-badge bg-violet-50 text-violet-600">Transfer</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(217,119,6,.1)">⚡</div>
+                        <div>
+                            <div class="tech-chip-name">AlexNet</div>
+                            <div class="tech-chip-desc">Classic lightweight CNN baseline</div>
+                        </div><span class="tech-chip-badge bg-amber-50 text-amber-600">Classic</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(225,29,72,.1)">📊</div>
+                        <div>
+                            <div class="tech-chip-name">DeepANN</div>
+                            <div class="tech-chip-desc">Fully connected neural architecture</div>
+                        </div><span class="tech-chip-badge bg-rose-50 text-rose-600">Custom</span>
+                    </div>
+                </div>
+
+                <p class="tech-group-label">Frontend & Shell</p>
+                <div class="space-y-2">
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(79,70,229,.1)">⚛️</div>
+                        <div>
+                            <div class="tech-chip-name">Electron</div>
+                            <div class="tech-chip-desc">Native desktop cross-platform shell</div>
+                        </div><span class="tech-chip-badge bg-indigo-50 text-indigo-600">Shell</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(234,179,8,.1)">📜</div>
+                        <div>
+                            <div class="tech-chip-name">JavaScript (ES6+)</div>
+                            <div class="tech-chip-desc">Logic layer for IPC and UI reactivity</div>
+                        </div><span class="tech-chip-badge bg-yellow-50 text-yellow-600">Logic</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(14,165,233,.1)">🎨</div>
+                        <div>
+                            <div class="tech-chip-name">Tailwind CSS</div>
+                            <div class="tech-chip-desc">Modern glassmorphism UI styling</div>
+                        </div><span class="tech-chip-badge bg-sky-50 text-sky-600">Styling</span>
+                    </div>
+                    <div class="tech-chip">
+                        <div class="tech-chip-icon" style="background:rgba(249,115,22,.1)">🌐</div>
+                        <div>
+                            <div class="tech-chip-name">HTML5</div>
+                            <div class="tech-chip-desc">Semantic document architecture</div>
+                        </div><span class="tech-chip-badge bg-orange-50 text-orange-600">Structure</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── HELP (1:1 Direct Port) ── -->
+            <div class="drawer-page" id="dp-help">
+                <div>
+                    <h2
+                        style="font-family:'Sora',sans-serif;font-weight:800;font-size:1.3rem;color:#0f172a;margin-bottom:.3rem">
+                        How to Use</h2>
+                    <p style="font-size:.82rem;color:#64748b">Get a cataract analysis in under 30 seconds.</p>
+                </div>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.2rem;padding:1.2rem 1.3rem">
+                    <p
+                        style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#0f172a;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem">
+                        <span>📋</span> Step-by-step Guide
+                    </p>
+                    <div class="help-step">
+                        <div class="step-num">1</div>
+                        <div class="w-full">
+                            <p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Upload an Eye
+                                Image</p>
+                            <p style="font-size:.78rem;color:#64748b;line-height:1.65;margin-bottom:.8rem">Click the
+                                upload zone — or drag & drop. Accepted: JPG, PNG, WEBP. Use a well-lit, clear photo of a
+                                single open eye.</p>
+
+                            <!-- Detailed Photo Tips nested in help -->
+                            <div
+                                style="background:white;border:1px solid #eef2f6;border-radius:.9rem;padding:.9rem;margin-top:.4rem shadow-sm">
+                                <p
+                                    style="font-weight:700;font-size:.75rem;color:#0d9488;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem">
+                                    <span>📸</span> Photo Quick Guide
+                                </p>
+                                <ul
+                                    style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.4rem">
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Sit in a bright place (near a window or
+                                        light)
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Keep your phone steady and do not shake
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Bring the camera close to your eye
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> One eye (single close-up) clearly visible
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Look straight at the camera
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Avoid flash, reflections, or shadows
+                                    </li>
+                                </ul>
+                                <div
+                                    style="margin-top:.7rem;padding:.5rem .7rem;background:#fffbeb;border-radius:.5rem;border:1px solid #fef3c7;display:flex;align-items:center;gap:.4rem">
+                                    <span style="font-size:.9rem">⚠️</span>
+                                    <p style="font-size:.68rem;font-weight:700;color:#92400e;margin:0">Clear photos
+                                        ensure correct results.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-num">2</div>
+                        <div>
+                            <p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Start Vision
+                                Analysis</p>
+                            <p style="font-size:.78rem;color:#64748b;line-height:1.65">Tap <strong
+                                    style="color:#0d9488">✦ Start Vision Analysis</strong>. All 5 CNN models run in
+                                parallel and the AI report generates — usually under 10 seconds.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-num">3</div>
+                        <div>
+                            <p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Read Your
+                                Results</p>
+                            <p style="font-size:.78rem;color:#64748b;line-height:1.65">Verdict + confidence, model
+                                votes, 4 clinical indicators, 3-tier explanation (Simple / Technical / AI), and a full
+                                Llama-3 medical report.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-num">4</div>
+                        <div>
+                            <p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Chat with
+                                Medical AI</p>
+                            <p style="font-size:.78rem;color:#64748b;line-height:1.65">Tap <strong
+                                    style="color:#0d9488">Medical AI</strong> (bottom-right) to ask questions. Switch
+                                reply language — English, Telugu, or Hindi.</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p
+                        style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#0f172a;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem">
+                        <span>❓</span> FAQ
+                    </p>
+                    <div style="display:flex;flex-direction:column;gap:.45rem">
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>Is this a medical diagnosis?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">No. This is a screening aid — not a substitute for a qualified
+                                ophthalmologist. If cataract is detected, book an appointment with an eye specialist.
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>What makes a good photo?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Use a well-lit, in-focus photo of one open eye. Avoid heavy glare, dark
+                                images, or photos with the eye partially closed. A clear smartphone photo is sufficient.
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>How accurate is the system?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Five CNN models (DeepCNN, DeepANN, ResNet, VGG, AlexNet) vote via
+                                ensemble — reducing individual model bias. Accuracy depends on image quality. Always
+                                treat results as a first-pass screen.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>What does the 3-tier explanation
+                                    show?</span><span class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Simple: plain language for anyone. Technical: ophthalmology-level feature
+                                analysis. AI / Model: how the CNN pipeline detected cataract from pixel patterns and
+                                feature maps.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>Can I use any eye photo?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Upload one eye at a time. Works with standard smartphone photos — no
+                                fundus camera or slit-lamp required.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>Is my data stored?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Images are processed in memory and not permanently stored. Your results
+                                exist only in your current session.</div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    style="background:linear-gradient(135deg,rgba(225,29,72,.06),rgba(249,115,22,.06));border:1px solid rgba(225,29,72,.18);border-radius:1rem;padding:1.1rem 1.2rem;display:flex;gap:.8rem;align-items:flex-start">
+                    <span style="font-size:1.2rem;flex-shrink:0">⚕️</span>
+                    <div>
+                        <p
+                            style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#be123c;margin-bottom:.25rem">
+                            Always see a doctor</p>
+                        <p style="font-size:.78rem;color:#9f1239;line-height:1.65">If you experience sudden vision
+                            changes, blurriness, or halos — do not rely on this tool. Seek immediate professional
+                            medical attention.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── CONFIG ── -->
+            <div class="drawer-page" id="dp-config">
+                <div class="space-y-4">
+                    <h3 class="font-display font-bold text-sm text-slate-800">Persistent Configuration</h3>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-2">Groq API Key</label>
+                        <input type="password" id="groq-api-key-input"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm"
+                            placeholder="Paste your key here...">
+                    </div>
+                    <button onclick="saveGroqKey()"
+                        class="btn-primary w-full py-3.5 rounded-xl text-sm font-bold shadow-lg">Save Settings</button>
                 </div>
             </div>
         </div>
-
-        <!-- ROW 2 : Clinical Metrics (NEW - 1:1 Parity) -->
-        <section id="metrics-root" class="hidden results-reveal">
-            <div class="flex items-center gap-4 mb-6">
-                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
-                     style="width:3.5rem;height:3.5rem;font-size:1.5rem;background:linear-gradient(135deg,#0d9488,#0ea5e9)">🔬</div>
-                <div>
-                    <p class="font-display font-bold text-slate-900 leading-tight text-[22px]">Clinical Feature Analysis</p>
-                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-teal-500 mt-1">4 Indicators · Image-Level Metrics</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
-                <!-- Card 1: Pupil Brightness -->
-                <div class="feat-card feat-card-teal shadow-lg">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl leading-none">⚫</span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Pupil<br>Brightness</p>
-                    </div>
-                    <div id="pupil-brightness-value" class="feat-value text-teal-600">--%</div>
-                    <div class="feat-bar-track"><div id="pupil-brightness-bar" class="feat-bar-fill bg-teal-500" style="width:0%"></div></div>
-                </div>
-                <!-- Card 2: Lens Opacity -->
-                <div class="feat-card feat-card-teal shadow-lg">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl leading-none">🌫️</span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Lens<br>Opacity</p>
-                    </div>
-                    <div id="opacity-score-value" class="feat-value text-teal-600">--%</div>
-                    <div class="feat-bar-track"><div id="opacity-score-bar" class="feat-bar-fill bg-teal-500" style="width:0%"></div></div>
-                </div>
-                <!-- Card 3: Iris Contrast -->
-                <div class="feat-card feat-card-teal shadow-lg">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl leading-none">👁️</span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Iris<br>Contrast</p>
-                    </div>
-                    <div id="iris-contrast-value" class="feat-value text-teal-600">--%</div>
-                    <div class="feat-bar-track"><div id="iris-contrast-bar" class="feat-bar-fill bg-teal-500" style="width:0%"></div></div>
-                </div>
-                <!-- Card 4: Light Scatter -->
-                <div class="feat-card feat-card-teal shadow-lg">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl leading-none">💡</span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Light<br>Scatter</p>
-                    </div>
-                    <div id="light-scatter-value" class="feat-value text-teal-600">--%</div>
-                    <div class="feat-bar-track"><div id="light-scatter-bar" class="feat-bar-fill bg-teal-500" style="width:0%"></div></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ROW 3 : Diagnostic Heatmap (NEW - 1:1 Parity) -->
-        <section id="heatmap-root" class="hidden glass rounded-3xl p-10 shadow-xl card-lift results-reveal">
-            <div class="flex items-center gap-4 mb-7">
-                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
-                     style="width:3.5rem;height:3.5rem;font-size:1.5rem;background:linear-gradient(135deg,#e11d48,#fb7185)">🔥</div>
-                <div>
-                    <h2 class="font-display font-bold text-slate-900 text-2xl">Diagnostic Heatmap</h2>
-                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-rose-500 mt-1">AI Attention Areas (Grad-CAM)</p>
-                </div>
-            </div>
-            <div class="flex justify-center">
-                <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/60" style="max-width:480px; width:100%">
-                    <img id="heatmap-image" src="#" alt="Feature Analysis Heatmap" class="w-full h-auto block object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ROW 4 : Explanations (NEW - 1:1 Parity) -->
-        <section id="explanation-root" class="hidden glass rounded-3xl p-10 shadow-xl card-lift results-reveal">
-            <div class="flex items-center gap-4 mb-8">
-                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
-                     style="width:3.5rem;height:3.5rem;font-size:1.5rem;background:linear-gradient(135deg,#7c3aed,#2563eb)">🧠</div>
-                <div>
-                    <h2 class="font-display font-bold text-slate-900 text-2xl">Why This Was Found</h2>
-                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-violet-500 mt-1">Multi-Tier Clinical Perspective</p>
-                </div>
-            </div>
-            
-            <div class="flex gap-2 mb-6 bg-slate-50 p-1.5 rounded-full w-fit">
-                <button id="tab-simple"    class="px-6 py-2.5 rounded-full text-xs font-bold transition-all bg-white shadow-sm text-slate-800">😊 Simple</button>
-                <button id="tab-technical" class="px-6 py-2.5 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-600">🔬 Technical</button>
-                <button id="tab-aimodel"   class="px-6 py-2.5 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-600">🤖 AI Model</button>
-            </div>
-
-            <div id="simple-explanation"    class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100 text-[15px] text-slate-700 leading-relaxed whitespace-pre-line">--</div>
-            <div id="technical-explanation"  class="hidden bg-slate-50/50 rounded-2xl p-6 border border-slate-100 text-[15px] text-slate-700 leading-relaxed whitespace-pre-line">--</div>
-            <div id="aimodel-explanation"   class="hidden bg-slate-50/50 rounded-2xl p-6 border border-slate-100 text-[15px] text-slate-700 leading-relaxed whitespace-pre-line">--</div>
-        </section>
-
-        <!-- ROW 5 : AI Report -->
-        <section class="glass rounded-3xl p-7 sm:p-10 lg:p-14 shadow-xl card-lift results-reveal">
-            <div class="flex items-center gap-5 mb-8 pb-7 border-b border-slate-100/80">
-                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xl"
-                     style="width:4rem; height:4rem; background:linear-gradient(135deg,#0d9488,#2563eb)">
-                    <svg style="width:46%;height:46%" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="font-display font-extrabold text-slate-900 leading-tight" style="font-size:2.5rem">AI Report</h2>
-                    <p class="text-teal-600 text-[12px] font-bold uppercase tracking-[.2em] mt-1">Llama-3 Analysis</p>
-                </div>
-            </div>
-            <div id="ai-report-content" class="md-body text-slate-700 leading-relaxed">
-                <!-- AI Generated Summary -->
-            </div>
-        </section>
-
     </div>
 
-    <!-- Footer -->
-    <footer class="mt-20 text-center pb-24">
-        <p class="font-display font-bold text-slate-400 text-[11px] uppercase tracking-widest mb-2">Cataract Intelligence Hub Desktop</p>
-        <p class="text-slate-400/60 text-[11px] max-w-sm mx-auto leading-relaxed">Screening aid only — does not replace professional medical advice.</p>
-    </footer>
-
-</main>
-
-<!-- Settings Drawer -->
-<div id="subpage-overlay">
-    <div id="subpage-backdrop"></div>
-    <div id="subpage-drawer" class="p-8">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="font-display font-bold text-2xl text-slate-800">Connection Settings</h2>
-            <button id="btn-close-settings" class="text-slate-400 hover:text-rose-500 text-xl font-bold">✕</button>
-        </div>
-        
-        <div class="space-y-6">
-            <div>
-                <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Groq API Key</label>
-                <input type="password" id="groq-api-key" class="settings-input" placeholder="gsk_...">
-                <p class="text-[10px] text-slate-400 mt-2">Required for clinical reports. Stored in memory only.</p>
+    <!-- Chat & FAB (Same) -->
+    <div id="chat-panel" class="glass shadow-2xl">
+        <div
+            class="flex items-center justify-between px-4 py-3.5 border-b border-slate-100/70 bg-white/50 shrink-0 rounded-t-[1.5rem]">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm"
+                    style="background:linear-gradient(135deg,#0d9488,#2563eb)">👁️</div>
+                <div>
+                    <p class="font-display font-bold text-[13px]">Medical AI</p>
+                    <select id="chat-lang" class="text-[10px] bg-transparent font-bold uppercase cursor-pointer">
+                        <option value="English">🇬🇧 EN</option>
+                        <option value="Telugu">🇮🇳 TE</option>
+                        <option value="Hindi">🇮🇳 HI</option>
+                    </select>
+                </div>
             </div>
-
-            <div class="pt-4">
-                <button id="save-settings" class="btn-primary w-full py-4 rounded-xl">Save & Close</button>
-            </div>
+            <button onclick="toggleChat()" class="text-slate-400 font-bold">✕</button>
         </div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-3.5 space-y-3"></div>
+        <form id="chat-form" class="p-3 border-t border-slate-100/60 flex gap-2">
+            <input type="text" id="chat-input" placeholder="Ask me anything..."
+                class="flex-1 bg-slate-100 rounded-xl px-3 py-2 text-sm outline-none">
+            <button type="submit" class="btn-primary w-9 h-9 rounded-xl flex items-center justify-center">➤</button>
+        </form>
+    </div>
+    <button id="chat-fab" onclick="toggleChat()">
+        <div class="fab-avatar text-white">👁️</div><span class="fab-label">Medical AI</span>
+    </button>
 
-        <div class="mt-12 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h3 class="font-display font-bold text-sm mb-3">Model Registry</h3>
-            <ul class="text-xs text-slate-500 space-y-2">
-                <li>• ResNet (Advanced Architecture)</li>
-                <li>• VGG-16 (Deep Vision)</li>
-                <li>• AlexNet (Efficient Backbone)</li>
-                <li>• DeepCNN (Custom Hybrid)</li>
-                <li>• DeepANN (Structure Focused)</li>
-            </ul>
+    <div id="loading-overlay">
+        <div class="glass rounded-3xl p-10 flex flex-col items-center shadow-2xl">
+            <div class="spinner mb-5"></div>
+            <h2 class="font-display font-extrabold text-slate-900 text-lg">Analysing...</h2>
+            <p class="text-teal-600 text-[10px] font-bold uppercase tracking-widest animate-pulse">Running Neural
+                Ensemble</p>
         </div>
     </div>
-</div>
+    <div id="result-toast" class="flex">
+        <div class="toast-dot bg-teal-400"></div><span id="toast-text"
+            class="text-white text-xs font-bold font-display">Analysis Complete</span>
+    </div>
 
-<script src="renderer.js"></script>
+    <script src="renderer.js"></script>
 </body>
+
 </html>
