@@ -6,3 +6,5 @@ __pycache__/
 myenv/
 Dataset/
 static/
+apikey.txt
+desktop-application/

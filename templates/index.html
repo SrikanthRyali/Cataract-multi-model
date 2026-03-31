@@ -1,33 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Cataract Hub — Clinical Eye Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --teal:  #0d9488;
-            --sky:   #0ea5e9;
-            --blue:  #2563eb;
-            --rose:  #e11d48;
+            --teal: #0d9488;
+            --sky: #0ea5e9;
+            --blue: #2563eb;
+            --rose: #e11d48;
             --amber: #d97706;
-            --violet:#7c3aed;
-            --ink:   #0f172a;
+            --violet: #7c3aed;
+            --ink: #0f172a;
             --muted: #64748b;
         }
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             font-family: 'DM Sans', sans-serif;
             background: #f0fdf9;
             background-image:
-                radial-gradient(ellipse 80% 55% at 0%   0%,   #ccfbf1 0%, transparent 60%),
+                radial-gradient(ellipse 80% 55% at 0% 0%, #ccfbf1 0%, transparent 60%),
                 radial-gradient(ellipse 65% 55% at 100% 100%, #dbeafe 0%, transparent 60%),
-                radial-gradient(ellipse 45% 45% at 55%  45%,  #f0f9ff 0%, transparent 70%);
+                radial-gradient(ellipse 45% 45% at 55% 45%, #f0f9ff 0%, transparent 70%);
             background-attachment: fixed;
             color: var(--ink);
             overflow-x: hidden;
@@ -35,1096 +48,2374 @@
         }
 
         .glass {
-            background: rgba(255,255,255,0.80);
+            background: rgba(255, 255, 255, 0.80);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
-        .font-display { font-family: 'Sora', sans-serif; }
+
+        .font-display {
+            font-family: 'Sora', sans-serif;
+        }
+
         .text-gradient {
             background: linear-gradient(135deg, var(--teal) 0%, var(--sky) 50%, var(--blue) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         .btn-primary {
             background: linear-gradient(135deg, var(--teal) 0%, var(--sky) 55%, var(--blue) 100%);
-            color: white; font-family: 'Sora',sans-serif; font-weight: 700;
-            overflow: hidden; transition: transform .3s, box-shadow .3s;
+            color: white;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            overflow: hidden;
+            transition: transform .3s, box-shadow .3s;
         }
-        .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(13,148,136,.4); }
-        .btn-primary:active { transform: scale(.97); }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(13, 148, 136, .4);
+        }
+
+        .btn-primary:active {
+            transform: scale(.97);
+        }
 
         .nav-link {
-            position: relative; color: var(--muted); font-weight: 600;
-            font-size: .83rem; text-decoration: none; transition: color .2s;
-            cursor: pointer; background: none; border: none; padding: 0;
+            position: relative;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: .83rem;
+            text-decoration: none;
+            transition: color .2s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
         }
+
         .nav-link::after {
-            content: ''; position: absolute; bottom: -3px; left: 0; right: 100%;
-            height: 2px; background: var(--teal); border-radius: 1px; transition: right .25s;
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 100%;
+            height: 2px;
+            background: var(--teal);
+            border-radius: 1px;
+            transition: right .25s;
         }
-        .nav-link:hover { color: var(--teal); }
-        .nav-link:hover::after { right: 0; }
+
+        .nav-link:hover {
+            color: var(--teal);
+        }
+
+        .nav-link:hover::after {
+            right: 0;
+        }
 
         .badge {
-            display: inline-flex; align-items: center; gap: .4rem;
-            font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
-            color: var(--teal); background: rgba(13,148,136,.08);
-            border: 1px solid rgba(13,148,136,.2); padding: .28rem .85rem; border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--teal);
+            background: rgba(13, 148, 136, .08);
+            border: 1px solid rgba(13, 148, 136, .2);
+            padding: .28rem .85rem;
+            border-radius: 9999px;
         }
 
-        .feat-tag { display: inline-flex; align-items: center; gap: .35rem; font-size: .7rem; font-weight: 700; padding: .3rem .8rem; border-radius: 9999px; }
-        .feat-tag-warn  { background:rgba(225,29,72,.08);  border:1px solid rgba(225,29,72,.25);  color:#be123c; }
-        .feat-tag-ok    { background:rgba(13,148,136,.08); border:1px solid rgba(13,148,136,.25); color:#0d9488; }
-        .feat-tag-amber { background:rgba(217,119,6,.08);  border:1px solid rgba(217,119,6,.25);  color:#b45309; }
+        .feat-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .7rem;
+            font-weight: 700;
+            padding: .3rem .8rem;
+            border-radius: 9999px;
+        }
 
-        .card-lift { transition: transform .25s, box-shadow .25s; }
-        .card-lift:hover { transform: translateY(-4px); box-shadow: 0 22px 56px rgba(13,148,136,.13); }
+        .feat-tag-warn {
+            background: rgba(225, 29, 72, .08);
+            border: 1px solid rgba(225, 29, 72, .25);
+            color: #be123c;
+        }
+
+        .feat-tag-ok {
+            background: rgba(13, 148, 136, .08);
+            border: 1px solid rgba(13, 148, 136, .25);
+            color: #0d9488;
+        }
+
+        .feat-tag-amber {
+            background: rgba(217, 119, 6, .08);
+            border: 1px solid rgba(217, 119, 6, .25);
+            color: #b45309;
+        }
+
+        .card-lift {
+            transition: transform .25s, box-shadow .25s;
+        }
+
+        .card-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 22px 56px rgba(13, 148, 136, .13);
+        }
 
         .feat-card {
-            background: rgba(255,255,255,.88);
-            border: 1px solid rgba(255,255,255,.6);
+            background: rgba(255, 255, 255, .88);
+            border: 1px solid rgba(255, 255, 255, .6);
             border-radius: 1.5rem;
             padding: 1.6rem 1.4rem;
-            display: flex; flex-direction: column; gap: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
             transition: transform .25s, box-shadow .25s;
-            position: relative; overflow: hidden;
+            position: relative;
+            overflow: hidden;
         }
-        .feat-card:hover { transform: translateY(-6px); box-shadow: 0 28px 64px rgba(0,0,0,.12); }
+
+        .feat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 28px 64px rgba(0, 0, 0, .12);
+        }
+
         .feat-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 100%;
-            height: 3px; border-radius: 99px; transition: right .55s ease;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 100%;
+            height: 3px;
+            border-radius: 99px;
+            transition: right .55s ease;
         }
-        .feat-card:hover::before { right: 0; }
-        .feat-card-rose::before  { background: var(--rose); }
-        .feat-card-teal::before  { background: var(--teal); }
-        .feat-card-amber::before { background: var(--amber); }
+
+        .feat-card:hover::before {
+            right: 0;
+        }
+
+        .feat-card-rose::before {
+            background: var(--rose);
+        }
+
+        .feat-card-teal::before {
+            background: var(--teal);
+        }
+
+        .feat-card-amber::before {
+            background: var(--amber);
+        }
 
         .feat-value {
-            font-family: 'Sora', sans-serif; font-weight: 800;
-            font-size: clamp(1.6rem, 2.6vw, 2.6rem); line-height: 1;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.6rem, 2.6vw, 2.6rem);
+            line-height: 1;
             white-space: nowrap;
         }
 
-        .feat-bar-track { width:100%; background:#e2e8f0; border-radius:9999px; overflow:hidden; height:10px; }
-        .feat-bar-fill  { height:100%; border-radius:9999px; animation:barIn 1.4s cubic-bezier(.22,1,.36,1) .6s both; }
-        @keyframes barIn  { from { width: 0%; } }
-        @keyframes confIn { from { width: 0%; } }
+        .feat-bar-track {
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 10px;
+        }
+
+        .feat-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            animation: barIn 1.4s cubic-bezier(.22, 1, .36, 1) .6s both;
+        }
+
+        @keyframes barIn {
+            from {
+                width: 0%;
+            }
+        }
+
+        @keyframes confIn {
+            from {
+                width: 0%;
+            }
+        }
 
         .metric-pointer {
-            display: inline-flex; align-items: center; gap: .3rem;
-            font-size: .75rem; font-weight: 700;
-            padding: .2rem .65rem; border-radius: 9999px;
-            animation: pointerPop .5s 1.2s cubic-bezier(.34,1.56,.64,1) both;
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            font-size: .75rem;
+            font-weight: 700;
+            padding: .2rem .65rem;
+            border-radius: 9999px;
+            animation: pointerPop .5s 1.2s cubic-bezier(.34, 1.56, .64, 1) both;
         }
-        @keyframes pointerPop {
-            from { opacity:0; transform: scale(.6) translateY(6px); }
-            to   { opacity:1; transform: scale(1) translateY(0); }
-        }
-        .arrow-pulse { display:inline-block; animation:arrowBounce 1.4s 1.8s ease-in-out infinite; }
-        @keyframes arrowBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 
-        .results-reveal { animation: revealUp .65s cubic-bezier(.22,1,.36,1) both; }
-        @keyframes revealUp { from{opacity:0;transform:translateY(34px) scale(.985)} to{opacity:1;transform:translateY(0) scale(1)} }
-        .rv-1 { animation-delay: .05s; }
-        .rv-2 { animation-delay: .18s; }
-        .rv-3 { animation-delay: .30s; }
-        .rv-4 { animation-delay: .42s; }
-        .rv-5 { animation-delay: .54s; }
+        @keyframes pointerPop {
+            from {
+                opacity: 0;
+                transform: scale(.6) translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .arrow-pulse {
+            display: inline-block;
+            animation: arrowBounce 1.4s 1.8s ease-in-out infinite;
+        }
+
+        @keyframes arrowBounce {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-4px)
+            }
+        }
+
+        .results-reveal {
+            animation: revealUp .65s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        @keyframes revealUp {
+            from {
+                opacity: 0;
+                transform: translateY(34px) scale(.985)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
+        }
+
+        .rv-1 {
+            animation-delay: .05s;
+        }
+
+        .rv-2 {
+            animation-delay: .18s;
+        }
+
+        .rv-3 {
+            animation-delay: .30s;
+        }
+
+        .rv-4 {
+            animation-delay: .42s;
+        }
+
+        .rv-5 {
+            animation-delay: .54s;
+        }
 
         #result-toast {
-            position: fixed; top: 1.2rem; left: 50%; transform: translateX(-50%);
+            position: fixed;
+            top: 1.2rem;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 400;
-            display: flex; align-items: center; gap: .75rem;
-            background: rgba(15,23,42,.92); backdrop-filter:blur(20px);
-            border: 1px solid rgba(255,255,255,.12);
-            padding: .7rem 1.4rem; border-radius: 9999px;
-            box-shadow: 0 12px 40px rgba(0,0,0,.3);
-            animation: toastIn .5s cubic-bezier(.34,1.56,.64,1) both,
-                       toastOut .4s 3.5s ease forwards;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            background: rgba(15, 23, 42, .92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, .12);
+            padding: .7rem 1.4rem;
+            border-radius: 9999px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .3);
+            animation: toastIn .5s cubic-bezier(.34, 1.56, .64, 1) both,
+                toastOut .4s 3.5s ease forwards;
             white-space: nowrap;
         }
-        @keyframes toastIn  { from{opacity:0;transform:translateX(-50%) translateY(-18px) scale(.9)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
-        @keyframes toastOut { to{opacity:0;transform:translateX(-50%) translateY(-12px);pointer-events:none} }
-        .toast-dot { width:8px;height:8px;border-radius:50%;animation:toastPulse 1s ease infinite; }
-        @keyframes toastPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.4)} }
 
-        @keyframes verdictGlowNormal { 0%{box-shadow:0 0 0 0 rgba(13,148,136,.35)} 70%{box-shadow:0 0 0 16px rgba(13,148,136,0)} 100%{box-shadow:0 0 0 0 rgba(13,148,136,0)} }
-        @keyframes verdictGlowRose   { 0%{box-shadow:0 0 0 0 rgba(225,29,72,.35)}  70%{box-shadow:0 0 0 16px rgba(225,29,72,0)}  100%{box-shadow:0 0 0 0 rgba(225,29,72,0)} }
-        .verdict-glow-normal   { animation: verdictGlowNormal 2.2s .5s ease infinite; }
-        .verdict-glow-cataract { animation: verdictGlowRose   2.2s .5s ease infinite; }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-18px) scale(.9)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0) scale(1)
+            }
+        }
+
+        @keyframes toastOut {
+            to {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-12px);
+                pointer-events: none
+            }
+        }
+
+        .toast-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: toastPulse 1s ease infinite;
+        }
+
+        @keyframes toastPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .6;
+                transform: scale(1.4)
+            }
+        }
+
+        @keyframes verdictGlowNormal {
+            0% {
+                box-shadow: 0 0 0 0 rgba(13, 148, 136, .35)
+            }
+
+            70% {
+                box-shadow: 0 0 0 16px rgba(13, 148, 136, 0)
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(13, 148, 136, 0)
+            }
+        }
+
+        @keyframes verdictGlowRose {
+            0% {
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, .35)
+            }
+
+            70% {
+                box-shadow: 0 0 0 16px rgba(225, 29, 72, 0)
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0)
+            }
+        }
+
+        .verdict-glow-normal {
+            animation: verdictGlowNormal 2.2s .5s ease infinite;
+        }
+
+        .verdict-glow-cataract {
+            animation: verdictGlowRose 2.2s .5s ease infinite;
+        }
 
         #chat-fab {
-            position:fixed; bottom:1.25rem; right:1.25rem; z-index:200;
-            display:flex; align-items:center; gap:.6rem;
-            padding:.55rem 1.1rem .55rem .55rem;
-            border-radius:9999px; cursor:pointer; border:none;
-            box-shadow:0 4px 20px rgba(13,148,136,.35); background:white;
-            transition:transform .22s, box-shadow .22s; user-select:none;
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .55rem 1.1rem .55rem .55rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 20px rgba(13, 148, 136, .35);
+            background: white;
+            transition: transform .22s, box-shadow .22s;
+            user-select: none;
         }
-        #chat-fab:hover  { transform:translateY(-2px); box-shadow:0 8px 28px rgba(13,148,136,.45); }
-        #chat-fab:active { transform:scale(.95); }
+
+        #chat-fab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(13, 148, 136, .45);
+        }
+
+        #chat-fab:active {
+            transform: scale(.95);
+        }
+
         #chat-fab .fab-avatar {
-            width:34px; height:34px; border-radius:50%;
-            display:flex; align-items:center; justify-content:center;
-            font-size:1rem; flex-shrink:0;
-            background:linear-gradient(135deg,#0d9488,#2563eb);
-            animation:pulseGlow 2.5s ease infinite;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #0d9488, #2563eb);
+            animation: pulseGlow 2.5s ease infinite;
         }
-        #chat-fab .fab-label { font-family:'Sora',sans-serif; font-size:.78rem; font-weight:700; color:var(--ink); white-space:nowrap; }
+
+        #chat-fab .fab-label {
+            font-family: 'Sora', sans-serif;
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--ink);
+            white-space: nowrap;
+        }
 
         #chat-panel {
-            position:fixed; bottom:5rem; right:1.25rem;
-            width:min(360px,calc(100vw - 2rem)); height:min(520px,calc(100dvh - 7rem));
-            z-index:199; border-radius:1.5rem;
-            display:flex; flex-direction:column; overflow:hidden;
-            box-shadow:0 20px 60px rgba(15,23,42,.2),0 4px 16px rgba(15,23,42,.1);
-            transform:scale(.85) translateY(20px); transform-origin:bottom right;
-            opacity:0; pointer-events:none;
-            transition:transform .3s cubic-bezier(.34,1.56,.64,1), opacity .25s ease;
+            position: fixed;
+            bottom: 5rem;
+            right: 1.25rem;
+            width: min(360px, calc(100vw - 2rem));
+            height: min(520px, calc(100dvh - 7rem));
+            z-index: 199;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, .2), 0 4px 16px rgba(15, 23, 42, .1);
+            transform: scale(.85) translateY(20px);
+            transform-origin: bottom right;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), opacity .25s ease;
         }
-        #chat-panel.open { transform:scale(1) translateY(0); opacity:1; pointer-events:all; }
-        @media(max-width:480px){
-            #chat-panel{ bottom:5.5rem; right:.75rem; left:.75rem; width:auto; height:min(480px,calc(100dvh - 8rem)); border-radius:1.25rem; }
-            #chat-fab  { bottom:1rem; right:1rem; }
+
+        #chat-panel.open {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: all;
         }
 
-        .dot{ width:6px;height:6px;background:#94a3b8;border-radius:50%;display:inline-block;animation:dotBounce 1.2s ease-in-out infinite; }
-        .dot:nth-child(2){animation-delay:.18s} .dot:nth-child(3){animation-delay:.36s}
-        @keyframes dotBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+        @media(max-width:480px) {
+            #chat-panel {
+                bottom: 5.5rem;
+                right: .75rem;
+                left: .75rem;
+                width: auto;
+                height: min(480px, calc(100dvh - 8rem));
+                border-radius: 1.25rem;
+            }
 
-        @keyframes fadeUp   { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes floatY   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
-        @keyframes pulseGlow{ 0%,100%{box-shadow:0 0 0 0 rgba(13,148,136,.5)} 60%{box-shadow:0 0 0 8px rgba(13,148,136,0)} }
-        @keyframes spin     { to{transform:rotate(360deg)} }
-        @keyframes msgIn    { from{opacity:0;transform:translateY(8px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
-        @keyframes shake    { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
+            #chat-fab {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
 
-        .anim-0{animation:fadeUp .55s 0s   ease both}
-        .anim-1{animation:fadeUp .55s .10s ease both}
-        .anim-2{animation:fadeUp .55s .20s ease both}
-        .anim-5{animation:fadeUp .55s .50s ease both}
-        .float-anim{animation:floatY 3.2s ease-in-out infinite}
-        .msg-anim  {animation:msgIn .25s ease both}
-        .shake     {animation:shake .45s ease both}
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
+            animation: dotBounce 1.2s ease-in-out infinite;
+        }
 
-        #drop-zone{transition:border-color .25s,background .25s,transform .2s}
-        #drop-zone:hover,#drop-zone.drag-over{border-color:var(--teal);background:rgba(13,148,136,.035);transform:scale(1.005)}
+        .dot:nth-child(2) {
+            animation-delay: .18s
+        }
 
-        .md-body{line-height:1.75;color:#334155;font-size:.9rem}
-        .md-body h2{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:var(--ink);margin:1.75rem 0 .65rem;padding-left:.85rem;border-left:3px solid var(--teal)}
-        .md-body h3{font-size:.9rem;font-weight:700;color:var(--blue);margin:1.25rem 0 .4rem}
-        .md-body p{margin-bottom:.85rem}
-        .md-body ul,.md-body ol{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.2rem}
-        .md-body li{position:relative;background:white;padding:.65rem 1rem .65rem 2.5rem;border-radius:.75rem;border-left:3px solid var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.04);font-size:.84rem}
-        .md-body li::before{content:"💡";position:absolute;left:.7rem;top:.6rem}
-        .md-body strong{color:var(--ink)}
+        .dot:nth-child(3) {
+            animation-delay: .36s
+        }
 
-        #loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(22px);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem}
-        .spinner{width:52px;height:52px;border:4px solid rgba(13,148,136,.18);border-top-color:var(--teal);border-radius:50%;animation:spin .85s linear infinite}
+        @keyframes dotBounce {
 
-        ::-webkit-scrollbar{width:5px}
-        ::-webkit-scrollbar-track{background:transparent}
-        ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
-        *:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+            0%,
+            80%,
+            100% {
+                transform: translateY(0)
+            }
+
+            40% {
+                transform: translateY(-5px)
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(22px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes floatY {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-7px)
+            }
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(13, 148, 136, .5)
+            }
+
+            60% {
+                box-shadow: 0 0 0 8px rgba(13, 148, 136, 0)
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px) scale(.97)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            20%,
+            60% {
+                transform: translateX(-5px)
+            }
+
+            40%,
+            80% {
+                transform: translateX(5px)
+            }
+        }
+
+        .anim-0 {
+            animation: fadeUp .55s 0s ease both
+        }
+
+        .anim-1 {
+            animation: fadeUp .55s .10s ease both
+        }
+
+        .anim-2 {
+            animation: fadeUp .55s .20s ease both
+        }
+
+        .anim-5 {
+            animation: fadeUp .55s .50s ease both
+        }
+
+        .float-anim {
+            animation: floatY 3.2s ease-in-out infinite
+        }
+
+        .msg-anim {
+            animation: msgIn .25s ease both
+        }
+
+        .shake {
+            animation: shake .45s ease both
+        }
+
+        #drop-zone {
+            transition: border-color .25s, background .25s, transform .2s
+        }
+
+        #drop-zone:hover,
+        #drop-zone.drag-over {
+            border-color: var(--teal);
+            background: rgba(13, 148, 136, .035);
+            transform: scale(1.005)
+        }
+
+        .md-body {
+            line-height: 1.75;
+            color: #334155;
+            font-size: .9rem
+        }
+
+        .md-body h2 {
+            font-family: 'Sora', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 1.75rem 0 .65rem;
+            padding-left: .85rem;
+            border-left: 3px solid var(--teal)
+        }
+
+        .md-body h3 {
+            font-size: .9rem;
+            font-weight: 700;
+            color: var(--blue);
+            margin: 1.25rem 0 .4rem
+        }
+
+        .md-body p {
+            margin-bottom: .85rem
+        }
+
+        .md-body ul,
+        .md-body ol {
+            display: flex;
+            flex-direction: column;
+            gap: .45rem;
+            margin-bottom: 1.2rem
+        }
+
+        .md-body li {
+            position: relative;
+            background: white;
+            padding: .65rem 1rem .65rem 2.5rem;
+            border-radius: .75rem;
+            border-left: 3px solid var(--teal);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .04);
+            font-size: .84rem
+        }
+
+        .md-body li::before {
+            content: "💡";
+            position: absolute;
+            left: .7rem;
+            top: .6rem
+        }
+
+        .md-body strong {
+            color: var(--ink)
+        }
+
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .45);
+            backdrop-filter: blur(22px);
+            z-index: 500;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem
+        }
+
+        .spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid rgba(13, 148, 136, .18);
+            border-top-color: var(--teal);
+            border-radius: 50%;
+            animation: spin .85s linear infinite
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--teal);
+            outline-offset: 2px
+        }
 
         /* ── Explanation tabs ── */
-        .exp-tab-bar { display:flex; gap:.35rem; background:#f1f5f9; border-radius:9999px; padding:.25rem; width:fit-content; flex-wrap:wrap; }
-        .exp-tab {
-            padding:.38rem .9rem; border-radius:9999px;
-            font-family:'Sora',sans-serif; font-weight:700; font-size:.7rem;
-            cursor:pointer; border:none; background:transparent; color:var(--muted);
-            transition:all .2s; white-space:nowrap;
+        .exp-tab-bar {
+            display: flex;
+            gap: .35rem;
+            background: #f1f5f9;
+            border-radius: 9999px;
+            padding: .25rem;
+            width: fit-content;
+            flex-wrap: wrap;
         }
-        .exp-tab.active { background:white; color:var(--ink); box-shadow:0 2px 8px rgba(0,0,0,.08); }
-        .exp-panel { display:none; }
-        .exp-panel.active { display:block; animation:fadeUp .3s ease both; }
+
+        .exp-tab {
+            padding: .38rem .9rem;
+            border-radius: 9999px;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: .7rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .exp-tab.active {
+            background: white;
+            color: var(--ink);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        }
+
+        .exp-panel {
+            display: none;
+        }
+
+        .exp-panel.active {
+            display: block;
+            animation: fadeUp .3s ease both;
+        }
 
         /* ══════════════════════════════════════
            SUBPAGE OVERLAY SYSTEM
         ══════════════════════════════════════ */
         #subpage-overlay {
-            position: fixed; inset: 0; z-index: 300;
-            display: flex; align-items: stretch;
-            pointer-events: none; opacity: 0;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            display: flex;
+            align-items: stretch;
+            pointer-events: none;
+            opacity: 0;
             transition: opacity .35s ease;
         }
-        #subpage-overlay.open { opacity: 1; pointer-events: all; }
+
+        #subpage-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
         #subpage-backdrop {
-            position: absolute; inset: 0;
-            background: rgba(15,23,42,.55);
-            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, .55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
         }
+
         #subpage-drawer {
-            position: relative; z-index: 1; margin-left: auto;
-            width: min(640px, 100vw); height: 100dvh;
-            background: #ffffff; overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            margin-left: auto;
+            width: min(640px, 100vw);
+            height: 100dvh;
+            background: #ffffff;
+            overflow-y: auto;
             transform: translateX(100%);
-            transition: transform .42s cubic-bezier(.22,1,.36,1);
-            display: flex; flex-direction: column;
-            box-shadow: -24px 0 80px rgba(15,23,42,.18);
+            transition: transform .42s cubic-bezier(.22, 1, .36, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -24px 0 80px rgba(15, 23, 42, .18);
         }
-        #subpage-overlay.open #subpage-drawer { transform: translateX(0); }
+
+        #subpage-overlay.open #subpage-drawer {
+            transform: translateX(0);
+        }
 
         .drawer-header {
-            position: sticky; top: 0; z-index: 10;
+            position: sticky;
+            top: 0;
+            z-index: 10;
             padding: 1.1rem 1.6rem;
-            background: rgba(255,255,255,.95); backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(226,232,240,.7);
-            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+            background: rgba(255, 255, 255, .95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(226, 232, 240, .7);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
         }
-        .drawer-tab-bar { display:flex; gap:.3rem; background:#f1f5f9; border-radius:9999px; padding:.25rem; }
+
+        .drawer-tab-bar {
+            display: flex;
+            gap: .3rem;
+            background: #f1f5f9;
+            border-radius: 9999px;
+            padding: .25rem;
+        }
+
         .drawer-tab {
-            padding:.4rem .9rem; border-radius:9999px;
-            font-family:'Sora',sans-serif; font-weight:700; font-size:.72rem;
-            cursor:pointer; border:none; background:transparent; color:var(--muted);
-            transition:all .22s; white-space:nowrap;
+            padding: .4rem .9rem;
+            border-radius: 9999px;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: .72rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            transition: all .22s;
+            white-space: nowrap;
         }
-        .drawer-tab.active { background:white; color:var(--ink); box-shadow:0 2px 8px rgba(0,0,0,.08); }
+
+        .drawer-tab.active {
+            background: white;
+            color: var(--ink);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        }
+
         .drawer-close {
-            width:2rem; height:2rem; border-radius:50%; border:none; cursor:pointer;
-            background:#f1f5f9; color:var(--muted);
-            display:flex; align-items:center; justify-content:center;
-            font-size:.9rem; font-weight:700; transition:background .18s,color .18s; flex-shrink:0;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: #f1f5f9;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            font-weight: 700;
+            transition: background .18s, color .18s;
+            flex-shrink: 0;
         }
-        .drawer-close:hover { background:#fee2e2; color:var(--rose); }
 
-        .drawer-page { display:none; padding:2rem 1.6rem 3rem; flex-direction:column; gap:1.6rem; }
-        .drawer-page.active { display:flex; animation:drawerPageIn .35s ease both; }
-        @keyframes drawerPageIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        .drawer-close:hover {
+            background: #fee2e2;
+            color: var(--rose);
+        }
 
-        .about-hero { background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%); border-radius:1.4rem; padding:2rem; position:relative; overflow:hidden; }
-        .about-hero::before { content:'';position:absolute;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(13,148,136,.25) 0%,transparent 70%);top:-80px;right:-80px; }
-        .about-hero::after  { content:'';position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.18) 0%,transparent 70%);bottom:-50px;left:20px; }
-        .about-stat { background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:1rem;padding:1.1rem;text-align:center;flex:1; }
-        .about-stat-num { font-family:'Sora',sans-serif;font-weight:800;font-size:1.8rem;line-height:1;background:linear-gradient(135deg,#2dd4bf,#38bdf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent; }
-        .about-stat-label { font-size:.68rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem; }
+        .drawer-page {
+            display: none;
+            padding: 2rem 1.6rem 3rem;
+            flex-direction: column;
+            gap: 1.6rem;
+        }
 
-        .info-block { background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.1rem;padding:1.2rem 1.3rem;display:flex;gap:1rem;align-items:flex-start; }
-        .info-icon  { width:2.6rem;height:2.6rem;border-radius:.75rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem; }
+        .drawer-page.active {
+            display: flex;
+            animation: drawerPageIn .35s ease both;
+        }
 
-        .tech-group-label { font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);padding:0 .2rem;margin-bottom:.5rem; }
-        .tech-chip { display:flex;align-items:center;gap:.75rem;background:white;border:1px solid #e2e8f0;border-radius:.85rem;padding:.8rem 1rem;transition:border-color .2s,box-shadow .2s,transform .2s; }
-        .tech-chip:hover { border-color:rgba(13,148,136,.4);box-shadow:0 4px 16px rgba(13,148,136,.1);transform:translateX(3px); }
-        .tech-chip-icon  { width:2.4rem;height:2.4rem;border-radius:.6rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem; }
-        .tech-chip-name  { font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:var(--ink); }
-        .tech-chip-desc  { font-size:.72rem;color:var(--muted);margin-top:.1rem; }
-        .tech-chip-badge { margin-left:auto;font-size:.62rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;white-space:nowrap; }
+        @keyframes drawerPageIn {
+            from {
+                opacity: 0;
+                transform: translateY(14px)
+            }
 
-        .help-step { display:flex;gap:1rem;align-items:flex-start;padding:1rem 0;border-bottom:1px solid #f1f5f9; }
-        .help-step:last-child { border-bottom:none; }
-        .step-num { width:2rem;height:2rem;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal),var(--sky));color:white;font-family:'Sora',sans-serif;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(13,148,136,.3); }
-        .faq-item { background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden; }
-        .faq-q    { padding:.9rem 1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:.85rem;user-select:none;transition:background .18s; }
-        .faq-q:hover { background:#f1f5f9; }
-        .faq-a    { max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;font-size:.82rem;color:var(--muted);line-height:1.7;padding:0 1.1rem; }
-        .faq-item.open .faq-a   { max-height:200px;padding:.2rem 1.1rem .9rem; }
-        .faq-item.open .faq-arrow { transform:rotate(180deg); }
-        .faq-arrow { transition:transform .3s;display:inline-block; }
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
 
-        @media(max-width:480px){
-            #subpage-drawer { width:100vw; }
-            .drawer-header  { padding:.9rem 1.1rem; }
-            .drawer-page    { padding:1.4rem 1.1rem 3rem; }
-            .about-stat-num { font-size:1.4rem; }
+        .about-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 1.4rem;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(13, 148, 136, .25) 0%, transparent 70%);
+            top: -80px;
+            right: -80px;
+        }
+
+        .about-hero::after {
+            content: '';
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(14, 165, 233, .18) 0%, transparent 70%);
+            bottom: -50px;
+            left: 20px;
+        }
+
+        .about-stat {
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 1rem;
+            padding: 1.1rem;
+            text-align: center;
+            flex: 1;
+        }
+
+        .about-stat-num {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 1.8rem;
+            line-height: 1;
+            background: linear-gradient(135deg, #2dd4bf, #38bdf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .about-stat-label {
+            font-size: .68rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            margin-top: .3rem;
+        }
+
+        .info-block {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.1rem;
+            padding: 1.2rem 1.3rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .info-icon {
+            width: 2.6rem;
+            height: 2.6rem;
+            border-radius: .75rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .tech-group-label {
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .18em;
+            color: var(--muted);
+            padding: 0 .2rem;
+            margin-bottom: .5rem;
+        }
+
+        .tech-chip {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: .85rem;
+            padding: .8rem 1rem;
+            transition: border-color .2s, box-shadow .2s, transform .2s;
+        }
+
+        .tech-chip:hover {
+            border-color: rgba(13, 148, 136, .4);
+            box-shadow: 0 4px 16px rgba(13, 148, 136, .1);
+            transform: translateX(3px);
+        }
+
+        .tech-chip-icon {
+            width: 2.4rem;
+            height: 2.4rem;
+            border-radius: .6rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .tech-chip-name {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: .82rem;
+            color: var(--ink);
+        }
+
+        .tech-chip-desc {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: .1rem;
+        }
+
+        .tech-chip-badge {
+            margin-left: auto;
+            font-size: .62rem;
+            font-weight: 700;
+            padding: .2rem .6rem;
+            border-radius: 9999px;
+            white-space: nowrap;
+        }
+
+        .help-step {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .help-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--teal), var(--sky));
+            color: white;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: .75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(13, 148, 136, .3);
+        }
+
+        .faq-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .faq-q {
+            padding: .9rem 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: .85rem;
+            user-select: none;
+            transition: background .18s;
+        }
+
+        .faq-q:hover {
+            background: #f1f5f9;
+        }
+
+        .faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .3s ease, padding .3s ease;
+            font-size: .82rem;
+            color: var(--muted);
+            line-height: 1.7;
+            padding: 0 1.1rem;
+        }
+
+        .faq-item.open .faq-a {
+            max-height: 200px;
+            padding: .2rem 1.1rem .9rem;
+        }
+
+        .faq-item.open .faq-arrow {
+            transform: rotate(180deg);
+        }
+
+        .faq-arrow {
+            transition: transform .3s;
+            display: inline-block;
+        }
+
+        @media(max-width:480px) {
+            #subpage-drawer {
+                width: 100vw;
+            }
+
+            .drawer-header {
+                padding: .9rem 1.1rem;
+            }
+
+            .drawer-page {
+                padding: 1.4rem 1.1rem 3rem;
+            }
+
+            .about-stat-num {
+                font-size: 1.4rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
-<!-- ── Result-ready toast ── -->
-{% if prediction_data %}
-<div id="result-toast">
-    <span class="toast-dot {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-400{% else %}bg-teal-400{% endif %}"></span>
-    <span style="font-family:'Sora',sans-serif;font-size:.82rem;font-weight:700;color:white;">
-        Analysis Complete —
-        <span class="{% if prediction_data.final.prediction == 'Cataract' %}text-rose-300{% else %}text-teal-300{% endif %}">
-            {{ prediction_data.final.prediction }} · {{ prediction_data.final.confidence }}%
+    <!-- ── Result-ready toast ── -->
+    {% if prediction_data %}
+    <div id="result-toast">
+        <span
+            class="toast-dot {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-400{% else %}bg-teal-400{% endif %}"></span>
+        <span style="font-family:'Sora',sans-serif;font-size:.82rem;font-weight:700;color:white;">
+            Analysis Complete —
+            <span
+                class="{% if prediction_data.final.prediction == 'Cataract' %}text-rose-300{% else %}text-teal-300{% endif %}">
+                {{ prediction_data.final.prediction }} · {{ prediction_data.final.confidence }}%
+            </span>
         </span>
-    </span>
-    <span style="font-size:.9rem">{% if prediction_data.final.prediction == 'Cataract' %}🚨{% else %}✨{% endif %}</span>
-</div>
-{% endif %}
+        <span style="font-size:.9rem">{% if prediction_data.final.prediction == 'Cataract' %}🚨{% else %}✨{% endif
+            %}</span>
+    </div>
+    {% endif %}
 
-<main>
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 pt-5 pb-28">
+    <main>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 pt-5 pb-28">
 
-    <!-- Navbar -->
-    <nav class="glass rounded-2xl px-4 sm:px-7 py-3.5 mb-10 flex items-center justify-between shadow-sm anim-0">
-        <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0"
-                 style="background:linear-gradient(135deg,#0d9488,#2563eb)">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-            </div>
-            <span class="font-display font-bold text-slate-800 text-[15px]">Cataract Hub</span>
-        </div>
-        <div class="flex items-center gap-5 sm:gap-7">
-            <button class="nav-link" onclick="openSubpage('about')">About</button>
-            <button class="nav-link hidden sm:inline" onclick="openSubpage('tech')">Tech</button>
-            <button class="nav-link" onclick="openSubpage('help')">Help</button>
-        </div>
-    </nav>
-
-    <!-- Hero -->
-    <header class="text-center mb-10 sm:mb-14 anim-1">
-        <div class="badge mb-5">
-            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
-            AI Eye Screening
-        </div>
-        <h1 class="font-display font-extrabold text-slate-900 leading-[1.07] tracking-tight mb-3"
-            style="font-size:clamp(2.2rem,7vw,4rem)">
-            Cataract <span class="text-gradient">Hub</span>
-        </h1>
-        <p class="text-slate-400 font-medium" style="font-size:clamp(.9rem,2.5vw,1.1rem)">
-            Upload a single eye image for instant AI-powered analysis
-        </p>
-    </header>
-
-    <!-- Upload Card -->
-    <section class="glass rounded-3xl shadow-xl p-2 mb-10 anim-2">
-        <div class="bg-white/45 rounded-[1.4rem] p-5 sm:p-8 lg:p-10">
-            <form action="/" method="POST" enctype="multipart/form-data" id="main-upload-form">
-                <div id="drop-zone" class="relative border-2 border-dashed border-slate-200 rounded-2xl p-10 sm:p-14 lg:p-20 text-center cursor-pointer">
-                    <input type="file" name="file" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" accept="image/*" onchange="previewFile(event)">
-                    <div id="preview-container" class="hidden flex justify-center mb-6">
-                        <div class="p-2 glass rounded-2xl shadow-xl inline-block">
-                            <img id="image-preview" src="#" alt="Preview" class="max-h-56 sm:max-h-80 rounded-xl border border-white/80 object-contain">
-                        </div>
+            <!-- Navbar -->
+            <nav class="glass rounded-2xl px-4 sm:px-7 py-3.5 mb-10 flex items-center justify-between shadow-sm anim-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0"
+                        style="background:linear-gradient(135deg,#0d9488,#2563eb)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
                     </div>
-                    <div id="upload-instruction">
-                        <div class="float-anim w-16 h-16 sm:w-20 sm:h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center shadow-inner"
-                             style="background:linear-gradient(135deg,#f0fdf9,#e0f2fe)">
-                            <svg class="text-teal-500 w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
+                    <span class="font-display font-bold text-slate-800 text-[15px]">Cataract Hub</span>
+                </div>
+                <div class="flex items-center gap-5 sm:gap-7">
+                    <button class="nav-link" onclick="openSubpage('about')">About</button>
+                    <button class="nav-link hidden sm:inline" onclick="openSubpage('tech')">Tech</button>
+                    <button class="nav-link" onclick="openSubpage('help')">Help</button>
+                </div>
+            </nav>
+
+            <!-- Hero -->
+            <header class="text-center mb-10 sm:mb-14 anim-1">
+                <div class="badge mb-5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+                    AI Eye Screening
+                </div>
+                <h1 class="font-display font-extrabold text-slate-900 leading-[1.07] tracking-tight mb-3"
+                    style="font-size:clamp(2.2rem,7vw,4rem)">
+                    Cataract <span class="text-gradient">Hub</span>
+                </h1>
+                <p class="text-slate-400 font-medium" style="font-size:clamp(.9rem,2.5vw,1.1rem)">
+                    Upload a single eye image for instant AI-powered analysis
+                </p>
+            </header>
+
+            <!-- Upload Card -->
+            <section class="glass rounded-3xl shadow-xl p-2 mb-10 anim-2">
+                <div class="bg-white/45 rounded-[1.4rem] p-5 sm:p-8 lg:p-10">
+                    <form action="/" method="POST" enctype="multipart/form-data" id="main-upload-form">
+                        <div id="drop-zone"
+                            class="relative border-2 border-dashed border-slate-200 rounded-2xl p-10 sm:p-14 lg:p-20 text-center cursor-pointer">
+                            <input type="file" name="file" id="file-input"
+                                class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" accept="image/*"
+                                onchange="previewFile(event)">
+                            <div id="preview-container" class="hidden flex justify-center mb-6">
+                                <div class="p-2 glass rounded-2xl shadow-xl inline-block">
+                                    <img id="image-preview" src="#" alt="Preview"
+                                        class="max-h-56 sm:max-h-80 rounded-xl border border-white/80 object-contain">
+                                </div>
+                            </div>
+                            <div id="upload-instruction">
+                                <div class="float-anim w-16 h-16 sm:w-20 sm:h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center shadow-inner"
+                                    style="background:linear-gradient(135deg,#f0fdf9,#e0f2fe)">
+                                    <svg class="text-teal-500 w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor"
+                                        stroke-width="1.75" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <h3 class="font-display font-bold text-slate-800 mb-2"
+                                    style="font-size:clamp(1.15rem,3.5vw,1.55rem)">Upload Eye Image</h3>
+                                <p class="text-slate-400 text-sm sm:text-base">Single eye only · JPG / PNG / WEBP</p>
+                                <p class="text-teal-500 text-xs sm:text-sm font-semibold mt-2.5">Tap to browse</p>
+                            </div>
                         </div>
-                        <h3 class="font-display font-bold text-slate-800 mb-2" style="font-size:clamp(1.15rem,3.5vw,1.55rem)">Upload Eye Image</h3>
-                        <p class="text-slate-400 text-sm sm:text-base">Single eye only · JPG / PNG / WEBP</p>
-                        <p class="text-teal-500 text-xs sm:text-sm font-semibold mt-2.5">Tap to browse</p>
+                        <button type="submit" id="submit-btn"
+                            class="btn-primary w-full mt-5 py-4 sm:py-5 rounded-2xl text-sm sm:text-base font-bold shadow-xl hidden"
+                            style="letter-spacing:.02em">✦ &nbsp;Start Vision Analysis</button>
+                    </form>
+
+                    {% if error_message %}
+                    <div class="shake mt-5 p-4 sm:p-5 rounded-2xl flex items-start gap-3.5 border border-rose-200"
+                        style="background:#fff1f2">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-rose-500 flex items-center justify-center text-white shrink-0 text-sm shadow-md">
+                            ⚠</div>
+                        <p class="text-rose-700 font-semibold text-sm leading-relaxed pt-1">{{ error_message }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Photographic Guide -->
+                    <div class="mt-10 pt-8 border-t border-slate-100/60">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-xl shadow-sm border border-teal-100/50">📸</div>
+                            <h4 class="font-display font-bold text-slate-800 text-lg">How to Take a Clear Eye Photo</h4>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                            <div class="flex items-start gap-3 group">
+                                <div class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Sit in a bright place <span class="text-slate-400 font-normal">(near a window or light)</span></p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Keep your phone steady and do not shake</p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Bring the camera close to your eye</p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Make sure only one eye <span class="text-slate-400 font-normal">(single close up)</span> is clearly visible</p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Keep your eye open and look straight at the camera</p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Avoid flash, reflections, or shadows on your eye</p>
+                            </div>
+                            <div class="flex items-start gap-3 group">
+                                <div class="w-6 h-6 rounded-full bg-teal-500/10 text-teal-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5 group-hover:bg-teal-500 group-hover:text-white transition-all">✓</div>
+                                <p class="text-sm text-slate-600 leading-relaxed font-medium">Do not use filters or edit the photo</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 p-4 rounded-2xl bg-amber-50/50 border border-amber-100 flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xl shrink-0 shadow-sm border border-amber-100">⚠️</div>
+                            <p class="text-sm font-bold text-amber-800 leading-snug">A clear photo helps the system give correct results.</p>
+                        </div>
                     </div>
                 </div>
-                <button type="submit" id="submit-btn"
-                    class="btn-primary w-full mt-5 py-4 sm:py-5 rounded-2xl text-sm sm:text-base font-bold shadow-xl hidden"
-                    style="letter-spacing:.02em">✦ &nbsp;Start Vision Analysis</button>
-            </form>
-
-            {% if error_message %}
-            <div class="shake mt-5 p-4 sm:p-5 rounded-2xl flex items-start gap-3.5 border border-rose-200" style="background:#fff1f2">
-                <div class="w-10 h-10 rounded-xl bg-rose-500 flex items-center justify-center text-white shrink-0 text-sm shadow-md">⚠</div>
-                <p class="text-rose-700 font-semibold text-sm leading-relaxed pt-1">{{ error_message }}</p>
-            </div>
-            {% endif %}
-        </div>
-    </section>
+            </section>
 
 
-    <!-- ══════════════════════════════════════
+            <!-- ══════════════════════════════════════
          RESULTS
     ══════════════════════════════════════ -->
-    {% if prediction_data %}
-    <div id="results-root" class="space-y-8">
+            {% if prediction_data %}
+            <div id="results-root" class="space-y-8">
 
-        <!-- ── ROW 1 : Verdict + Model Logs ── -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 results-reveal rv-1">
+                <!-- ── ROW 1 : Verdict + Model Logs ── -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 results-reveal rv-1">
 
-            <!-- Verdict card -->
-            <div class="glass rounded-3xl p-8 lg:p-12 flex flex-col items-center justify-center text-center shadow-xl card-lift
+                    <!-- Verdict card -->
+                    <div
+                        class="glass rounded-3xl p-8 lg:p-12 flex flex-col items-center justify-center text-center shadow-xl card-lift
                 {% if prediction_data.final.prediction == 'Cataract' %}verdict-glow-cataract{% else %}verdict-glow-normal{% endif %}">
 
-                <p class="text-[10px] font-bold uppercase tracking-[.3em] text-slate-400 mb-6">Eye Condition</p>
+                        <p class="text-[10px] font-bold uppercase tracking-[.3em] text-slate-400 mb-6">Eye Condition</p>
 
-                <div class="rounded-3xl flex items-center justify-center mb-5 shadow-lg
+                        <div class="rounded-3xl flex items-center justify-center mb-5 shadow-lg
                     {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-50 border-2 border-rose-200{% else %}bg-teal-50 border-2 border-teal-200{% endif %}"
-                    style="width:clamp(4.5rem,10vw,7rem);height:clamp(4.5rem,10vw,7rem);font-size:clamp(2rem,5vw,3.2rem)">
-                    {% if prediction_data.final.prediction == 'Cataract' %}🚨{% else %}✨{% endif %}
-                </div>
-
-                <h2 class="font-display font-extrabold mb-2
-                    {% if prediction_data.final.prediction == 'Cataract' %}text-rose-600{% else %}text-teal-600{% endif %}"
-                    style="font-size:clamp(2rem,5.5vw,3.8rem)">{{ prediction_data.final.prediction }}</h2>
-
-                <p class="text-slate-500 font-medium mb-6" style="font-size:clamp(.9rem,2vw,1.2rem)">
-                    Confidence: <strong class="text-slate-800" style="font-size:clamp(1.2rem,3vw,1.8rem)">{{ prediction_data.final.confidence }}%</strong>
-                </p>
-
-                <div class="w-full bg-slate-100 rounded-full overflow-hidden shadow-inner" style="height:14px">
-                    <div style="width:{{ prediction_data.final.confidence|int }}%;height:100%;border-radius:9999px;animation:confIn 1.4s cubic-bezier(.22,1,.36,1) .3s both"
-                         class="{% if prediction_data.final.prediction == 'Cataract' %}bg-gradient-to-r from-rose-400 to-rose-600{% else %}bg-gradient-to-r from-teal-400 to-teal-600{% endif %}"></div>
-                </div>
-
-                <!-- Dynamic feature tags from eye_features -->
-                {% if prediction_data and prediction_data.eye_features %}
-                {% set ef = prediction_data.eye_features %}
-                <div class="mt-5 flex flex-wrap gap-2 justify-center">
-                    {% if ef.pupil_brightness > 55 %}<span class="feat-tag feat-tag-warn">⬜ White Pupil</span>
-                    {% elif ef.pupil_brightness > 38 %}<span class="feat-tag feat-tag-amber">🔆 Dim Pupil</span>
-                    {% else %}<span class="feat-tag feat-tag-ok">⚫ Clear Pupil</span>{% endif %}
-
-                    {% if ef.opacity_score > 40 %}<span class="feat-tag feat-tag-warn">🌫️ Lens Opaque</span>
-                    {% elif ef.opacity_score > 22 %}<span class="feat-tag feat-tag-amber">🌫️ Partial Haze</span>
-                    {% else %}<span class="feat-tag feat-tag-ok">✅ Lens Clear</span>{% endif %}
-
-                    {% if ef.iris_contrast < 22 %}<span class="feat-tag feat-tag-warn">👁️ Low Contrast</span>
-                    {% elif ef.iris_contrast < 38 %}<span class="feat-tag feat-tag-amber">👁️ Soft Contrast</span>
-                    {% else %}<span class="feat-tag feat-tag-ok">👁️ Good Contrast</span>{% endif %}
-
-                    {% if ef.light_scatter > 50 %}<span class="feat-tag feat-tag-warn">💡 Diffuse Scatter</span>
-                    {% elif ef.light_scatter > 30 %}<span class="feat-tag feat-tag-amber">💡 Mild Scatter</span>
-                    {% else %}<span class="feat-tag feat-tag-ok">💡 Normal Light</span>{% endif %}
-                </div>
-                {% endif %}
-
-                {% if prediction_data.final.prediction == 'Cataract' %}
-                <div class="mt-5 w-full p-4 rounded-xl bg-rose-50 border border-rose-100 text-sm font-semibold leading-snug text-rose-600">
-                    ⚕️ Consult a real eye doctor before taking any medical steps.
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Model Intelligence logs -->
-            <div class="glass rounded-3xl p-8 lg:p-10 shadow-xl card-lift">
-                <p class="text-[10px] font-bold uppercase tracking-[.3em] text-slate-400 mb-6">Model Intelligence</p>
-                <div class="space-y-3 overflow-y-auto pr-1" style="max-height:380px">
-                    {% for item in prediction_data.individual %}
-                    <div class="bg-white/70 px-5 py-4 rounded-2xl flex justify-between items-center border border-slate-50 hover:shadow-md transition-all">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-3 h-3 rounded-full shrink-0
-                                {% if item.prediction == 'Cataract' %}bg-rose-400{% else %}bg-teal-400 animate-pulse{% endif %}"></div>
-                            <span class="font-semibold text-slate-700 lg:text-lg truncate">{{ item.model }}</span>
+                            style="width:clamp(4.5rem,10vw,7rem);height:clamp(4.5rem,10vw,7rem);font-size:clamp(2rem,5vw,3.2rem)">
+                            {% if prediction_data.final.prediction == 'Cataract' %}🚨{% else %}✨{% endif %}
                         </div>
-                        <div class="text-right shrink-0 ml-4">
-                            <div class="font-bold text-slate-400 lg:text-base">{{ item.confidence }}%</div>
-                            <div class="font-bold lg:text-base {% if item.prediction == 'Cataract' %}text-rose-500{% else %}text-teal-600{% endif %}">
-                                {{ item.prediction }}
+
+                        <h2 class="font-display font-extrabold mb-2
+                    {% if prediction_data.final.prediction == 'Cataract' %}text-rose-600{% else %}text-teal-600{% endif %}"
+                            style="font-size:clamp(2rem,5.5vw,3.8rem)">{{ prediction_data.final.prediction }}</h2>
+
+                        <p class="text-slate-500 font-medium mb-6" style="font-size:clamp(.9rem,2vw,1.2rem)">
+                            Confidence: <strong class="text-slate-800" style="font-size:clamp(1.2rem,3vw,1.8rem)">{{
+                                prediction_data.final.confidence }}%</strong>
+                        </p>
+
+                        <div class="w-full bg-slate-100 rounded-full overflow-hidden shadow-inner" style="height:14px">
+                            <div style="width:{{ prediction_data.final.confidence|int }}%;height:100%;border-radius:9999px;animation:confIn 1.4s cubic-bezier(.22,1,.36,1) .3s both"
+                                class="{% if prediction_data.final.prediction == 'Cataract' %}bg-gradient-to-r from-rose-400 to-rose-600{% else %}bg-gradient-to-r from-teal-400 to-teal-600{% endif %}">
+                            </div>
+                        </div>
+
+                        <!-- Dynamic feature tags from eye_features -->
+                        {% if prediction_data and prediction_data.eye_features %}
+                        {% set ef = prediction_data.eye_features %}
+                        <div class="mt-5 flex flex-wrap gap-2 justify-center">
+                            {% if ef.pupil_brightness > 55 %}<span class="feat-tag feat-tag-warn">⬜ White Pupil</span>
+                            {% elif ef.pupil_brightness > 38 %}<span class="feat-tag feat-tag-amber">🔆 Dim Pupil</span>
+                            {% else %}<span class="feat-tag feat-tag-ok">⚫ Clear Pupil</span>{% endif %}
+
+                            {% if ef.opacity_score > 40 %}<span class="feat-tag feat-tag-warn">🌫️ Lens Opaque</span>
+                            {% elif ef.opacity_score > 22 %}<span class="feat-tag feat-tag-amber">🌫️ Partial
+                                Haze</span>
+                            {% else %}<span class="feat-tag feat-tag-ok">✅ Lens Clear</span>{% endif %}
+
+                            {% if ef.iris_contrast < 22 %}<span class="feat-tag feat-tag-warn">👁️ Low Contrast</span>
+                                {% elif ef.iris_contrast < 38 %}<span class="feat-tag feat-tag-amber">👁️ Soft
+                                    Contrast</span>
+                                    {% else %}<span class="feat-tag feat-tag-ok">👁️ Good Contrast</span>{% endif %}
+
+                                    {% if ef.light_scatter > 50 %}<span class="feat-tag feat-tag-warn">💡 Diffuse
+                                        Scatter</span>
+                                    {% elif ef.light_scatter > 30 %}<span class="feat-tag feat-tag-amber">💡 Mild
+                                        Scatter</span>
+                                    {% else %}<span class="feat-tag feat-tag-ok">💡 Normal Light</span>{% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if prediction_data.final.prediction == 'Cataract' %}
+                        <div
+                            class="mt-5 w-full p-4 rounded-xl bg-rose-50 border border-rose-100 text-sm font-semibold leading-snug text-rose-600">
+                            ⚕️ Consult a real eye doctor before taking any medical steps.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Model Intelligence logs -->
+                    <div class="glass rounded-3xl p-8 lg:p-10 shadow-xl card-lift">
+                        <p class="text-[10px] font-bold uppercase tracking-[.3em] text-slate-400 mb-6">Model
+                            Intelligence</p>
+                        <div class="space-y-3 overflow-y-auto pr-1" style="max-height:380px">
+                            {% for item in prediction_data.individual %}
+                            <div
+                                class="bg-white/70 px-5 py-4 rounded-2xl flex justify-between items-center border border-slate-50 hover:shadow-md transition-all">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div
+                                        class="w-3 h-3 rounded-full shrink-0
+                                {% if item.prediction == 'Cataract' %}bg-rose-400{% else %}bg-teal-400 animate-pulse{% endif %}">
+                                    </div>
+                                    <span class="font-semibold text-slate-700 lg:text-lg truncate">{{ item.model
+                                        }}</span>
+                                </div>
+                                <div class="text-right shrink-0 ml-4">
+                                    <div class="font-bold text-slate-400 lg:text-base">{{ item.confidence }}%</div>
+                                    <div
+                                        class="font-bold lg:text-base {% if item.prediction == 'Cataract' %}text-rose-500{% else %}text-teal-600{% endif %}">
+                                        {{ item.prediction }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ROW 2 : Scanned Eye Image ── -->
+                <section class="glass rounded-3xl p-7 lg:p-10 shadow-xl card-lift results-reveal rv-2">
+                    <div class="flex items-center gap-4 mb-7">
+                        <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
+                            style="width:clamp(2.8rem,6vw,3.5rem);height:clamp(2.8rem,6vw,3.5rem);font-size:clamp(1.1rem,3vw,1.5rem);background:linear-gradient(135deg,#0d9488,#0ea5e9)">
+                            👁️</div>
+                        <div>
+                            <p class="font-display font-bold text-slate-900 leading-tight"
+                                style="font-size:clamp(1rem,3vw,1.4rem)">Scanned Eye Image</p>
+                            <p class="text-[11px] font-bold uppercase tracking-[.2em] text-teal-500 mt-0.5">Submitted
+                                for Analysis · AI Processed</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/60"
+                            style="max-width:420px;width:100%">
+                            <img src="{{ image_url }}" alt="Uploaded eye image"
+                                class="w-full h-auto block object-cover">
+                            <div class="absolute bottom-0 left-0 right-0 px-4 py-2.5 flex items-center justify-between"
+                                style="background:rgba(15,23,42,0.68);backdrop-filter:blur(10px)">
+                                <span class="text-white font-display font-bold text-sm">
+                                    {% if prediction_data.final.prediction == 'Cataract' %}🚨 Cataract Detected{% else
+                                    %}✨ Normal Eye{% endif %}
+                                </span>
+                                <span
+                                    class="text-[11px] font-bold px-2.5 py-0.5 rounded-full
+                            {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-500 text-white{% else %}bg-teal-500 text-white{% endif %}">
+                                    {{ prediction_data.final.confidence }}% confident
+                                </span>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+                    <p class="text-center text-xs text-slate-400 font-medium mt-4">
+                        This is the image the AI models analysed. The clinical indicators below are measured from this
+                        photo.
+                    </p>
+                </section>
 
-        <!-- ── ROW 2 : Scanned Eye Image ── -->
-        <section class="glass rounded-3xl p-7 lg:p-10 shadow-xl card-lift results-reveal rv-2">
-            <div class="flex items-center gap-4 mb-7">
-                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
-                     style="width:clamp(2.8rem,6vw,3.5rem);height:clamp(2.8rem,6vw,3.5rem);font-size:clamp(1.1rem,3vw,1.5rem);background:linear-gradient(135deg,#0d9488,#0ea5e9)">👁️</div>
-                <div>
-                    <p class="font-display font-bold text-slate-900 leading-tight" style="font-size:clamp(1rem,3vw,1.4rem)">Scanned Eye Image</p>
-                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-teal-500 mt-0.5">Submitted for Analysis · AI Processed</p>
-                </div>
-            </div>
-            <div class="flex justify-center">
-                <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/60" style="max-width:420px;width:100%">
-                    <img src="{{ image_url }}" alt="Uploaded eye image" class="w-full h-auto block object-cover">
-                    <div class="absolute bottom-0 left-0 right-0 px-4 py-2.5 flex items-center justify-between"
-                         style="background:rgba(15,23,42,0.68);backdrop-filter:blur(10px)">
-                        <span class="text-white font-display font-bold text-sm">
-                            {% if prediction_data.final.prediction == 'Cataract' %}🚨 Cataract Detected{% else %}✨ Normal Eye{% endif %}
-                        </span>
-                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full
-                            {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-500 text-white{% else %}bg-teal-500 text-white{% endif %}">
-                            {{ prediction_data.final.confidence }}% confident
-                        </span>
+                <!-- ── ROW 3 : Clinical Feature Analysis (4 metric cards) ── -->
+                {% if prediction_data and prediction_data.eye_features is defined and prediction_data.eye_features %}
+                {% set ef = prediction_data.eye_features %}
+                <section class="results-reveal rv-3">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
+                            style="width:clamp(2.8rem,6vw,3.5rem);height:clamp(2.8rem,6vw,3.5rem);font-size:clamp(1.1rem,3vw,1.5rem);background:linear-gradient(135deg,#0d9488,#0ea5e9)">
+                            🔬</div>
+                        <div>
+                            <p class="font-display font-bold text-slate-900 leading-tight"
+                                style="font-size:clamp(1rem,3vw,1.6rem)">Clinical Feature Analysis</p>
+                            <p class="text-[11px] font-bold uppercase tracking-[.2em] text-teal-500 mt-0.5">4 Cataract
+                                Indicators · Image-Level</p>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <p class="text-center text-xs text-slate-400 font-medium mt-4">
-                This is the image the AI models analysed. The clinical indicators below are measured from this photo.
-            </p>
-        </section>
 
-        <!-- ── ROW 3 : Clinical Feature Analysis (4 metric cards) ── -->
-        {% if prediction_data and prediction_data.eye_features is defined and prediction_data.eye_features %}
-        {% set ef = prediction_data.eye_features %}
-        <section class="results-reveal rv-3">
-            <div class="flex items-center gap-4 mb-6">
-                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
-                     style="width:clamp(2.8rem,6vw,3.5rem);height:clamp(2.8rem,6vw,3.5rem);font-size:clamp(1.1rem,3vw,1.5rem);background:linear-gradient(135deg,#0d9488,#0ea5e9)">🔬</div>
-                <div>
-                    <p class="font-display font-bold text-slate-900 leading-tight" style="font-size:clamp(1rem,3vw,1.6rem)">Clinical Feature Analysis</p>
-                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-teal-500 mt-0.5">4 Cataract Indicators · Image-Level</p>
-                </div>
-            </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
 
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+                        <!-- Card 1: Pupil Brightness -->
+                        {% set pb = ef.pupil_brightness %}
+                        {% if pb > 55 %}{% set pc="rose" %}{% set pl="White / Cloudy Pupil"%}{% set pi="⬜"%}{% set
+                        pt="Bright pupil → lens opacity likely"%}
+                        {% elif pb > 38 %}{% set pc="amber"%}{% set pl="Slightly Bright"%}{% set pi="🔆"%}{% set
+                        pt="Mildly elevated — watch closely"%}
+                        {% else %}{% set pc="teal"%}{% set pl="Normal Dark Pupil"%}{% set pi="⚫"%}{% set pt="Healthy
+                        dark pupil — no opacity"%}{% endif %}
+                        <div class="feat-card feat-card-{{ pc }} shadow-lg">
+                            <div class="flex items-center gap-2"><span class="text-2xl leading-none shrink-0">{{ pi
+                                    }}</span>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">
+                                    Pupil<br>Brightness</p>
+                            </div>
+                            <div class="feat-value {% if pc=='rose' %}text-rose-500{% elif pc=='amber' %}text-amber-600{% else %}text-teal-600{% endif %}"
+                                data-target="{{ pb }}">{{ pb }}%</div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span
+                                    class="metric-pointer {% if pc=='rose' %}bg-rose-50 text-rose-600{% elif pc=='amber' %}bg-amber-50 text-amber-700{% else %}bg-teal-50 text-teal-700{% endif %}">
+                                    <span class="arrow-pulse">{% if pc=='rose' %}↑{% elif pc=='amber' %}→{% else %}✓{%
+                                        endif %}</span>
+                                    {% if pc=='rose' %}High{% elif pc=='amber' %}Mid{% else %}OK{% endif %}
+                                </span>
+                                <p
+                                    class="text-sm font-bold {% if pc=='rose' %}text-rose-600{% elif pc=='amber' %}text-amber-700{% else %}text-teal-700{% endif %} leading-tight">
+                                    {{ pl }}</p>
+                            </div>
+                            <div class="feat-bar-track">
+                                <div class="feat-bar-fill {% if pc=='rose' %}bg-gradient-to-r from-rose-400 to-rose-500{% elif pc=='amber' %}bg-gradient-to-r from-amber-400 to-amber-500{% else %}bg-gradient-to-r from-teal-400 to-teal-500{% endif %}"
+                                    style="width:{{ pb|int }}%"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-snug">{{ pt }}</p>
+                        </div>
 
-                <!-- Card 1: Pupil Brightness -->
-                {% set pb = ef.pupil_brightness %}
-                {% if pb > 55 %}{% set pc="rose" %}{% set pl="White / Cloudy Pupil"%}{% set pi="⬜"%}{% set pt="Bright pupil → lens opacity likely"%}
-                {% elif pb > 38 %}{% set pc="amber"%}{% set pl="Slightly Bright"%}{% set pi="🔆"%}{% set pt="Mildly elevated — watch closely"%}
-                {% else %}{% set pc="teal"%}{% set pl="Normal Dark Pupil"%}{% set pi="⚫"%}{% set pt="Healthy dark pupil — no opacity"%}{% endif %}
-                <div class="feat-card feat-card-{{ pc }} shadow-lg">
-                    <div class="flex items-center gap-2"><span class="text-2xl leading-none shrink-0">{{ pi }}</span><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Pupil<br>Brightness</p></div>
-                    <div class="feat-value {% if pc=='rose' %}text-rose-500{% elif pc=='amber' %}text-amber-600{% else %}text-teal-600{% endif %}" data-target="{{ pb }}">{{ pb }}%</div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="metric-pointer {% if pc=='rose' %}bg-rose-50 text-rose-600{% elif pc=='amber' %}bg-amber-50 text-amber-700{% else %}bg-teal-50 text-teal-700{% endif %}">
-                            <span class="arrow-pulse">{% if pc=='rose' %}↑{% elif pc=='amber' %}→{% else %}✓{% endif %}</span>
-                            {% if pc=='rose' %}High{% elif pc=='amber' %}Mid{% else %}OK{% endif %}
-                        </span>
-                        <p class="text-sm font-bold {% if pc=='rose' %}text-rose-600{% elif pc=='amber' %}text-amber-700{% else %}text-teal-700{% endif %} leading-tight">{{ pl }}</p>
+                        <!-- Card 2: Lens Opacity -->
+                        {% set op = ef.opacity_score %}
+                        {% if op > 40 %}{% set oc="rose"%}{% set ol="High Opacity"%}{% set oi="🌫️"%}{% set ot="Protein
+                        aggregation in lens zone"%}
+                        {% elif op > 22 %}{% set oc="amber"%}{% set ol="Partial Haze"%}{% set oi="🌁"%}{% set ot="Some
+                        cloudiness detected"%}
+                        {% else %}{% set oc="teal"%}{% set ol="Clear Lens"%}{% set oi="💎"%}{% set ot="No significant
+                        opacity"%}{% endif %}
+                        <div class="feat-card feat-card-{{ oc }} shadow-lg">
+                            <div class="flex items-center gap-2"><span class="text-2xl leading-none shrink-0">{{ oi
+                                    }}</span>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">
+                                    Lens<br>Opacity</p>
+                            </div>
+                            <div class="feat-value {% if oc=='rose' %}text-rose-500{% elif oc=='amber' %}text-amber-600{% else %}text-teal-600{% endif %}"
+                                data-target="{{ op }}">{{ op }}%</div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span
+                                    class="metric-pointer {% if oc=='rose' %}bg-rose-50 text-rose-600{% elif oc=='amber' %}bg-amber-50 text-amber-700{% else %}bg-teal-50 text-teal-700{% endif %}">
+                                    <span class="arrow-pulse">{% if oc=='rose' %}↑{% elif oc=='amber' %}→{% else %}✓{%
+                                        endif %}</span>
+                                    {% if oc=='rose' %}High{% elif oc=='amber' %}Mid{% else %}OK{% endif %}
+                                </span>
+                                <p
+                                    class="text-sm font-bold {% if oc=='rose' %}text-rose-600{% elif oc=='amber' %}text-amber-700{% else %}text-teal-700{% endif %} leading-tight">
+                                    {{ ol }}</p>
+                            </div>
+                            <div class="feat-bar-track">
+                                <div class="feat-bar-fill {% if oc=='rose' %}bg-gradient-to-r from-rose-400 to-rose-500{% elif oc=='amber' %}bg-gradient-to-r from-amber-400 to-amber-500{% else %}bg-gradient-to-r from-teal-400 to-teal-500{% endif %}"
+                                    style="width:{{ op|int }}%"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-snug">{{ ot }}</p>
+                        </div>
+
+                        <!-- Card 3: Iris Contrast -->
+                        {% set ic = ef.iris_contrast %}
+                        {% if ic < 22 %}{% set icc="rose" %}{% set icl="Reduced Contrast" %}{% set ici="👁️" %}{% set
+                            ict="Iris boundary faded — hallmark sign" %} {% elif ic < 38 %}{% set icc="amber" %}{% set
+                            icl="Moderate Contrast" %}{% set ici="🔍" %}{% set ict="Boundary slightly soft" %} {% else
+                            %}{% set icc="teal" %}{% set icl="Good Contrast" %}{% set ici="🎯" %}{% set
+                            ict="Sharp iris–pupil boundary — healthy" %}{% endif %} <div
+                            class="feat-card feat-card-{{ icc }} shadow-lg">
+                            <div class="flex items-center gap-2"><span class="text-2xl leading-none shrink-0">{{ ici
+                                    }}</span>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">
+                                    Iris<br>Contrast</p>
+                            </div>
+                            <div class="feat-value {% if icc=='rose' %}text-rose-500{% elif icc=='amber' %}text-amber-600{% else %}text-teal-600{% endif %}"
+                                data-target="{{ ic }}">{{ ic }}%</div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span
+                                    class="metric-pointer {% if icc=='rose' %}bg-rose-50 text-rose-600{% elif icc=='amber' %}bg-amber-50 text-amber-700{% else %}bg-teal-50 text-teal-700{% endif %}">
+                                    <span class="arrow-pulse">{% if icc=='rose' %}↓{% elif icc=='amber' %}→{% else %}✓{%
+                                        endif %}</span>
+                                    {% if icc=='rose' %}Low{% elif icc=='amber' %}Mid{% else %}Good{% endif %}
+                                </span>
+                                <p
+                                    class="text-sm font-bold {% if icc=='rose' %}text-rose-600{% elif icc=='amber' %}text-amber-700{% else %}text-teal-700{% endif %} leading-tight">
+                                    {{ icl }}</p>
+                            </div>
+                            <div class="feat-bar-track">
+                                <div class="feat-bar-fill {% if icc=='rose' %}bg-gradient-to-r from-rose-400 to-rose-500{% elif icc=='amber' %}bg-gradient-to-r from-amber-400 to-amber-500{% else %}bg-gradient-to-r from-teal-400 to-teal-500{% endif %}"
+                                    style="width:{{ [ic|int,100]|min }}%"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-snug">{{ ict }}</p>
                     </div>
-                    <div class="feat-bar-track"><div class="feat-bar-fill {% if pc=='rose' %}bg-gradient-to-r from-rose-400 to-rose-500{% elif pc=='amber' %}bg-gradient-to-r from-amber-400 to-amber-500{% else %}bg-gradient-to-r from-teal-400 to-teal-500{% endif %}" style="width:{{ pb|int }}%"></div></div>
-                    <p class="text-[11px] text-slate-500 leading-snug">{{ pt }}</p>
-                </div>
 
-                <!-- Card 2: Lens Opacity -->
-                {% set op = ef.opacity_score %}
-                {% if op > 40 %}{% set oc="rose"%}{% set ol="High Opacity"%}{% set oi="🌫️"%}{% set ot="Protein aggregation in lens zone"%}
-                {% elif op > 22 %}{% set oc="amber"%}{% set ol="Partial Haze"%}{% set oi="🌁"%}{% set ot="Some cloudiness detected"%}
-                {% else %}{% set oc="teal"%}{% set ol="Clear Lens"%}{% set oi="💎"%}{% set ot="No significant opacity"%}{% endif %}
-                <div class="feat-card feat-card-{{ oc }} shadow-lg">
-                    <div class="flex items-center gap-2"><span class="text-2xl leading-none shrink-0">{{ oi }}</span><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Lens<br>Opacity</p></div>
-                    <div class="feat-value {% if oc=='rose' %}text-rose-500{% elif oc=='amber' %}text-amber-600{% else %}text-teal-600{% endif %}" data-target="{{ op }}">{{ op }}%</div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="metric-pointer {% if oc=='rose' %}bg-rose-50 text-rose-600{% elif oc=='amber' %}bg-amber-50 text-amber-700{% else %}bg-teal-50 text-teal-700{% endif %}">
-                            <span class="arrow-pulse">{% if oc=='rose' %}↑{% elif oc=='amber' %}→{% else %}✓{% endif %}</span>
-                            {% if oc=='rose' %}High{% elif oc=='amber' %}Mid{% else %}OK{% endif %}
-                        </span>
-                        <p class="text-sm font-bold {% if oc=='rose' %}text-rose-600{% elif oc=='amber' %}text-amber-700{% else %}text-teal-700{% endif %} leading-tight">{{ ol }}</p>
+                    <!-- Card 4: Light Scatter -->
+                    {% set ls = ef.light_scatter %}
+                    {% if ls > 50 %}{% set lsc="rose"%}{% set lsl="Diffuse Reflection"%}{% set lsi="💡"%}{% set
+                    lst="Scattered light = opacity signature"%}
+                    {% elif ls > 30 %}{% set lsc="amber"%}{% set lsl="Mild Scatter"%}{% set lsi="🕯️"%}{% set lst="Some
+                    spreading — minor concern"%}
+                    {% else %}{% set lsc="teal"%}{% set lsl="Normal Reflection"%}{% set lsi="✨"%}{% set lst="Focused
+                    light — healthy response"%}{% endif %}
+                    <div class="feat-card feat-card-{{ lsc }} shadow-lg">
+                        <div class="flex items-center gap-2"><span class="text-2xl leading-none shrink-0">{{ lsi
+                                }}</span>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">
+                                Light<br>Scatter</p>
+                        </div>
+                        <div class="feat-value {% if lsc=='rose' %}text-rose-500{% elif lsc=='amber' %}text-amber-600{% else %}text-teal-600{% endif %}"
+                            data-target="{{ ls }}">{{ ls }}%</div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span
+                                class="metric-pointer {% if lsc=='rose' %}bg-rose-50 text-rose-600{% elif lsc=='amber' %}bg-amber-50 text-amber-700{% else %}bg-teal-50 text-teal-700{% endif %}">
+                                <span class="arrow-pulse">{% if lsc=='rose' %}↑{% elif lsc=='amber' %}→{% else %}✓{%
+                                    endif %}</span>
+                                {% if lsc=='rose' %}High{% elif lsc=='amber' %}Mid{% else %}OK{% endif %}
+                            </span>
+                            <p
+                                class="text-sm font-bold {% if lsc=='rose' %}text-rose-600{% elif lsc=='amber' %}text-amber-700{% else %}text-teal-700{% endif %} leading-tight">
+                                {{ lsl }}</p>
+                        </div>
+                        <div class="feat-bar-track">
+                            <div class="feat-bar-fill {% if lsc=='rose' %}bg-gradient-to-r from-rose-400 to-rose-500{% elif lsc=='amber' %}bg-gradient-to-r from-amber-400 to-amber-500{% else %}bg-gradient-to-r from-teal-400 to-teal-500{% endif %}"
+                                style="width:{{ [ls|int,100]|min }}%"></div>
+                        </div>
+                        <p class="text-[11px] text-slate-500 leading-snug">{{ lst }}</p>
                     </div>
-                    <div class="feat-bar-track"><div class="feat-bar-fill {% if oc=='rose' %}bg-gradient-to-r from-rose-400 to-rose-500{% elif oc=='amber' %}bg-gradient-to-r from-amber-400 to-amber-500{% else %}bg-gradient-to-r from-teal-400 to-teal-500{% endif %}" style="width:{{ op|int }}%"></div></div>
-                    <p class="text-[11px] text-slate-500 leading-snug">{{ ot }}</p>
-                </div>
-
-                <!-- Card 3: Iris Contrast -->
-                {% set ic = ef.iris_contrast %}
-                {% if ic < 22 %}{% set icc="rose"%}{% set icl="Reduced Contrast"%}{% set ici="👁️"%}{% set ict="Iris boundary faded — hallmark sign"%}
-                {% elif ic < 38 %}{% set icc="amber"%}{% set icl="Moderate Contrast"%}{% set ici="🔍"%}{% set ict="Boundary slightly soft"%}
-                {% else %}{% set icc="teal"%}{% set icl="Good Contrast"%}{% set ici="🎯"%}{% set ict="Sharp iris–pupil boundary — healthy"%}{% endif %}
-                <div class="feat-card feat-card-{{ icc }} shadow-lg">
-                    <div class="flex items-center gap-2"><span class="text-2xl leading-none shrink-0">{{ ici }}</span><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Iris<br>Contrast</p></div>
-                    <div class="feat-value {% if icc=='rose' %}text-rose-500{% elif icc=='amber' %}text-amber-600{% else %}text-teal-600{% endif %}" data-target="{{ ic }}">{{ ic }}%</div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="metric-pointer {% if icc=='rose' %}bg-rose-50 text-rose-600{% elif icc=='amber' %}bg-amber-50 text-amber-700{% else %}bg-teal-50 text-teal-700{% endif %}">
-                            <span class="arrow-pulse">{% if icc=='rose' %}↓{% elif icc=='amber' %}→{% else %}✓{% endif %}</span>
-                            {% if icc=='rose' %}Low{% elif icc=='amber' %}Mid{% else %}Good{% endif %}
-                        </span>
-                        <p class="text-sm font-bold {% if icc=='rose' %}text-rose-600{% elif icc=='amber' %}text-amber-700{% else %}text-teal-700{% endif %} leading-tight">{{ icl }}</p>
-                    </div>
-                    <div class="feat-bar-track"><div class="feat-bar-fill {% if icc=='rose' %}bg-gradient-to-r from-rose-400 to-rose-500{% elif icc=='amber' %}bg-gradient-to-r from-amber-400 to-amber-500{% else %}bg-gradient-to-r from-teal-400 to-teal-500{% endif %}" style="width:{{ [ic|int,100]|min }}%"></div></div>
-                    <p class="text-[11px] text-slate-500 leading-snug">{{ ict }}</p>
-                </div>
-
-                <!-- Card 4: Light Scatter -->
-                {% set ls = ef.light_scatter %}
-                {% if ls > 50 %}{% set lsc="rose"%}{% set lsl="Diffuse Reflection"%}{% set lsi="💡"%}{% set lst="Scattered light = opacity signature"%}
-                {% elif ls > 30 %}{% set lsc="amber"%}{% set lsl="Mild Scatter"%}{% set lsi="🕯️"%}{% set lst="Some spreading — minor concern"%}
-                {% else %}{% set lsc="teal"%}{% set lsl="Normal Reflection"%}{% set lsi="✨"%}{% set lst="Focused light — healthy response"%}{% endif %}
-                <div class="feat-card feat-card-{{ lsc }} shadow-lg">
-                    <div class="flex items-center gap-2"><span class="text-2xl leading-none shrink-0">{{ lsi }}</span><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-tight">Light<br>Scatter</p></div>
-                    <div class="feat-value {% if lsc=='rose' %}text-rose-500{% elif lsc=='amber' %}text-amber-600{% else %}text-teal-600{% endif %}" data-target="{{ ls }}">{{ ls }}%</div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="metric-pointer {% if lsc=='rose' %}bg-rose-50 text-rose-600{% elif lsc=='amber' %}bg-amber-50 text-amber-700{% else %}bg-teal-50 text-teal-700{% endif %}">
-                            <span class="arrow-pulse">{% if lsc=='rose' %}↑{% elif lsc=='amber' %}→{% else %}✓{% endif %}</span>
-                            {% if lsc=='rose' %}High{% elif lsc=='amber' %}Mid{% else %}OK{% endif %}
-                        </span>
-                        <p class="text-sm font-bold {% if lsc=='rose' %}text-rose-600{% elif lsc=='amber' %}text-amber-700{% else %}text-teal-700{% endif %} leading-tight">{{ lsl }}</p>
-                    </div>
-                    <div class="feat-bar-track"><div class="feat-bar-fill {% if lsc=='rose' %}bg-gradient-to-r from-rose-400 to-rose-500{% elif lsc=='amber' %}bg-gradient-to-r from-amber-400 to-amber-500{% else %}bg-gradient-to-r from-teal-400 to-teal-500{% endif %}" style="width:{{ [ls|int,100]|min }}%"></div></div>
-                    <p class="text-[11px] text-slate-500 leading-snug">{{ lst }}</p>
-                </div>
             </div>
 
             <!-- Summary banner below cards -->
-            <div class="mt-5 p-4 lg:p-5 rounded-2xl border text-sm lg:text-base font-medium leading-relaxed
+            <div
+                class="mt-5 p-4 lg:p-5 rounded-2xl border text-sm lg:text-base font-medium leading-relaxed
                 {% if prediction_data.final.prediction == 'Cataract' %}bg-rose-50/70 border-rose-100 text-rose-700{% else %}bg-teal-50/70 border-teal-100 text-teal-700{% endif %}">
                 {% if prediction_data.final.prediction == 'Cataract' %}
-                    🔬 These image-level features show patterns consistent with cataract: elevated pupil brightness, lens opacity, and light scattering are the key visual signatures learned by the CNN models during training.
+                🔬 These image-level features show patterns consistent with cataract: elevated pupil brightness, lens
+                opacity, and light scattering are the key visual signatures learned by the CNN models during training.
                 {% else %}
-                    🔬 Image features show no significant opacity or brightness anomalies. The pupil region appears dark and the iris–pupil boundary is well defined — consistent with a healthy eye lens.
+                🔬 Image features show no significant opacity or brightness anomalies. The pupil region appears dark and
+                the iris–pupil boundary is well defined — consistent with a healthy eye lens.
                 {% endif %}
             </div>
-        </section>
+            </section>
+            {% endif %}
+
+            <!-- ── ROW 4 : Why Was This Detected (3-tier explanation) ── -->
+            {% if prediction_data.explanation and prediction_data.explanation.simple %}
+            <section class="glass rounded-3xl p-7 sm:p-10 shadow-xl card-lift results-reveal rv-4">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
+                        style="width:clamp(2.8rem,6vw,3.5rem);height:clamp(2.8rem,6vw,3.5rem);font-size:clamp(1.1rem,3vw,1.5rem);background:linear-gradient(135deg,#7c3aed,#2563eb)">
+                        🧠</div>
+                    <div>
+                        <p class="font-display font-bold text-slate-900 leading-tight"
+                            style="font-size:clamp(1rem,3vw,1.4rem)">Why Cataract Was Detected</p>
+                        <p class="text-[11px] font-bold uppercase tracking-[.2em] text-violet-500 mt-0.5">Visual ·
+                            Clinical · AI Perspective</p>
+                    </div>
+                </div>
+
+                <!-- Tab switcher -->
+                <div class="exp-tab-bar mb-5">
+                    <button class="exp-tab active" onclick="showExpTab('simple',this)">😊 Simple</button>
+                    <button class="exp-tab" onclick="showExpTab('technical',this)">🔬 Technical</button>
+                    <button class="exp-tab" onclick="showExpTab('ai_model',this)">🤖 AI / Model</button>
+                </div>
+
+                <div id="exp-simple"
+                    class="exp-panel active bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                    {{ prediction_data.explanation.simple }}</div>
+                <div id="exp-technical"
+                    class="exp-panel          bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                    {{ prediction_data.explanation.technical }}</div>
+                <div id="exp-ai_model"
+                    class="exp-panel          bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 leading-relaxed whitespace-pre-line font-mono">
+                    {{ prediction_data.explanation.ai_model }}</div>
+            </section>
+            {% endif %}
+
+            <!-- ── ROW 5 : AI Report ── -->
+            <section class="glass rounded-3xl p-7 sm:p-10 lg:p-14 shadow-xl card-lift results-reveal rv-5">
+                <div class="flex items-center gap-5 mb-8 pb-7 border-b border-slate-100/80">
+                    <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xl"
+                        style="width:clamp(3rem,7vw,4rem);height:clamp(3rem,7vw,4rem);background:linear-gradient(135deg,#0d9488,#2563eb)">
+                        <svg style="width:46%;height:46%" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="font-display font-extrabold text-slate-900 leading-tight"
+                            style="font-size:clamp(1.4rem,4vw,2.5rem)">AI Report</h2>
+                        <p class="text-teal-600 text-[12px] font-bold uppercase tracking-[.2em] mt-1">Verified by
+                            Llama-3 · 70B</p>
+                    </div>
+                </div>
+                <div id="groq-summary-text" class="md-body">{{ prediction_data.summary }}</div>
+            </section>
+
+        </div><!-- /results-root -->
         {% endif %}
 
-        <!-- ── ROW 4 : Why Was This Detected (3-tier explanation) ── -->
-        {% if prediction_data.explanation and prediction_data.explanation.simple %}
-        <section class="glass rounded-3xl p-7 sm:p-10 shadow-xl card-lift results-reveal rv-4">
-            <div class="flex items-center gap-4 mb-6">
-                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg"
-                     style="width:clamp(2.8rem,6vw,3.5rem);height:clamp(2.8rem,6vw,3.5rem);font-size:clamp(1.1rem,3vw,1.5rem);background:linear-gradient(135deg,#7c3aed,#2563eb)">🧠</div>
-                <div>
-                    <p class="font-display font-bold text-slate-900 leading-tight" style="font-size:clamp(1rem,3vw,1.4rem)">Why Cataract Was Detected</p>
-                    <p class="text-[11px] font-bold uppercase tracking-[.2em] text-violet-500 mt-0.5">Visual · Clinical · AI Perspective</p>
-                </div>
+        <!-- Footer -->
+        <footer class="mt-20 text-center pb-24">
+            <div class="flex justify-center gap-2 mb-4">
+                <span class="w-8 h-1 rounded-full bg-teal-400/70"></span>
+                <span class="w-8 h-1 rounded-full bg-sky-400/70"></span>
+                <span class="w-8 h-1 rounded-full bg-blue-400/70"></span>
             </div>
-
-            <!-- Tab switcher -->
-            <div class="exp-tab-bar mb-5">
-                <button class="exp-tab active" onclick="showExpTab('simple',this)">😊 Simple</button>
-                <button class="exp-tab" onclick="showExpTab('technical',this)">🔬 Technical</button>
-                <button class="exp-tab" onclick="showExpTab('ai_model',this)">🤖 AI / Model</button>
-            </div>
-
-            <div id="exp-simple"   class="exp-panel active bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 leading-relaxed whitespace-pre-line">{{ prediction_data.explanation.simple }}</div>
-            <div id="exp-technical" class="exp-panel          bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 leading-relaxed whitespace-pre-line">{{ prediction_data.explanation.technical }}</div>
-            <div id="exp-ai_model"  class="exp-panel          bg-slate-50 rounded-2xl p-5 border border-slate-100 text-sm text-slate-700 leading-relaxed whitespace-pre-line font-mono">{{ prediction_data.explanation.ai_model }}</div>
-        </section>
-        {% endif %}
-
-        <!-- ── ROW 5 : AI Report ── -->
-        <section class="glass rounded-3xl p-7 sm:p-10 lg:p-14 shadow-xl card-lift results-reveal rv-5">
-            <div class="flex items-center gap-5 mb-8 pb-7 border-b border-slate-100/80">
-                <div class="rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xl"
-                     style="width:clamp(3rem,7vw,4rem);height:clamp(3rem,7vw,4rem);background:linear-gradient(135deg,#0d9488,#2563eb)">
-                    <svg style="width:46%;height:46%" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="font-display font-extrabold text-slate-900 leading-tight" style="font-size:clamp(1.4rem,4vw,2.5rem)">AI Report</h2>
-                    <p class="text-teal-600 text-[12px] font-bold uppercase tracking-[.2em] mt-1">Verified by Llama-3 · 70B</p>
-                </div>
-            </div>
-            <div id="groq-summary-text" class="md-body">{{ prediction_data.summary }}</div>
-        </section>
-
-    </div><!-- /results-root -->
-    {% endif %}
-
-    <!-- Footer -->
-    <footer class="mt-20 text-center pb-24">
-        <div class="flex justify-center gap-2 mb-4">
-            <span class="w-8 h-1 rounded-full bg-teal-400/70"></span>
-            <span class="w-8 h-1 rounded-full bg-sky-400/70"></span>
-            <span class="w-8 h-1 rounded-full bg-blue-400/70"></span>
+            <p class="font-display font-bold text-slate-400 text-[11px] uppercase tracking-widest mb-2">Cataract
+                Intelligence Hub</p>
+            <p class="text-slate-400/60 text-[11px] max-w-sm mx-auto leading-relaxed">Screening aid only — does not
+                replace professional medical advice. Always consult a qualified eye doctor.</p>
+        </footer>
         </div>
-        <p class="font-display font-bold text-slate-400 text-[11px] uppercase tracking-widest mb-2">Cataract Intelligence Hub</p>
-        <p class="text-slate-400/60 text-[11px] max-w-sm mx-auto leading-relaxed">Screening aid only — does not replace professional medical advice. Always consult a qualified eye doctor.</p>
-    </footer>
-</div>
-</main>
+    </main>
 
 
-<!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
      SUBPAGE OVERLAY DRAWER
 ══════════════════════════════════════ -->
-<div id="subpage-overlay" role="dialog" aria-modal="true">
-    <div id="subpage-backdrop" onclick="closeSubpage()"></div>
-    <div id="subpage-drawer">
+    <div id="subpage-overlay" role="dialog" aria-modal="true">
+        <div id="subpage-backdrop" onclick="closeSubpage()"></div>
+        <div id="subpage-drawer">
 
-        <div class="drawer-header">
-            <div class="drawer-tab-bar">
-                <button class="drawer-tab active" onclick="switchDrawerTab('about',this)">About</button>
-                <button class="drawer-tab" onclick="switchDrawerTab('tech',this)">Tech Stack</button>
-                <button class="drawer-tab" onclick="switchDrawerTab('help',this)">Help</button>
+            <div class="drawer-header">
+                <div class="drawer-tab-bar">
+                    <button class="drawer-tab active" onclick="switchDrawerTab('about',this)">About</button>
+                    <button class="drawer-tab" onclick="switchDrawerTab('tech',this)">Tech Stack</button>
+                    <button class="drawer-tab" onclick="switchDrawerTab('help',this)">Help</button>
+                </div>
+                <button class="drawer-close" onclick="closeSubpage()" aria-label="Close">✕</button>
             </div>
-            <button class="drawer-close" onclick="closeSubpage()" aria-label="Close">✕</button>
-        </div>
 
-        <!-- ── ABOUT ── -->
-        <div class="drawer-page active" id="dp-about">
-            <div class="about-hero">
-                <div style="position:relative;z-index:1">
-                    <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(13,148,136,.2);border:1px solid rgba(13,148,136,.35);border-radius:9999px;padding:.3rem .9rem;margin-bottom:1.1rem">
-                        <span style="width:.4rem;height:.4rem;border-radius:50%;background:#2dd4bf;display:inline-block"></span>
-                        <span style="font-family:'Sora',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#2dd4bf">AI Eye Screening</span>
+            <!-- ── ABOUT ── -->
+            <div class="drawer-page active" id="dp-about">
+                <div class="about-hero">
+                    <div style="position:relative;z-index:1">
+                        <div
+                            style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(13,148,136,.2);border:1px solid rgba(13,148,136,.35);border-radius:9999px;padding:.3rem .9rem;margin-bottom:1.1rem">
+                            <span
+                                style="width:.4rem;height:.4rem;border-radius:50%;background:#2dd4bf;display:inline-block"></span>
+                            <span
+                                style="font-family:'Sora',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#2dd4bf">AI
+                                Eye Screening</span>
+                        </div>
+                        <h2
+                            style="font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(1.4rem,4vw,2rem);color:white;line-height:1.15;margin-bottom:.6rem">
+                            Automated Cataract<br>Detection System</h2>
+                        <p style="font-size:.85rem;color:#94a3b8;line-height:1.7;max-width:420px">An AI-powered
+                            screening tool that analyzes eye images in real time to detect cataract — making early
+                            detection accessible to everyone, everywhere.</p>
+                        <div style="display:flex;gap:.75rem;margin-top:1.4rem;flex-wrap:wrap">
+                            <div class="about-stat">
+                                <div class="about-stat-num">5</div>
+                                <div class="about-stat-label">AI Models</div>
+                            </div>
+                            <div class="about-stat">
+                                <div class="about-stat-num">70B</div>
+                                <div class="about-stat-label">LLM Params</div>
+                            </div>
+                            <div class="about-stat">
+                                <div class="about-stat-num">4</div>
+                                <div class="about-stat-label">Indicators</div>
+                            </div>
+                            <div class="about-stat">
+                                <div class="about-stat-num">∞</div>
+                                <div class="about-stat-label">Free to Use</div>
+                            </div>
+                        </div>
                     </div>
-                    <h2 style="font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(1.4rem,4vw,2rem);color:white;line-height:1.15;margin-bottom:.6rem">Automated Cataract<br>Detection System</h2>
-                    <p style="font-size:.85rem;color:#94a3b8;line-height:1.7;max-width:420px">An AI-powered screening tool that analyzes eye images in real time to detect cataract — making early detection accessible to everyone, everywhere.</p>
-                    <div style="display:flex;gap:.75rem;margin-top:1.4rem;flex-wrap:wrap">
-                        <div class="about-stat"><div class="about-stat-num">5</div><div class="about-stat-label">AI Models</div></div>
-                        <div class="about-stat"><div class="about-stat-num">70B</div><div class="about-stat-label">LLM Params</div></div>
-                        <div class="about-stat"><div class="about-stat-num">4</div><div class="about-stat-label">Indicators</div></div>
-                        <div class="about-stat"><div class="about-stat-num">∞</div><div class="about-stat-label">Free to Use</div></div>
+                </div>
+                <div class="info-block">
+                    <div class="info-icon"
+                        style="background:linear-gradient(135deg,rgba(13,148,136,.15),rgba(14,165,233,.15))">🎯</div>
+                    <div>
+                        <p
+                            style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">
+                            Purpose</p>
+                        <p style="font-size:.82rem;color:#64748b;line-height:1.7">This app gives a quick AI screening to
+                            identify whether an uploaded eye image shows signs of cataract or looks normal. Five trained
+                            models (DeepCNN, DeepANN, ResNet, VGG, AlexNet) vote for a consensus-based answer, ensuring
+                            reliable results.</p>
+                    </div>
+                </div>
+                <div class="info-block">
+                    <div class="info-icon"
+                        style="background:linear-gradient(135deg,rgba(225,29,72,.12),rgba(249,115,22,.12))">⚕️</div>
+                    <div>
+                        <p
+                            style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">
+                            Medical Disclaimer</p>
+                        <p style="font-size:.82rem;color:#64748b;line-height:1.7">Intended as a screening aid — <strong
+                                style="color:#be123c">not a medical diagnosis</strong>. If the system flags a potential
+                            cataract, please consult a qualified ophthalmologist.</p>
+                    </div>
+                </div>
+                <div class="info-block">
+                    <div class="info-icon"
+                        style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(37,99,235,.12))">🏫</div>
+                    <div>
+                        <p
+                            style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">
+                            Academic Project</p>
+                        <p style="font-size:.82rem;color:#64748b;line-height:1.7">Built by <strong
+                                style="color:#0f172a">Batch D13</strong> — Aditya College of Engineering and Technology,
+                            Department of CSE-AIML. Guided by Mr. M.V.R. Narasimha Rao (MTech., Ph.D.).</p>
+                        <div style="display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap">
+                            <span
+                                style="font-size:.68rem;font-weight:700;padding:.2rem .65rem;border-radius:9999px;background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.2);color:#0d9488">Ryali
+                                Srikanth</span>
+                            <span
+                                style="font-size:.68rem;font-weight:700;padding:.2rem .65rem;border-radius:9999px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);color:#2563eb">P.
+                                Gowri Shankar</span>
+                            <span
+                                style="font-size:.68rem;font-weight:700;padding:.2rem .65rem;border-radius:9999px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);color:#7c3aed">K.
+                                Mani Charan</span>
+                            <span
+                                style="font-size:.68rem;font-weight:700;padding:.2rem .65rem;border-radius:9999px;background:rgba(225,29,72,.08);border:1px solid rgba(225,29,72,.2);color:#be123c">J.
+                                Sivarama Krishna</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="info-block">
-                <div class="info-icon" style="background:linear-gradient(135deg,rgba(13,148,136,.15),rgba(14,165,233,.15))">🎯</div>
+
+            <!-- ── TECH STACK ── -->
+            <div class="drawer-page" id="dp-tech">
                 <div>
-                    <p style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">Purpose</p>
-                    <p style="font-size:.82rem;color:#64748b;line-height:1.7">This app gives a quick AI screening to identify whether an uploaded eye image shows signs of cataract or looks normal. Five trained models (DeepCNN, DeepANN, ResNet, VGG, AlexNet) vote for a consensus-based answer, ensuring reliable results.</p>
+                    <h2
+                        style="font-family:'Sora',sans-serif;font-weight:800;font-size:1.3rem;color:#0f172a;margin-bottom:.3rem">
+                        Tech Stack</h2>
+                    <p style="font-size:.82rem;color:#64748b">Every tool that powers this system, from training to
+                        interface.</p>
                 </div>
-            </div>
-            <div class="info-block">
-                <div class="info-icon" style="background:linear-gradient(135deg,rgba(225,29,72,.12),rgba(249,115,22,.12))">⚕️</div>
+
+                <!-- Backend & ML -->
                 <div>
-                    <p style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">Medical Disclaimer</p>
-                    <p style="font-size:.82rem;color:#64748b;line-height:1.7">Intended as a screening aid — <strong style="color:#be123c">not a medical diagnosis</strong>. If the system flags a potential cataract, please consult a qualified ophthalmologist.</p>
+                    <p class="tech-group-label">Backend & ML</p>
+                    <div style="display:flex;flex-direction:column;gap:.5rem">
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(225,29,72,.12),rgba(249,115,22,.12))">🔥
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">PyTorch</div>
+                                <div class="tech-chip-desc">CNN model training, loading & inference (DeepCNN, DeepANN,
+                                    ResNet, VGG, AlexNet)</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(225,29,72,.08);color:#be123c;border:1px solid rgba(225,29,72,.2)">Core
+                                ML</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(13,148,136,.12),rgba(5,150,105,.12))">🌶️
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">Hugging Face</div>
+                                <div class="tech-chip-desc">HF spaces, gradio, Live backend api functional support</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(13,148,136,.08);color:#0d9488;border:1px solid rgba(13,148,136,.2)">Backend</span>
+                        </div>
+
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(37,99,235,.12))">🐍
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">Python</div>
+                                <div class="tech-chip-desc">Core language — data processing, inference pipeline, feature
+                                    extraction</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(14,165,233,.08);color:#0369a1;border:1px solid rgba(14,165,233,.2)">Language</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="info-block">
-                <div class="info-icon" style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(37,99,235,.12))">🏫</div>
+
+                <!-- Vision & AI -->
                 <div>
-                    <p style="font-family:'Sora',sans-serif;font-weight:700;font-size:.88rem;color:#0f172a;margin-bottom:.35rem">Academic Project</p>
-                    <p style="font-size:.82rem;color:#64748b;line-height:1.7">Built by <strong style="color:#0f172a">Batch D13</strong> — Aditya College of Engineering and Technology, Department of CSE-AIML. Guided by Mr. M.V.R. Narasimha Rao (MTech., Ph.D.).</p>
-                    <div style="display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap">
-                        <span style="font-size:.68rem;font-weight:700;padding:.2rem .65rem;border-radius:9999px;background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.2);color:#0d9488">Ryali Srikanth</span>
-                        <span style="font-size:.68rem;font-weight:700;padding:.2rem .65rem;border-radius:9999px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);color:#2563eb">P. Gowri Shankar</span>
-                        <span style="font-size:.68rem;font-weight:700;padding:.2rem .65rem;border-radius:9999px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);color:#7c3aed">K. Mani Charan</span>
-                        <span style="font-size:.68rem;font-weight:700;padding:.2rem .65rem;border-radius:9999px;background:rgba(225,29,72,.08);border:1px solid rgba(225,29,72,.2);color:#be123c">J. Sivarama Krishna</span>
+                    <p class="tech-group-label">Vision & AI</p>
+                    <div style="display:flex;flex-direction:column;gap:.5rem">
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(217,119,6,.12),rgba(245,158,11,.12))">👁️
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">OpenCV</div>
+                                <div class="tech-chip-desc">Image validation, Haar cascade eye detection, Hough circles,
+                                    Grad-CAM heatmaps & clinical feature extraction</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(217,119,6,.08);color:#b45309;border:1px solid rgba(217,119,6,.2)">Vision</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(37,99,235,.12))">🤖
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">Groq API · Llama-3.3 70B</div>
+                                <div class="tech-chip-desc">AI-generated medical summaries, 3-language chat assistant
+                                    (English / Telugu / Hindi)</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(124,58,237,.08);color:#7c3aed;border:1px solid rgba(124,58,237,.2)">LLM</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(13,148,136,.1),rgba(14,165,233,.1))">🖼️
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">Pillow (PIL)</div>
+                                <div class="tech-chip-desc">Image loading, RGB conversion & preprocessing before model
+                                    inference</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(13,148,136,.08);color:#0d9488;border:1px solid rgba(13,148,136,.2)">Images</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(124,58,237,.1))">📐
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">torchvision</div>
+                                <div class="tech-chip-desc">Image transforms — resize, tensor conversion & normalisation
+                                    pipeline</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(37,99,235,.08);color:#2563eb;border:1px solid rgba(37,99,235,.2)">Transforms</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(5,150,105,.1),rgba(13,148,136,.1))">🔢
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">NumPy</div>
+                                <div class="tech-chip-desc">Pixel-level feature computation — brightness, opacity,
+                                    contrast & scatter metrics</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(5,150,105,.08);color:#047857;border:1px solid rgba(5,150,105,.2)">Numeric</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Models -->
+                <div>
+                    <p class="tech-group-label">AI Models (Ensemble)</p>
+                    <div style="display:flex;flex-direction:column;gap:.5rem">
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(13,148,136,.12),rgba(14,165,233,.12))">🧠
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">DeepCNN</div>
+                                <div class="tech-chip-desc">Custom deep convolutional network — primary cataract feature
+                                    extractor</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(13,148,136,.08);color:#0d9488;border:1px solid rgba(13,148,136,.2)">Custom</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(14,165,233,.12))">🔗
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">ResNet</div>
+                                <div class="tech-chip-desc">Residual network — deep feature extraction with skip
+                                    connections</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(37,99,235,.08);color:#2563eb;border:1px solid rgba(37,99,235,.2)">Transfer</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(37,99,235,.12))">🏗️
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">VGG</div>
+                                <div class="tech-chip-desc">VGG-style network — strong texture and pattern recognition
+                                </div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(124,58,237,.08);color:#7c3aed;border:1px solid rgba(124,58,237,.2)">Transfer</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(217,119,6,.12),rgba(245,158,11,.12))">⚡
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">AlexNet</div>
+                                <div class="tech-chip-desc">Lightweight convolutional network — fast inference, strong
+                                    baseline</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(217,119,6,.08);color:#b45309;border:1px solid rgba(217,119,6,.2)">Classic</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(225,29,72,.12),rgba(249,115,22,.12))">📊
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">DeepANN</div>
+                                <div class="tech-chip-desc">Deep artificial neural network — fully connected layers for
+                                    classification</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(225,29,72,.08);color:#be123c;border:1px solid rgba(225,29,72,.2)">Custom</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Frontend -->
+                <div>
+                    <p class="tech-group-label">Frontend</p>
+                    <div style="display:flex;flex-direction:column;gap:.5rem">
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(6,182,212,.12))">🎨
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">Tailwind CSS</div>
+                                <div class="tech-chip-desc">Utility-first responsive styling — glassmorphism, animations
+                                    & layout</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(14,165,233,.08);color:#0369a1;border:1px solid rgba(14,165,233,.2)">Styling</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(217,119,6,.12))">📝
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">markdown-it</div>
+                                <div class="tech-chip-desc">Renders Llama-3 markdown AI reports as styled HTML in the
+                                    browser</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(245,158,11,.08);color:#b45309;border:1px solid rgba(245,158,11,.2)">Render</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(124,58,237,.12))">🔤
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">Sora + DM Sans</div>
+                                <div class="tech-chip-desc">Typography system — Sora for display headings, DM Sans for
+                                    body text</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(37,99,235,.08);color:#2563eb;border:1px solid rgba(37,99,235,.2)">Fonts</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(79,70,229,.12),rgba(37,99,235,.12))">⚛️
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">Electron</div>
+                                <div class="tech-chip-desc">Desktop framework — bridges web technologies with native OS capabilities</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(79,70,229,.08);color:#4f46e5;border:1px solid rgba(79,70,229,.2)">Shell</span>
+                        </div>
+                        <div class="tech-chip">
+                            <div class="tech-chip-icon"
+                                style="background:linear-gradient(135deg,rgba(234,179,8,.12),rgba(202,138,4,.12))">📜
+                            </div>
+                            <div>
+                                <div class="tech-chip-name">JavaScript</div>
+                                <div class="tech-chip-desc">Logic layer — handles IPC communication, UI reactivity & AI API calls</div>
+                            </div>
+                            <span class="tech-chip-badge"
+                                style="background:rgba(234,179,8,.08);color:#a16207;border:1px solid rgba(234,179,8,.2)">Logic</span>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ── HELP ── -->
+            <div class="drawer-page" id="dp-help">
+                <div>
+                    <h2
+                        style="font-family:'Sora',sans-serif;font-weight:800;font-size:1.3rem;color:#0f172a;margin-bottom:.3rem">
+                        How to Use</h2>
+                    <p style="font-size:.82rem;color:#64748b">Get a cataract analysis in under 30 seconds.</p>
+                </div>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.2rem;padding:1.2rem 1.3rem">
+                    <p
+                        style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#0f172a;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem">
+                        <span>📋</span> Step-by-step Guide
+                    </p>
+                    <div class="help-step">
+                        <div class="step-num">1</div>
+                        <div class="w-full">
+                            <p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Upload an Eye Image</p>
+                            <p style="font-size:.78rem;color:#64748b;line-height:1.65;margin-bottom:.8rem">Click the upload zone — or drag & drop. Accepted: JPG, PNG, WEBP. Use a well-lit, clear photo of a single open eye.</p>
+                            
+                            <!-- Detailed Photo Tips nested in help -->
+                            <div style="background:white;border:1px solid #eef2f6;border-radius:.9rem;padding:.9rem;margin-top:.4rem shadow-sm">
+                                <p style="font-weight:700;font-size:.75rem;color:#0d9488;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem">
+                                    <span>📸</span> Photo Quick Guide
+                                </p>
+                                <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.4rem">
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Sit in a bright place (near a window or light)
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Keep your phone steady and do not shake
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Bring the camera close to your eye
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> One eye (single close-up) clearly visible
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Look straight at the camera
+                                    </li>
+                                    <li style="font-size:.72rem;color:#64748b;display:flex;gap:.5rem;align-items:start">
+                                        <span style="color:#2dd4bf">•</span> Avoid flash, reflections, or shadows
+                                    </li>
+                                </ul>
+                                <div style="margin-top:.7rem;padding:.5rem .7rem;background:#fffbeb;border-radius:.5rem;border:1px solid #fef3c7;display:flex;align-items:center;gap:.4rem">
+                                    <span style="font-size:.9rem">⚠️</span>
+                                    <p style="font-size:.68rem;font-weight:700;color:#92400e;margin:0">Clear photos ensure correct results.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-num">2</div>
+                        <div>
+                            <p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Start Vision
+                                Analysis</p>
+                            <p style="font-size:.78rem;color:#64748b;line-height:1.65">Tap <strong
+                                    style="color:#0d9488">✦ Start Vision Analysis</strong>. All 5 CNN models run in
+                                parallel and the AI report generates — usually under 10 seconds.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-num">3</div>
+                        <div>
+                            <p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Read Your
+                                Results</p>
+                            <p style="font-size:.78rem;color:#64748b;line-height:1.65">Verdict + confidence, model
+                                votes, 4 clinical indicators, 3-tier explanation (Simple / Technical / AI), and a full
+                                Llama-3 medical report.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-num">4</div>
+                        <div>
+                            <p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Chat with
+                                Medical AI</p>
+                            <p style="font-size:.78rem;color:#64748b;line-height:1.65">Tap <strong
+                                    style="color:#0d9488">Medical AI</strong> (bottom-right) to ask questions. Switch
+                                reply language — English, Telugu, or Hindi.</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p
+                        style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#0f172a;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem">
+                        <span>❓</span> FAQ
+                    </p>
+                    <div style="display:flex;flex-direction:column;gap:.45rem">
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>Is this a medical diagnosis?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">No. This is a screening aid — not a substitute for a qualified
+                                ophthalmologist. If cataract is detected, book an appointment with an eye specialist.
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>What makes a good photo?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Use a well-lit, in-focus photo of one open eye. Avoid heavy glare, dark
+                                images, or photos with the eye partially closed. A clear smartphone photo is sufficient.
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>How accurate is the system?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Five CNN models (DeepCNN, DeepANN, ResNet, VGG, AlexNet) vote via
+                                ensemble — reducing individual model bias. Accuracy depends on image quality. Always
+                                treat results as a first-pass screen.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>What does the 3-tier explanation
+                                    show?</span><span class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Simple: plain language for anyone. Technical: ophthalmology-level feature
+                                analysis. AI / Model: how the CNN pipeline detected cataract from pixel patterns and
+                                feature maps.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>Can I use any eye photo?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Upload one eye at a time. Works with standard smartphone photos — no
+                                fundus camera or slit-lamp required.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)"><span>Is my data stored?</span><span
+                                    class="faq-arrow">▾</span></div>
+                            <div class="faq-a">Images are processed in memory and not permanently stored. Your results
+                                exist only in your current session.</div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    style="background:linear-gradient(135deg,rgba(225,29,72,.06),rgba(249,115,22,.06));border:1px solid rgba(225,29,72,.18);border-radius:1rem;padding:1.1rem 1.2rem;display:flex;gap:.8rem;align-items:flex-start">
+                    <span style="font-size:1.2rem;flex-shrink:0">⚕️</span>
+                    <div>
+                        <p
+                            style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#be123c;margin-bottom:.25rem">
+                            Always see a doctor</p>
+                        <p style="font-size:.78rem;color:#9f1239;line-height:1.65">If you experience sudden vision
+                            changes, blurriness, or halos — do not rely on this tool. Seek immediate professional
+                            medical attention.</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
-
-        <!-- ── TECH STACK ── -->
-        <div class="drawer-page" id="dp-tech">
-            <div><h2 style="font-family:'Sora',sans-serif;font-weight:800;font-size:1.3rem;color:#0f172a;margin-bottom:.3rem">Tech Stack</h2><p style="font-size:.82rem;color:#64748b">Every tool that powers this system, from training to interface.</p></div>
-
-            <!-- Backend & ML -->
-            <div>
-                <p class="tech-group-label">Backend & ML</p>
-                <div style="display:flex;flex-direction:column;gap:.5rem">
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(225,29,72,.12),rgba(249,115,22,.12))">🔥</div>
-                        <div><div class="tech-chip-name">PyTorch</div><div class="tech-chip-desc">CNN model training, loading & inference (DeepCNN, DeepANN, ResNet, VGG, AlexNet)</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(225,29,72,.08);color:#be123c;border:1px solid rgba(225,29,72,.2)">Core ML</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(13,148,136,.12),rgba(5,150,105,.12))">🌶️</div>
-                        <div><div class="tech-chip-name">Flask</div><div class="tech-chip-desc">Web server, routing, session management & file handling</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(13,148,136,.08);color:#0d9488;border:1px solid rgba(13,148,136,.2)">Backend</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(37,99,235,.12))">🐍</div>
-                        <div><div class="tech-chip-name">Python</div><div class="tech-chip-desc">Core language — data processing, inference pipeline, feature extraction</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(14,165,233,.08);color:#0369a1;border:1px solid rgba(14,165,233,.2)">Language</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vision & AI -->
-            <div>
-                <p class="tech-group-label">Vision & AI</p>
-                <div style="display:flex;flex-direction:column;gap:.5rem">
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(217,119,6,.12),rgba(245,158,11,.12))">👁️</div>
-                        <div><div class="tech-chip-name">OpenCV</div><div class="tech-chip-desc">Image validation, Haar cascade eye detection, Hough circles, Grad-CAM heatmaps & clinical feature extraction</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(217,119,6,.08);color:#b45309;border:1px solid rgba(217,119,6,.2)">Vision</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(37,99,235,.12))">🤖</div>
-                        <div><div class="tech-chip-name">Groq API · Llama-3.3 70B</div><div class="tech-chip-desc">AI-generated medical summaries, 3-language chat assistant (English / Telugu / Hindi)</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(124,58,237,.08);color:#7c3aed;border:1px solid rgba(124,58,237,.2)">LLM</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(13,148,136,.1),rgba(14,165,233,.1))">🖼️</div>
-                        <div><div class="tech-chip-name">Pillow (PIL)</div><div class="tech-chip-desc">Image loading, RGB conversion & preprocessing before model inference</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(13,148,136,.08);color:#0d9488;border:1px solid rgba(13,148,136,.2)">Images</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(124,58,237,.1))">📐</div>
-                        <div><div class="tech-chip-name">torchvision</div><div class="tech-chip-desc">Image transforms — resize, tensor conversion & normalisation pipeline</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(37,99,235,.08);color:#2563eb;border:1px solid rgba(37,99,235,.2)">Transforms</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(5,150,105,.1),rgba(13,148,136,.1))">🔢</div>
-                        <div><div class="tech-chip-name">NumPy</div><div class="tech-chip-desc">Pixel-level feature computation — brightness, opacity, contrast & scatter metrics</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(5,150,105,.08);color:#047857;border:1px solid rgba(5,150,105,.2)">Numeric</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Models -->
-            <div>
-                <p class="tech-group-label">AI Models (Ensemble)</p>
-                <div style="display:flex;flex-direction:column;gap:.5rem">
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(13,148,136,.12),rgba(14,165,233,.12))">🧠</div>
-                        <div><div class="tech-chip-name">DeepCNN</div><div class="tech-chip-desc">Custom deep convolutional network — primary cataract feature extractor</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(13,148,136,.08);color:#0d9488;border:1px solid rgba(13,148,136,.2)">Custom</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(14,165,233,.12))">🔗</div>
-                        <div><div class="tech-chip-name">ResNet</div><div class="tech-chip-desc">Residual network — deep feature extraction with skip connections</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(37,99,235,.08);color:#2563eb;border:1px solid rgba(37,99,235,.2)">Transfer</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(37,99,235,.12))">🏗️</div>
-                        <div><div class="tech-chip-name">VGG</div><div class="tech-chip-desc">VGG-style network — strong texture and pattern recognition</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(124,58,237,.08);color:#7c3aed;border:1px solid rgba(124,58,237,.2)">Transfer</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(217,119,6,.12),rgba(245,158,11,.12))">⚡</div>
-                        <div><div class="tech-chip-name">AlexNet</div><div class="tech-chip-desc">Lightweight convolutional network — fast inference, strong baseline</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(217,119,6,.08);color:#b45309;border:1px solid rgba(217,119,6,.2)">Classic</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(225,29,72,.12),rgba(249,115,22,.12))">📊</div>
-                        <div><div class="tech-chip-name">DeepANN</div><div class="tech-chip-desc">Deep artificial neural network — fully connected layers for classification</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(225,29,72,.08);color:#be123c;border:1px solid rgba(225,29,72,.2)">Custom</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Frontend -->
-            <div>
-                <p class="tech-group-label">Frontend</p>
-                <div style="display:flex;flex-direction:column;gap:.5rem">
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(6,182,212,.12))">🎨</div>
-                        <div><div class="tech-chip-name">Tailwind CSS</div><div class="tech-chip-desc">Utility-first responsive styling — glassmorphism, animations & layout</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(14,165,233,.08);color:#0369a1;border:1px solid rgba(14,165,233,.2)">Styling</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(217,119,6,.12))">📝</div>
-                        <div><div class="tech-chip-name">markdown-it</div><div class="tech-chip-desc">Renders Llama-3 markdown AI reports as styled HTML in the browser</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(245,158,11,.08);color:#b45309;border:1px solid rgba(245,158,11,.2)">Render</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(124,58,237,.12))">🔤</div>
-                        <div><div class="tech-chip-name">Sora + DM Sans</div><div class="tech-chip-desc">Typography system — Sora for display headings, DM Sans for body text</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(37,99,235,.08);color:#2563eb;border:1px solid rgba(37,99,235,.2)">Fonts</span>
-                    </div>
-                    <div class="tech-chip">
-                        <div class="tech-chip-icon" style="background:linear-gradient(135deg,rgba(13,148,136,.12),rgba(5,150,105,.12))">🧩</div>
-                        <div><div class="tech-chip-name">Jinja2</div><div class="tech-chip-desc">Flask's template engine — dynamic result rendering from Python backend</div></div>
-                        <span class="tech-chip-badge" style="background:rgba(13,148,136,.08);color:#0d9488;border:1px solid rgba(13,148,136,.2)">Templates</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ── HELP ── -->
-        <div class="drawer-page" id="dp-help">
-            <div><h2 style="font-family:'Sora',sans-serif;font-weight:800;font-size:1.3rem;color:#0f172a;margin-bottom:.3rem">How to Use</h2><p style="font-size:.82rem;color:#64748b">Get a cataract analysis in under 30 seconds.</p></div>
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.2rem;padding:1.2rem 1.3rem">
-                <p style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#0f172a;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem"><span>📋</span> Step-by-step Guide</p>
-                <div class="help-step"><div class="step-num">1</div><div><p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Upload an Eye Image</p><p style="font-size:.78rem;color:#64748b;line-height:1.65">Click the upload zone — or drag & drop. Accepted: JPG, PNG, WEBP. Use a well-lit, clear photo of a single open eye.</p></div></div>
-                <div class="help-step"><div class="step-num">2</div><div><p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Start Vision Analysis</p><p style="font-size:.78rem;color:#64748b;line-height:1.65">Tap <strong style="color:#0d9488">✦ Start Vision Analysis</strong>. All 5 CNN models run in parallel and the AI report generates — usually under 10 seconds.</p></div></div>
-                <div class="help-step"><div class="step-num">3</div><div><p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Read Your Results</p><p style="font-size:.78rem;color:#64748b;line-height:1.65">Verdict + confidence, model votes, 4 clinical indicators, 3-tier explanation (Simple / Technical / AI), and a full Llama-3 medical report.</p></div></div>
-                <div class="help-step"><div class="step-num">4</div><div><p style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:.2rem">Chat with Medical AI</p><p style="font-size:.78rem;color:#64748b;line-height:1.65">Tap <strong style="color:#0d9488">Medical AI</strong> (bottom-right) to ask questions. Switch reply language — English, Telugu, or Hindi.</p></div></div>
-            </div>
-            <div>
-                <p style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#0f172a;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem"><span>❓</span> FAQ</p>
-                <div style="display:flex;flex-direction:column;gap:.45rem">
-                    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Is this a medical diagnosis?</span><span class="faq-arrow">▾</span></div><div class="faq-a">No. This is a screening aid — not a substitute for a qualified ophthalmologist. If cataract is detected, book an appointment with an eye specialist.</div></div>
-                    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>What makes a good photo?</span><span class="faq-arrow">▾</span></div><div class="faq-a">Use a well-lit, in-focus photo of one open eye. Avoid heavy glare, dark images, or photos with the eye partially closed. A clear smartphone photo is sufficient.</div></div>
-                    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>How accurate is the system?</span><span class="faq-arrow">▾</span></div><div class="faq-a">Five CNN models (DeepCNN, DeepANN, ResNet, VGG, AlexNet) vote via ensemble — reducing individual model bias. Accuracy depends on image quality. Always treat results as a first-pass screen.</div></div>
-                    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>What does the 3-tier explanation show?</span><span class="faq-arrow">▾</span></div><div class="faq-a">Simple: plain language for anyone. Technical: ophthalmology-level feature analysis. AI / Model: how the CNN pipeline detected cataract from pixel patterns and feature maps.</div></div>
-                    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Can I use any eye photo?</span><span class="faq-arrow">▾</span></div><div class="faq-a">Upload one eye at a time. Works with standard smartphone photos — no fundus camera or slit-lamp required.</div></div>
-                    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Is my data stored?</span><span class="faq-arrow">▾</span></div><div class="faq-a">Images are processed in memory and not permanently stored. Your results exist only in your current session.</div></div>
-                </div>
-            </div>
-            <div style="background:linear-gradient(135deg,rgba(225,29,72,.06),rgba(249,115,22,.06));border:1px solid rgba(225,29,72,.18);border-radius:1rem;padding:1.1rem 1.2rem;display:flex;gap:.8rem;align-items:flex-start">
-                <span style="font-size:1.2rem;flex-shrink:0">⚕️</span>
-                <div><p style="font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;color:#be123c;margin-bottom:.25rem">Always see a doctor</p><p style="font-size:.78rem;color:#9f1239;line-height:1.65">If you experience sudden vision changes, blurriness, or halos — do not rely on this tool. Seek immediate professional medical attention.</p></div>
-            </div>
-        </div>
-
     </div>
-</div>
 
 
-<!-- ── Chat Panel ── -->
-<div id="chat-panel" class="glass shadow-2xl">
-    <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-100/70 bg-white/50 shrink-0 rounded-t-[1.5rem]">
-        <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0"
-                 style="background:linear-gradient(135deg,#0d9488,#2563eb);animation:pulseGlow 2.5s ease infinite">👁️</div>
-            <div>
-                <p class="font-display font-bold text-[13px] text-slate-800 leading-tight">Medical AI</p>
-                <select id="chat-lang" class="text-[10px] bg-transparent border-none outline-none text-slate-500 font-semibold uppercase tracking-wide cursor-pointer">
-                    <option value="English">🇬🇧 English</option>
-                    <option value="Telugu">🇮🇳 Telugu</option>
-                    <option value="Hindi">🇮🇳 Hindi</option>
-                </select>
+    <!-- ── Chat Panel ── -->
+    <div id="chat-panel" class="glass shadow-2xl">
+        <div
+            class="flex items-center justify-between px-4 py-3.5 border-b border-slate-100/70 bg-white/50 shrink-0 rounded-t-[1.5rem]">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0"
+                    style="background:linear-gradient(135deg,#0d9488,#2563eb);animation:pulseGlow 2.5s ease infinite">
+                    👁️</div>
+                <div>
+                    <p class="font-display font-bold text-[13px] text-slate-800 leading-tight">Medical AI</p>
+                    <select id="chat-lang"
+                        class="text-[10px] bg-transparent border-none outline-none text-slate-500 font-semibold uppercase tracking-wide cursor-pointer">
+                        <option value="English">🇬🇧 English</option>
+                        <option value="Telugu">🇮🇳 Telugu</option>
+                        <option value="Hindi">🇮🇳 Hindi</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="toggleChat()"
+                class="w-7 h-7 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-400 flex items-center justify-center text-slate-400 transition-colors text-xs font-bold">✕</button>
+        </div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-3.5 space-y-3" style="overscroll-behavior:contain">
+            <div class="msg-anim mr-4 p-3.5 rounded-2xl rounded-tl-none border border-teal-100/50 text-sm text-slate-600 leading-relaxed"
+                style="background:linear-gradient(135deg,#f0fdf9,#f0f9ff)">
+                Welcome! I can explain your scan results or answer cataract questions. 👁️
             </div>
         </div>
-        <button onclick="toggleChat()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-400 flex items-center justify-center text-slate-400 transition-colors text-xs font-bold">✕</button>
+        <form id="chat-form"
+            class="p-3 border-t border-slate-100/60 flex gap-2 bg-white/60 shrink-0 rounded-b-[1.5rem]">
+            <input type="text" id="chat-input" placeholder="Ask me anything…" autocomplete="off"
+                class="flex-1 bg-slate-100 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400 border border-transparent transition-all placeholder-slate-400 min-w-0">
+            <button type="submit"
+                class="btn-primary w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7-7 7M3 12h18" />
+                </svg>
+            </button>
+        </form>
     </div>
-    <div id="chat-messages" class="flex-1 overflow-y-auto p-3.5 space-y-3" style="overscroll-behavior:contain">
-        <div class="msg-anim mr-4 p-3.5 rounded-2xl rounded-tl-none border border-teal-100/50 text-sm text-slate-600 leading-relaxed"
-             style="background:linear-gradient(135deg,#f0fdf9,#f0f9ff)">
-            Welcome! I can explain your scan results or answer cataract questions. 👁️
+    <button id="chat-fab" onclick="toggleChat()">
+        <div class="fab-avatar text-white">👁️</div>
+        <span class="fab-label">Medical AI</span>
+    </button>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay">
+        <div
+            class="glass rounded-3xl px-10 sm:px-14 py-10 flex flex-col items-center shadow-2xl text-center mx-4 w-full max-w-xs">
+            <div class="spinner mb-5"></div>
+            <h2 class="font-display font-extrabold text-slate-900 text-lg mb-1">Analysing…</h2>
+            <p class="text-teal-600 text-[11px] font-bold uppercase tracking-widest animate-pulse">Running all models
+            </p>
         </div>
     </div>
-    <form id="chat-form" class="p-3 border-t border-slate-100/60 flex gap-2 bg-white/60 shrink-0 rounded-b-[1.5rem]">
-        <input type="text" id="chat-input" placeholder="Ask me anything…" autocomplete="off"
-            class="flex-1 bg-slate-100 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-teal-400 border border-transparent transition-all placeholder-slate-400 min-w-0">
-        <button type="submit" class="btn-primary w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7-7 7M3 12h18"/>
-            </svg>
-        </button>
-    </form>
-</div>
-<button id="chat-fab" onclick="toggleChat()">
-    <div class="fab-avatar text-white">👁️</div>
-    <span class="fab-label">Medical AI</span>
-</button>
-
-<!-- Loading overlay -->
-<div id="loading-overlay">
-    <div class="glass rounded-3xl px-10 sm:px-14 py-10 flex flex-col items-center shadow-2xl text-center mx-4 w-full max-w-xs">
-        <div class="spinner mb-5"></div>
-        <h2 class="font-display font-extrabold text-slate-900 text-lg mb-1">Analysing…</h2>
-        <p class="text-teal-600 text-[11px] font-bold uppercase tracking-widest animate-pulse">Running all models</p>
-    </div>
-</div>
 
 
-<script>
-    /* PRG — prevent re-submit on back */
-    if (window.history.replaceState)
-        window.history.replaceState(null, '', window.location.pathname);
+    <script>
+        /* PRG — prevent re-submit on back */
+        if (window.history.replaceState)
+            window.history.replaceState(null, '', window.location.pathname);
 
-    /* ── Markdown render ── */
-    try {
-        const el = document.getElementById('groq-summary-text');
-        if (el && typeof window.markdownit === 'function') {
-            const md  = window.markdownit({ html:true, linkify:true, typographer:true });
-            const raw = (el.textContent || el.innerText || '').trim();
-            if (raw) el.innerHTML = md.render(raw.split('\n').map(l => l.trim()).join('\n'));
-        }
-    } catch(e){ console.warn('md skip', e); }
-
-    /* ── Auto-scroll to results ── */
-    const resultsRoot = document.getElementById('results-root');
-    if (resultsRoot) {
-        setTimeout(() => { resultsRoot.scrollIntoView({ behavior:'smooth', block:'start' }); }, 520);
-    }
-
-    /* ── Animated count-up for feat-value ── */
-    document.querySelectorAll('.feat-value[data-target]').forEach(el => {
-        const target = parseFloat(el.dataset.target);
-        if (isNaN(target)) return;
-        const dur = 1100, start = performance.now();
-        const tick = now => {
-            const t    = Math.min((now - start) / dur, 1);
-            const ease = 1 - Math.pow(1 - t, 3);
-            el.textContent = (target * ease).toFixed(1) + '%';
-            if (t < 1) requestAnimationFrame(tick);
-            else el.textContent = target.toFixed(1) + '%';
-        };
-        setTimeout(() => requestAnimationFrame(tick), 750);
-    });
-
-    /* ── 3-Tier Explanation tabs ── */
-    function showExpTab(name, btn) {
-        document.querySelectorAll('.exp-panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.exp-tab').forEach(b => b.classList.remove('active'));
-        const panel = document.getElementById('exp-' + name);
-        if (panel) panel.classList.add('active');
-        if (btn)   btn.classList.add('active');
-    }
-
-    /* ── Subpage Drawer ── */
-    const overlay    = document.getElementById('subpage-overlay');
-    const drawerTabs = document.querySelectorAll('.drawer-tab');
-
-    function openSubpage(tab) {
-        overlay.classList.add('open');
-        document.body.style.overflow = 'hidden';
-        switchDrawerTab(tab, null);
-    }
-    function closeSubpage() {
-        overlay.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-    function switchDrawerTab(tab, btn) {
-        document.querySelectorAll('.drawer-page').forEach(p => p.classList.remove('active'));
-        const page = document.getElementById('dp-' + tab);
-        if (page) page.classList.add('active');
-        document.querySelectorAll('.drawer-tab').forEach(b => b.classList.remove('active'));
-        if (btn) {
-            btn.classList.add('active');
-        } else {
-            const idx = { about:0, tech:1, help:2 }[tab];
-            if (idx !== undefined && drawerTabs[idx]) drawerTabs[idx].classList.add('active');
-        }
-        const drawer = document.getElementById('subpage-drawer');
-        if (drawer) drawer.scrollTop = 0;
-    }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubpage(); });
-
-    /* ── FAQ ── */
-    function toggleFaq(qEl) {
-        const item   = qEl.closest('.faq-item');
-        const isOpen = item.classList.contains('open');
-        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
-        if (!isOpen) item.classList.add('open');
-    }
-
-    /* ── Chat ── */
-    let chatOpen = false;
-    function toggleChat() {
-        chatOpen = !chatOpen;
-        document.getElementById('chat-panel').classList.toggle('open', chatOpen);
-        if (chatOpen) setTimeout(() => document.getElementById('chat-input').focus(), 320);
-    }
-
-    /* ── File preview ── */
-    function previewFile(e) {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        const r = new FileReader();
-        r.onload = ev => {
-            const p = document.getElementById('image-preview');
-            const c = document.getElementById('preview-container');
-            const i = document.getElementById('upload-instruction');
-            const b = document.getElementById('submit-btn');
-            if (p) p.src = ev.target.result;
-            if (c) c.classList.remove('hidden');
-            if (i) i.classList.add('hidden');
-            if (b) { b.classList.remove('hidden'); b.style.animation = 'fadeUp .4s ease both'; }
-        };
-        r.readAsDataURL(file);
-    }
-
-    /* ── Submit + bfcache ── */
-    const uploadForm     = document.getElementById('main-upload-form');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    if (uploadForm) uploadForm.addEventListener('submit', () => { if (loadingOverlay) loadingOverlay.style.display = 'flex'; });
-    window.addEventListener('pageshow', e => { if (e.persisted && loadingOverlay) loadingOverlay.style.display = 'none'; });
-
-    /* ── Drag & drop ── */
-    const dz = document.getElementById('drop-zone');
-    if (dz) {
-        ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag-over'); }));
-        dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-        dz.addEventListener('drop', e => {
-            e.preventDefault(); dz.classList.remove('drag-over');
-            const fi = document.getElementById('file-input');
-            if (e.dataTransfer?.files?.length && fi) {
-                const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
-                fi.files = dt.files; fi.dispatchEvent(new Event('change', { bubbles:true }));
+        /* ── Markdown render ── */
+        try {
+            const el = document.getElementById('groq-summary-text');
+            if (el && typeof window.markdownit === 'function') {
+                const md = window.markdownit({ html: true, linkify: true, typographer: true });
+                const raw = (el.textContent || el.innerText || '').trim();
+                if (raw) el.innerHTML = md.render(raw.split('\n').map(l => l.trim()).join('\n'));
             }
-        });
-    }
+        } catch (e) { console.warn('md skip', e); }
 
-    /* ── Chat send/receive ── */
-    const chatForm  = document.getElementById('chat-form');
-    const chatInput = document.getElementById('chat-input');
-    const chatBox   = document.getElementById('chat-messages');
-    if (chatForm) {
-        chatForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            const msg  = chatInput.value.trim();
-            const lang = document.getElementById('chat-lang')?.value || 'English';
-            if (!msg) return;
-            chatInput.disabled = true; chatInput.placeholder = 'AI is thinking…';
-            addMsg(msg, 'user'); chatInput.value = '';
-            const typing = document.createElement('div');
-            typing.className = 'msg-anim mr-4 bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex gap-1.5 items-center';
-            typing.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-            chatBox.appendChild(typing); chatBox.scrollTop = chatBox.scrollHeight;
-            try {
-                const res  = await fetch('/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ message:msg, language:lang }) });
-                const data = await res.json(); typing.remove(); addMsg(data.reply, 'ai');
-            } catch { typing.remove(); addMsg('Connection error. Please try again. ⚠️', 'ai'); }
-            finally { chatInput.disabled = false; chatInput.placeholder = 'Ask me anything…'; chatInput.focus(); }
-        });
-    }
-    function addMsg(text, side) {
-        const div = document.createElement('div');
-        if (side === 'user') {
-            div.className = 'msg-anim ml-4 p-3.5 rounded-2xl rounded-tr-none text-sm text-white shadow-md';
-            div.style.background = 'linear-gradient(135deg,#0d9488,#2563eb)';
-        } else {
-            div.className = 'msg-anim mr-4 bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-100 text-sm text-slate-700 shadow-sm';
+        /* ── Auto-scroll to results ── */
+        const resultsRoot = document.getElementById('results-root');
+        if (resultsRoot) {
+            setTimeout(() => { resultsRoot.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 520);
         }
-        div.innerHTML = `<p class="leading-relaxed">${text}</p>`;
-        chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
-    }
-</script>
+
+        /* ── Animated count-up for feat-value ── */
+        document.querySelectorAll('.feat-value[data-target]').forEach(el => {
+            const target = parseFloat(el.dataset.target);
+            if (isNaN(target)) return;
+            const dur = 1100, start = performance.now();
+            const tick = now => {
+                const t = Math.min((now - start) / dur, 1);
+                const ease = 1 - Math.pow(1 - t, 3);
+                el.textContent = (target * ease).toFixed(1) + '%';
+                if (t < 1) requestAnimationFrame(tick);
+                else el.textContent = target.toFixed(1) + '%';
+            };
+            setTimeout(() => requestAnimationFrame(tick), 750);
+        });
+
+        /* ── 3-Tier Explanation tabs ── */
+        function showExpTab(name, btn) {
+            document.querySelectorAll('.exp-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.exp-tab').forEach(b => b.classList.remove('active'));
+            const panel = document.getElementById('exp-' + name);
+            if (panel) panel.classList.add('active');
+            if (btn) btn.classList.add('active');
+        }
+
+        /* ── Subpage Drawer ── */
+        const overlay = document.getElementById('subpage-overlay');
+        const drawerTabs = document.querySelectorAll('.drawer-tab');
+
+        function openSubpage(tab) {
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            switchDrawerTab(tab, null);
+        }
+        function closeSubpage() {
+            overlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function switchDrawerTab(tab, btn) {
+            document.querySelectorAll('.drawer-page').forEach(p => p.classList.remove('active'));
+            const page = document.getElementById('dp-' + tab);
+            if (page) page.classList.add('active');
+            document.querySelectorAll('.drawer-tab').forEach(b => b.classList.remove('active'));
+            if (btn) {
+                btn.classList.add('active');
+            } else {
+                const idx = { about: 0, tech: 1, help: 2 }[tab];
+                if (idx !== undefined && drawerTabs[idx]) drawerTabs[idx].classList.add('active');
+            }
+            const drawer = document.getElementById('subpage-drawer');
+            if (drawer) drawer.scrollTop = 0;
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubpage(); });
+
+        /* ── FAQ ── */
+        function toggleFaq(qEl) {
+            const item = qEl.closest('.faq-item');
+            const isOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+            if (!isOpen) item.classList.add('open');
+        }
+
+        /* ── Chat ── */
+        let chatOpen = false;
+        function toggleChat() {
+            chatOpen = !chatOpen;
+            document.getElementById('chat-panel').classList.toggle('open', chatOpen);
+            if (chatOpen) setTimeout(() => document.getElementById('chat-input').focus(), 320);
+        }
+
+        /* ── File preview ── */
+        function previewFile(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = ev => {
+                const p = document.getElementById('image-preview');
+                const c = document.getElementById('preview-container');
+                const i = document.getElementById('upload-instruction');
+                const b = document.getElementById('submit-btn');
+                if (p) p.src = ev.target.result;
+                if (c) c.classList.remove('hidden');
+                if (i) i.classList.add('hidden');
+                if (b) { b.classList.remove('hidden'); b.style.animation = 'fadeUp .4s ease both'; }
+            };
+            r.readAsDataURL(file);
+        }
+
+        /* ── Submit + bfcache ── */
+        const uploadForm = document.getElementById('main-upload-form');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (uploadForm) uploadForm.addEventListener('submit', () => { if (loadingOverlay) loadingOverlay.style.display = 'flex'; });
+        window.addEventListener('pageshow', e => { if (e.persisted && loadingOverlay) loadingOverlay.style.display = 'none'; });
+
+        /* ── Drag & drop ── */
+        const dz = document.getElementById('drop-zone');
+        if (dz) {
+            ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag-over'); }));
+            dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+            dz.addEventListener('drop', e => {
+                e.preventDefault(); dz.classList.remove('drag-over');
+                const fi = document.getElementById('file-input');
+                if (e.dataTransfer?.files?.length && fi) {
+                    const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+                    fi.files = dt.files; fi.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        }
+
+        /* ── Chat send/receive ── */
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatBox = document.getElementById('chat-messages');
+        if (chatForm) {
+            chatForm.addEventListener('submit', async e => {
+                e.preventDefault();
+                const msg = chatInput.value.trim();
+                const lang = document.getElementById('chat-lang')?.value || 'English';
+                if (!msg) return;
+                chatInput.disabled = true; chatInput.placeholder = 'AI is thinking…';
+                addMsg(msg, 'user'); chatInput.value = '';
+                const typing = document.createElement('div');
+                typing.className = 'msg-anim mr-4 bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex gap-1.5 items-center';
+                typing.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+                chatBox.appendChild(typing); chatBox.scrollTop = chatBox.scrollHeight;
+                try {
+                    const res = await fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, language: lang }) });
+                    const data = await res.json(); typing.remove(); addMsg(data.reply, 'ai');
+                } catch { typing.remove(); addMsg('Connection error. Please try again. ⚠️', 'ai'); }
+                finally { chatInput.disabled = false; chatInput.placeholder = 'Ask me anything…'; chatInput.focus(); }
+            });
+        }
+        function addMsg(text, side) {
+            const div = document.createElement('div');
+            if (side === 'user') {
+                div.className = 'msg-anim ml-4 p-3.5 rounded-2xl rounded-tr-none text-sm text-white shadow-md';
+                div.style.background = 'linear-gradient(135deg,#0d9488,#2563eb)';
+            } else {
+                div.className = 'msg-anim mr-4 bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-100 text-sm text-slate-700 shadow-sm';
+            }
+            div.innerHTML = `<p class="leading-relaxed">${text}</p>`;
+            chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
 </body>
+
 </html>
