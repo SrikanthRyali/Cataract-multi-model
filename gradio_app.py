@@ -676,7 +676,7 @@ def is_eye_image(image_path: str) -> tuple:
 
 def predict_single_model(image, model_name, groq_api_key):
     if image is None:
-        raise gr.Error("No image uploaded.")
+        return "No image uploaded.", "", "", "", "", None
     
     # Save image temporarily
     ext = "png"
@@ -688,13 +688,13 @@ def predict_single_model(image, model_name, groq_api_key):
     is_valid, err_msg = is_eye_image(img_path)
     if not is_valid:
         os.remove(img_path)
-        raise gr.Error(err_msg)
+        return err_msg, "", "", "", "", None
     
     # Load model
     model = get_model(model_name)
     if model is None:
         os.remove(img_path)
-        raise gr.Error(f"Model '{model_name}' could not be loaded.")
+        return f"Model '{model_name}' could not be loaded.", "", "", "", "", None
     
     # Preprocess
     input_tensor = transform(image).unsqueeze(0)
@@ -740,7 +740,7 @@ def predict_single_model(image, model_name, groq_api_key):
 
 def predict_ensemble(image, groq_api_key):
     if image is None:
-        raise gr.Error("No image uploaded.")
+        return "No image uploaded.", "", "", "", "", "", None
     
     # Save image temporarily
     ext = "png"
@@ -752,7 +752,7 @@ def predict_ensemble(image, groq_api_key):
     is_valid, err_msg = is_eye_image(img_path)
     if not is_valid:
         os.remove(img_path)
-        raise gr.Error(err_msg)
+        return err_msg, "", "", "", "", "", None
     
     # Preprocess
     input_tensor = transform(image).unsqueeze(0)
@@ -776,7 +776,7 @@ def predict_ensemble(image, groq_api_key):
     
     if not model_results:
         os.remove(img_path)
-        raise gr.Error("No models could run inference.")
+        return "No models could run inference.", "", "", "", "", "", None
     
     cataract_count = len(cataract_votes)
     normal_count = len(normal_votes)
@@ -795,11 +795,11 @@ def predict_ensemble(image, groq_api_key):
     
     if final_result["confidence"] < MIN_CONFIDENCE:
         os.remove(img_path)
-        raise gr.Error(f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.")
+        return f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.", "", "", "", "", "", None
     
     if final_result["avg_entropy"] > MAX_ENTROPY:
         os.remove(img_path)
-        raise gr.Error("The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.")
+        return "The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.", "", "", "", "", "", None
     
     # Eye features
     eye_features = analyze_eye_features(img_path)
