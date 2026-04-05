@@ -51,9 +51,9 @@ try {
       /**
        * Medical AI Chat Assistant (Multilingual)
        */
-      chat: async (userText, language, apiKey) => {
+      chat: async (userText, language, apiKey, systemPrompt) => {
         const url = 'https://api.groq.com/openai/v1/chat/completions';
-        const systemPrompt = `You are a helpful Medical Assistant specialized in Cataract. 
+        const finalSystemPrompt = systemPrompt || `You are a helpful Medical Assistant specialized in Cataract. 
 Respond in ${language}. 
 Use simple, caring language. 
 If the user asks about surgery, mention that Ayushman Bharat offers free treatment in India. 

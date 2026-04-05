@@ -3,11 +3,16 @@
 
 const md = window.markdownit();
 let groqApiKey = localStorage.getItem('CATARACT_GROQ_KEY') || '';
+let hfToken = localStorage.getItem('CATARACT_HF_TOKEN') || '';
 let currentImageBase64 = null;
+let chatHistory = []; // Last 7 messages: {role, content}
+let latestAnalysisContext = null; 
+
 const DEFAULT_SPACE_ID = 'Srikanth22MH1A42C6/model-api-2';
 
 // --- Initialization ---
 document.getElementById('groq-api-key-input').value = groqApiKey;
+document.getElementById('hf-token-input').value = hfToken;
 
 // --- Helper: Count Up Animation ---
 const animateValue = (id, start, end, duration) => {
@@ -80,15 +85,19 @@ window.switchDrawerTab = (tabId, btn) => {
 window.toggleFaq = (el) => el.parentElement.classList.toggle('open');
 
 // --- Config Logic ---
-window.saveGroqKey = () => {
-    const key = document.getElementById('groq-api-key-input').value.trim();
-    if (key) {
-        groqApiKey = key;
-        localStorage.setItem('CATARACT_GROQ_KEY', key);
+window.saveSettings = () => {
+    const gKey = document.getElementById('groq-api-key-input').value.trim();
+    const hToken = document.getElementById('hf-token-input').value.trim();
+    
+    if (gKey && hToken) {
+        groqApiKey = gKey;
+        hfToken = hToken;
+        localStorage.setItem('CATARACT_GROQ_KEY', gKey);
+        localStorage.setItem('CATARACT_HF_TOKEN', hToken);
         alert("Configuration Saved!");
         closeSubpage();
     } else {
-        alert("Please enter a valid key.");
+        alert("Please enter both a Groq Key and a Hugging Face Token.");
     }
 };
 
@@ -113,8 +122,8 @@ const addChatMessage = (role, text) => {
 
 chatForm.onsubmit = async (e) => {
     e.preventDefault();
-    const txt = chatInput.value.trim();
-    if (!txt || !groqApiKey) {
+    const text = chatInput.value.trim();
+    if (!text || !groqApiKey) {
         if (!groqApiKey) {
            alert("Please configure Groq API Key first.");
            openSubpage('config');
@@ -122,7 +131,7 @@ chatForm.onsubmit = async (e) => {
         return;
     }
 
-    addChatMessage('user', txt);
+    addChatMessage('user', text);
     chatInput.value = '';
 
     const typing = document.createElement('div');
@@ -134,12 +143,37 @@ chatForm.onsubmit = async (e) => {
 
     try {
         const lang = chatLang.value;
-        const response = await window.api.groq.chat(txt, lang, groqApiKey);
+        
+        // Prepare context
+        let contextMessage = `Conversation history: ${JSON.stringify(chatHistory)}\n`;
+        if (latestAnalysisContext) {
+            contextMessage += `Latest Patient Analysis: ${JSON.stringify(latestAnalysisContext)}\n`;
+        }
+
+        const systemPrompt = `You are a friendly AI Eye Assistant. 
+        Speak in plain everyday language. 
+        Use the context below to answer user questions about their eye health.
+        ${contextMessage}
+        Keep responses VERY BRIEF — 2 to 4 sentences max.
+        RESPOND ONLY IN ${lang.toUpperCase()} LANGUAGE.
+        IF TELUGU: use only Telugu script. NO English letters.
+        IF HINDI: use only Devanagari script. NO English letters.
+        NO asterisks (*) or square brackets ([]).
+        Be professional but friendly.`;
+
+        const response = await window.api.groq.chat(text, lang, groqApiKey, systemPrompt);
         typing.remove();
         addChatMessage('ai', response);
+
+        // Update history (limit to last 7)
+        chatHistory.push({ role: 'user', content: text });
+        chatHistory.push({ role: 'assistant', content: response });
+        if (chatHistory.length > 14) chatHistory = chatHistory.slice(-14); // 7 pairs = 14 messages
+
     } catch (err) {
         typing.remove();
         addChatMessage('ai', "I encountered an error. Please check your API key.");
+        console.error("Chat Error:", err);
     }
 };
 
@@ -179,7 +213,8 @@ predictBtn.onclick = async () => {
     try {
         const resultData = await window.api.huggingface.call(DEFAULT_SPACE_ID, '/predict_ensemble', {
             image: currentImageBase64,
-            groq_api_key: groqApiKey
+            groq_api_key: groqApiKey,
+            hfToken: hfToken // Pass persistent token for auth
         });
 
         if (!resultData || !Array.isArray(resultData)) throw new Error("Neural output invalid.");
@@ -201,6 +236,15 @@ predictBtn.onclick = async () => {
         }
 
         const aiReportRaw = typeof resultData[2] === 'string' ? resultData[2] : '';
+
+        // Store context for Chat intelligence
+        latestAnalysisContext = {
+            prediction: finalPred,
+            confidence: confidence,
+            isCataract: finalPred === 'Cataract',
+            individualResults: individualResultsStr,
+            reportSummary: aiReportRaw.substring(0, 500) // Keep it small for context
+        };
 
         // 1:1 Parity Update UI
         updateResultsUI(finalPred, confidence, individualResultsStr, "", "", "", aiReportRaw);

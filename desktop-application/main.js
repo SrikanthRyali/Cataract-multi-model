@@ -31,10 +31,13 @@ app.whenReady().then(() => {
         const { Client } = await import('@gradio/client');
         console.log(`Connecting to Space: ${spaceId}...`);
         try {
-          gradioClient = await Client.connect(spaceId);
+          // Use hf_token if provided for authentication
+          const clientOptions = payload && payload.hfToken ? { hf_token: payload.hfToken } : {};
+          gradioClient = await Client.connect(spaceId, clientOptions);
         } catch (connErr) {
           const directUrl = `https://${spaceId.replace('/', '-').toLowerCase()}.hf.space`;
-          gradioClient = await Client.connect(directUrl);
+          const clientOptions = payload && payload.hfToken ? { hf_token: payload.hfToken } : {};
+          gradioClient = await Client.connect(directUrl, clientOptions);
         }
       }
       

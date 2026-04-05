@@ -663,7 +663,7 @@ def is_eye_image(image_path: str) -> tuple:
 
 def predict_single_model(image, model_name, groq_api_key):
     if image is None:
-        return "No image uploaded.", "", "", "", ""
+        return "No image uploaded.", "", "", "", "", None
     
     # Save image temporarily
     ext = "png"
@@ -675,13 +675,13 @@ def predict_single_model(image, model_name, groq_api_key):
     is_valid, err_msg = is_eye_image(img_path)
     if not is_valid:
         os.remove(img_path)
-        return err_msg, "", "", "", ""
+        return err_msg, "", "", "", "", None
     
     # Load model
     model = get_model(model_name)
     if model is None:
         os.remove(img_path)
-        return f"Model '{model_name}' could not be loaded.", "", "", "", ""
+        return f"Model '{model_name}' could not be loaded.", "", "", "", "", None
     
     # Preprocess
     input_tensor = transform(image).unsqueeze(0)
@@ -720,13 +720,14 @@ def predict_single_model(image, model_name, groq_api_key):
         summary,
         explanation["simple"],
         explanation["technical"],
-        explanation["ai_model"]
-    ), heatmap
+        explanation["ai_model"],
+        heatmap
+    )
 
 
 def predict_ensemble(image, groq_api_key):
     if image is None:
-        return "No image uploaded.", "", "", "", "", ""
+        return "No image uploaded.", "", "", "", "", "", None
     
     # Save image temporarily
     ext = "png"
@@ -738,7 +739,7 @@ def predict_ensemble(image, groq_api_key):
     is_valid, err_msg = is_eye_image(img_path)
     if not is_valid:
         os.remove(img_path)
-        return err_msg, "", "", "", "", ""
+        return err_msg, "", "", "", "", "", None
     
     # Preprocess
     input_tensor = transform(image).unsqueeze(0)
@@ -762,7 +763,7 @@ def predict_ensemble(image, groq_api_key):
     
     if not model_results:
         os.remove(img_path)
-        return "No models could run inference.", "", "", "", "", ""
+        return "No models could run inference.", "", "", "", "", "", None
     
     cataract_count = len(cataract_votes)
     normal_count = len(normal_votes)
@@ -781,11 +782,11 @@ def predict_ensemble(image, groq_api_key):
     
     if final_result["confidence"] < MIN_CONFIDENCE:
         os.remove(img_path)
-        return f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.", "", "", "", "", ""
+        return f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.", "", "", "", "", "", None
     
     if final_result["avg_entropy"] > MAX_ENTROPY:
         os.remove(img_path)
-        return "The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.", "", "", "", "", ""
+        return "The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.", "", "", "", "", "", None
     
     # Eye features
     eye_features = analyze_eye_features(img_path)
@@ -816,8 +817,9 @@ def predict_ensemble(image, groq_api_key):
         individual_results,
         summary,
         explanation["simple"],
-        explanation["technical"]
-    ), heatmap
+        explanation["technical"],
+        heatmap
+    )
 
 
 def list_models():
