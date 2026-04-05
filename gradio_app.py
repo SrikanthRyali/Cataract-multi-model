@@ -55,13 +55,13 @@ transform = transforms.Compose([
 ])
 
 # ── Thresholds ─────────────────────────────────────────────────
-MIN_CONFIDENCE   = 30
+MIN_CONFIDENCE   = 40
 MAX_ENTROPY      = 0.67
 MAX_LAP_VARIANCE = 8000
 ILLUS_HI_SAT_THRESH = 0.75
 ILLUS_SKIN_THRESH   = 0.08
 WHITE_BG_THRESHOLD  = 0.35
-HOUGH_CIRCLE_MAX_MEAN = 185
+HOUGH_CIRCLE_MAX_MEAN = 145
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "bmp", "gif", "tiff"}
 
 # ── Haar cascade ───────────────────────────────────────────────
@@ -610,6 +610,7 @@ def is_eye_image(image_path: str) -> tuple:
                 sep = np.hypot(dom_c[0]-sec_c[0], dom_c[1]-sec_c[1])
                 if sep > max_dim * 0.65:
                     return False, "This photo appears to show more than one eye. Please upload a close-up of just ONE eye."
+                log.info("Validation: PASSED via Cascade (Multiple Eye Logic)")
                 return True, ""
 
         # Hough fallback

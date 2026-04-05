@@ -47,6 +47,9 @@ app.whenReady().then(() => {
         payload.image = Buffer.from(base64Data, 'base64');
       }
 
+      // Remove hfToken from payload before prediction (it's for connection only)
+      delete payload.hfToken;
+
       const result = await gradioClient.predict(apiName, payload);
       return result.data;
     } catch (error) {

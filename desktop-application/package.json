@@ -4,8 +4,9 @@
   "description": "Cataract Detection AI Desktop Application",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "electron . --no-sandbox",
     "build": "electron-builder --win",
+    "build:linux": "electron-builder --linux AppImage",
     "pack": "electron-builder --dir"
   },
   "build": {
@@ -16,6 +17,13 @@
         "nsis",
         "portable"
       ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Medical"
     },
     "directories": {
       "output": "release"

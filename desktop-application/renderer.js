@@ -89,15 +89,15 @@ window.saveSettings = () => {
     const gKey = document.getElementById('groq-api-key-input').value.trim();
     const hToken = document.getElementById('hf-token-input').value.trim();
     
-    if (gKey && hToken) {
+    if (gKey) {
         groqApiKey = gKey;
-        hfToken = hToken;
+        hfToken = hToken; // Can be empty
         localStorage.setItem('CATARACT_GROQ_KEY', gKey);
-        localStorage.setItem('CATARACT_HF_TOKEN', hToken);
+        localStorage.setItem('CATARACT_HF_TOKEN', hToken || '');
         alert("Configuration Saved!");
         closeSubpage();
     } else {
-        alert("Please enter both a Groq Key and a Hugging Face Token.");
+        alert("Please enter a Groq API Key.");
     }
 };
 
@@ -177,6 +177,14 @@ chatForm.onsubmit = async (e) => {
     }
 };
 
+function resetUploadArea() {
+    document.getElementById('image-preview-container').style.display = 'none';
+    document.getElementById('upload-instruction').classList.remove('hidden');
+    predictBtn.classList.add('hidden');
+    fileInput.value = '';
+    currentImageBase64 = null;
+}
+
 // --- Prediction Logic ---
 const fileInput = document.getElementById('file-input');
 const predictBtn = document.getElementById('predict-btn');
@@ -221,7 +229,17 @@ predictBtn.onclick = async () => {
 
         // Robust parsing handling different Gradio response schemas
         const mainObj = (typeof resultData[0] === 'object' && !Array.isArray(resultData[0])) ? resultData[0] : {};
-        const finalStr = typeof resultData[0] === 'string' ? resultData[0] : (mainObj.final_prediction || 'Normal');
+        const firstValue = resultData[0];
+        
+        // If the first value is a string but doesn't contain "Prediction", it's a validation error
+        if (typeof firstValue === 'string' && !firstValue.includes('Prediction')) {
+            alert("Validation Error: " + firstValue);
+            loadingOverlay.style.display = 'none';
+            resetUploadArea();
+            return;
+        }
+
+        const finalStr = typeof firstValue === 'string' ? firstValue : (mainObj.final_prediction || 'Normal');
         const predMatch = finalStr.match ? finalStr.match(/(Cataract|Normal)\s*\(([\d.]+)%\)/i) : null;
         
         const finalPred = predMatch ? predMatch[1] : (finalStr.toLowerCase().includes('cataract') ? 'Cataract' : 'Normal');
@@ -255,11 +273,7 @@ predictBtn.onclick = async () => {
         resultsRoot.scrollIntoView({ behavior: 'smooth' });
 
         // User Feature Request: Instantly empty upload area for next image
-        document.getElementById('image-preview-container').style.display = 'none';
-        document.getElementById('upload-instruction').classList.remove('hidden');
-        predictBtn.classList.add('hidden');
-        fileInput.value = '';
-        currentImageBase64 = null;
+        resetUploadArea();
 
     } catch (err) {
         alert("Inference Error: " + err.message);
