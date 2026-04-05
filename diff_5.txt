@@ -1,0 +1,115 @@
+﻿diff --git a/gradio_app.py b/gradio_app.py
+index 6b9aa29..53b80eb 100644
+--- a/gradio_app.py
++++ b/gradio_app.py
+@@ -55,13 +55,13 @@ transform = transforms.Compose([
+ ])
+ 
+ # ΓöÇΓöÇ Thresholds ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+-MIN_CONFIDENCE   = 30
++MIN_CONFIDENCE   = 40
+ MAX_ENTROPY      = 0.67
+ MAX_LAP_VARIANCE = 8000
+ ILLUS_HI_SAT_THRESH = 0.75
+ ILLUS_SKIN_THRESH   = 0.08
+ WHITE_BG_THRESHOLD  = 0.35
+-HOUGH_CIRCLE_MAX_MEAN = 185
++HOUGH_CIRCLE_MAX_MEAN = 145
+ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "bmp", "gif", "tiff"}
+ 
+ # ΓöÇΓöÇ Haar cascade ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+@@ -610,6 +610,7 @@ def is_eye_image(image_path: str) -> tuple:
+                 sep = np.hypot(dom_c[0]-sec_c[0], dom_c[1]-sec_c[1])
+                 if sep > max_dim * 0.65:
+                     return False, "This photo appears to show more than one eye. Please upload a close-up of just ONE eye."
++                log.info("Validation: PASSED via Cascade (Multiple Eye Logic)")
+                 return True, ""
+ 
+         # Hough fallback
+@@ -663,7 +664,7 @@ def is_eye_image(image_path: str) -> tuple:
+ 
+ def predict_single_model(image, model_name, groq_api_key):
+     if image is None:
+-        return "No image uploaded.", "", "", "", ""
++        return "No image uploaded.", "", "", "", "", None
+     
+     # Save image temporarily
+     ext = "png"
+@@ -675,13 +676,13 @@ def predict_single_model(image, model_name, groq_api_key):
+     is_valid, err_msg = is_eye_image(img_path)
+     if not is_valid:
+         os.remove(img_path)
+-        return err_msg, "", "", "", ""
++        return err_msg, "", "", "", "", None
+     
+     # Load model
+     model = get_model(model_name)
+     if model is None:
+         os.remove(img_path)
+-        return f"Model '{model_name}' could not be loaded.", "", "", "", ""
++        return f"Model '{model_name}' could not be loaded.", "", "", "", "", None
+     
+     # Preprocess
+     input_tensor = transform(image).unsqueeze(0)
+@@ -720,13 +721,14 @@ def predict_single_model(image, model_name, groq_api_key):
+         summary,
+         explanation["simple"],
+         explanation["technical"],
+-        explanation["ai_model"]
+-    ), heatmap
++        explanation["ai_model"],
++        heatmap
++    )
+ 
+ 
+ def predict_ensemble(image, groq_api_key):
+     if image is None:
+-        return "No image uploaded.", "", "", "", "", ""
++        return "No image uploaded.", "", "", "", "", "", None
+     
+     # Save image temporarily
+     ext = "png"
+@@ -738,7 +740,7 @@ def predict_ensemble(image, groq_api_key):
+     is_valid, err_msg = is_eye_image(img_path)
+     if not is_valid:
+         os.remove(img_path)
+-        return err_msg, "", "", "", "", ""
++        return err_msg, "", "", "", "", "", None
+     
+     # Preprocess
+     input_tensor = transform(image).unsqueeze(0)
+@@ -762,7 +764,7 @@ def predict_ensemble(image, groq_api_key):
+     
+     if not model_results:
+         os.remove(img_path)
+-        return "No models could run inference.", "", "", "", "", ""
++        return "No models could run inference.", "", "", "", "", "", None
+     
+     cataract_count = len(cataract_votes)
+     normal_count = len(normal_votes)
+@@ -781,11 +783,11 @@ def predict_ensemble(image, groq_api_key):
+     
+     if final_result["confidence"] < MIN_CONFIDENCE:
+         os.remove(img_path)
+-        return f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.", "", "", "", "", ""
++        return f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.", "", "", "", "", "", None
+     
+     if final_result["avg_entropy"] > MAX_ENTROPY:
+         os.remove(img_path)
+-        return "The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.", "", "", "", "", ""
++        return "The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.", "", "", "", "", "", None
+     
+     # Eye features
+     eye_features = analyze_eye_features(img_path)
+@@ -816,8 +818,9 @@ def predict_ensemble(image, groq_api_key):
+         individual_results,
+         summary,
+         explanation["simple"],
+-        explanation["technical"]
+-    ), heatmap
++        explanation["technical"],
++        heatmap
++    )
+ 
+ 
+ def list_models():
