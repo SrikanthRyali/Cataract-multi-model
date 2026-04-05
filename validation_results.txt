@@ -1,3 +1,0 @@
-Noise image result: False, This appears to be a screenshot or computer-generated image. Please upload a real photograph.
-Blank image result: False, The image appears blank or solid colour. Please upload a real eye photograph.
-MAX_LAP_VARIANCE: 8000

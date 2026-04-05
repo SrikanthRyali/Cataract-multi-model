@@ -55,17 +55,18 @@ transform = transforms.Compose([
 ])
 
 # ── Thresholds ─────────────────────────────────────────────────
-MIN_CONFIDENCE   = 40
+MIN_CONFIDENCE   = 30
 MAX_ENTROPY      = 0.67
 MAX_LAP_VARIANCE = 8000
 ILLUS_HI_SAT_THRESH = 0.75
 ILLUS_SKIN_THRESH   = 0.08
 WHITE_BG_THRESHOLD  = 0.35
-HOUGH_CIRCLE_MAX_MEAN = 145
+HOUGH_CIRCLE_MAX_MEAN = 185
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "bmp", "gif", "tiff"}
 
-# ── Haar cascade ───────────────────────────────────────────────
+# ── Haar cascades ──────────────────────────────────────────────
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
 # ── Global variables ───────────────────────────────────────────
 os.makedirs(MODEL_DIR,    exist_ok=True)
@@ -540,6 +541,12 @@ def is_eye_image(image_path: str) -> tuple:
         if np.std(gray) < 5:
             return False, "The image appears blank or solid colour. Please upload a real eye photograph."
 
+        # Extremely safe check: A purely black canvas with a tiny squiggle has > 80% perfect 0.
+        # Medical scans have black borders but usually < 50-60%.
+        if float(np.mean(gray == 0)) > 0.85:
+            return False, "This appears to be a drawing on a blank canvas. Please upload a real eye photograph."
+
+
         lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
         if lap_var > MAX_LAP_VARIANCE:
             return False, "This appears to be a screenshot or computer-generated image. Please upload a real photograph."
@@ -573,6 +580,11 @@ def is_eye_image(image_path: str) -> tuple:
         gray_eq = clahe.apply(gray)
         min_dim = min(h, w)
         max_dim = max(h, w)
+
+        # Extremely strict face check to avoid false positives on medical images
+        faces = face_cascade.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=8, minSize=(int(min_dim*0.35), int(min_dim*0.35)))
+        if len(faces) > 0:
+            return False, "This appears to be a full-face photo. Please upload a close-up of just ONE eye."
 
         min_det  = max(25, int(min_dim * 0.07))
         all_dets = []
@@ -664,7 +676,7 @@ def is_eye_image(image_path: str) -> tuple:
 
 def predict_single_model(image, model_name, groq_api_key):
     if image is None:
-        return "No image uploaded.", "", "", "", "", None
+        raise gr.Error("No image uploaded.")
     
     # Save image temporarily
     ext = "png"
@@ -676,13 +688,13 @@ def predict_single_model(image, model_name, groq_api_key):
     is_valid, err_msg = is_eye_image(img_path)
     if not is_valid:
         os.remove(img_path)
-        return err_msg, "", "", "", "", None
+        raise gr.Error(err_msg)
     
     # Load model
     model = get_model(model_name)
     if model is None:
         os.remove(img_path)
-        return f"Model '{model_name}' could not be loaded.", "", "", "", "", None
+        raise gr.Error(f"Model '{model_name}' could not be loaded.")
     
     # Preprocess
     input_tensor = transform(image).unsqueeze(0)
@@ -728,7 +740,7 @@ def predict_single_model(image, model_name, groq_api_key):
 
 def predict_ensemble(image, groq_api_key):
     if image is None:
-        return "No image uploaded.", "", "", "", "", "", None
+        raise gr.Error("No image uploaded.")
     
     # Save image temporarily
     ext = "png"
@@ -740,7 +752,7 @@ def predict_ensemble(image, groq_api_key):
     is_valid, err_msg = is_eye_image(img_path)
     if not is_valid:
         os.remove(img_path)
-        return err_msg, "", "", "", "", "", None
+        raise gr.Error(err_msg)
     
     # Preprocess
     input_tensor = transform(image).unsqueeze(0)
@@ -764,7 +776,7 @@ def predict_ensemble(image, groq_api_key):
     
     if not model_results:
         os.remove(img_path)
-        return "No models could run inference.", "", "", "", "", "", None
+        raise gr.Error("No models could run inference.")
     
     cataract_count = len(cataract_votes)
     normal_count = len(normal_votes)
@@ -783,11 +795,11 @@ def predict_ensemble(image, groq_api_key):
     
     if final_result["confidence"] < MIN_CONFIDENCE:
         os.remove(img_path)
-        return f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.", "", "", "", "", "", None
+        raise gr.Error(f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.")
     
     if final_result["avg_entropy"] > MAX_ENTROPY:
         os.remove(img_path)
-        return "The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.", "", "", "", "", "", None
+        raise gr.Error("The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.")
     
     # Eye features
     eye_features = analyze_eye_features(img_path)

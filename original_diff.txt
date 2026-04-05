@@ -1,0 +1,114 @@
+﻿diff --git a/gradio_app.py b/gradio_app.py
+index 2e304c5..f2d6f54 100644
+--- a/gradio_app.py
++++ b/gradio_app.py
+@@ -540,6 +540,7 @@ def is_eye_image(image_path: str) -> tuple:
+         if np.std(gray) < 5:
+             return False, "The image appears blank or solid colour. Please upload a real eye photograph."
+ 
++
+         lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+         if lap_var > MAX_LAP_VARIANCE:
+             return False, "This appears to be a screenshot or computer-generated image. Please upload a real photograph."
+@@ -610,6 +611,7 @@ def is_eye_image(image_path: str) -> tuple:
+                 sep = np.hypot(dom_c[0]-sec_c[0], dom_c[1]-sec_c[1])
+                 if sep > max_dim * 0.65:
+                     return False, "This photo appears to show more than one eye. Please upload a close-up of just ONE eye."
++                log.info("Validation: PASSED via Cascade (Multiple Eye Logic)")
+                 return True, ""
+ 
+         # Hough fallback
+@@ -663,7 +665,7 @@ def is_eye_image(image_path: str) -> tuple:
+ 
+ def predict_single_model(image, model_name, groq_api_key):
+     if image is None:
+-        return "No image uploaded.", "", "", "", ""
++        raise gr.Error("No image uploaded.")
+     
+     # Save image temporarily
+     ext = "png"
+@@ -675,13 +677,13 @@ def predict_single_model(image, model_name, groq_api_key):
+     is_valid, err_msg = is_eye_image(img_path)
+     if not is_valid:
+         os.remove(img_path)
+-        return err_msg, "", "", "", ""
++        raise gr.Error(err_msg)
+     
+     # Load model
+     model = get_model(model_name)
+     if model is None:
+         os.remove(img_path)
+-        return f"Model '{model_name}' could not be loaded.", "", "", "", ""
++        raise gr.Error(f"Model '{model_name}' could not be loaded.")
+     
+     # Preprocess
+     input_tensor = transform(image).unsqueeze(0)
+@@ -720,13 +722,14 @@ def predict_single_model(image, model_name, groq_api_key):
+         summary,
+         explanation["simple"],
+         explanation["technical"],
+-        explanation["ai_model"]
+-    ), heatmap
++        explanation["ai_model"],
++        heatmap
++    )
+ 
+ 
+ def predict_ensemble(image, groq_api_key):
+     if image is None:
+-        return "No image uploaded.", "", "", "", "", ""
++        raise gr.Error("No image uploaded.")
+     
+     # Save image temporarily
+     ext = "png"
+@@ -738,7 +741,7 @@ def predict_ensemble(image, groq_api_key):
+     is_valid, err_msg = is_eye_image(img_path)
+     if not is_valid:
+         os.remove(img_path)
+-        return err_msg, "", "", "", "", ""
++        raise gr.Error(err_msg)
+     
+     # Preprocess
+     input_tensor = transform(image).unsqueeze(0)
+@@ -762,7 +765,7 @@ def predict_ensemble(image, groq_api_key):
+     
+     if not model_results:
+         os.remove(img_path)
+-        return "No models could run inference.", "", "", "", "", ""
++        raise gr.Error("No models could run inference.")
+     
+     cataract_count = len(cataract_votes)
+     normal_count = len(normal_votes)
+@@ -781,11 +784,11 @@ def predict_ensemble(image, groq_api_key):
+     
+     if final_result["confidence"] < MIN_CONFIDENCE:
+         os.remove(img_path)
+-        return f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.", "", "", "", "", ""
++        raise gr.Error(f"The model is not confident enough ({final_result['confidence']:.1f}%). Please try a sharper, better-lit photo.")
+     
+     if final_result["avg_entropy"] > MAX_ENTROPY:
+         os.remove(img_path)
+-        return "The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.", "", "", "", "", ""
++        raise gr.Error("The AI models are uncertain about this image. Please upload a clearer, well-focused close-up of the eye.")
+     
+     # Eye features
+     eye_features = analyze_eye_features(img_path)
+@@ -816,8 +819,9 @@ def predict_ensemble(image, groq_api_key):
+         individual_results,
+         summary,
+         explanation["simple"],
+-        explanation["technical"]
+-    ), heatmap
++        explanation["technical"],
++        heatmap
++    )
+ 
+ 
+ def list_models():
+@@ -935,4 +939,4 @@ with gr.Blocks(title="Cataract Detection AI") as demo:
+             )
+ 
+ if __name__ == "__main__":
+-    demo.launch()
+\ No newline at end of file
++    demo.launch(ssr_mode=False)

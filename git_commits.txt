@@ -1,0 +1,5 @@
+﻿a079058 feat: implement Electron-based desktop application and update validation testing suite
+6b41ac1 feat: make HF token optional, improve validation, add Linux build support, and update inference thresholds
+5f48cc4 refactor: update chat interface with context-aware prompts and add Hugging Face token configuration to backend and frontend
+f1cedce fix : ssr mode
+333a0c1 finalgaradio
