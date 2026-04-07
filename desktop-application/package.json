@@ -13,21 +13,23 @@
   "build": {
     "appId": "com.srikanth.cataracthub",
     "productName": "Cataract Hub",
+    "directories": {
+      "output": "release"
+    },
     "win": {
+      "icon": "build/icon.png",
       "target": [
         "nsis",
         "portable"
       ]
     },
     "linux": {
+      "icon": "build/icon.png",
       "target": [
         "AppImage",
         "deb"
       ],
       "category": "Medical"
-    },
-    "directories": {
-      "output": "release"
     }
   },
   "keywords": [
