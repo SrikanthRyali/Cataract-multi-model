@@ -46,22 +46,17 @@ const chatInput         = document.getElementById('chat-input');
 // ── Settings ───────────────────────────────────
 function loadSettings() {
   const groqInput = document.getElementById('groq-api-key-input');
-  const hfInput   = document.getElementById('hf-token-input');
   if (groqInput) groqInput.value = localStorage.getItem('groq_api_key') || '';
-  if (hfInput)   hfInput.value   = localStorage.getItem('hf_token')     || '';
 }
 
 function saveSettings() {
   const groqKey = document.getElementById('groq-api-key-input').value.trim();
-  const hfToken = document.getElementById('hf-token-input').value.trim();
   localStorage.setItem('groq_api_key', groqKey);
-  localStorage.setItem('hf_token',     hfToken);
   showToast('✓ Settings saved', '#10b981');
   closeSubpage();
 }
 
 const getGroqKey = () => localStorage.getItem('groq_api_key') || '';
-const getHfToken = () => localStorage.getItem('hf_token')     || '';
 
 // ── Parse the Result string ────────────────────
 // Backend returns e.g.:  "Cataract - 87.30%"  or  "Normal - 94.10%"
@@ -225,8 +220,6 @@ async function runPrediction() {
       image:        selectedDataURL,   // main.js converts this Buffer for Gradio
       groq_api_key: groqKey,
     };
-    const hfToken = getHfToken();
-    if (hfToken) payload.hfToken = hfToken;
 
     // data is the raw array returned by gradio client
     const data = await window.api.huggingface.call(SPACE_ID, API_NAME, payload);
@@ -437,6 +430,14 @@ function renderResults(data, groqKey) {
   const metricsGrid   = document.getElementById('metrics-grid');
   metricsGrid.innerHTML = '';
   const clinicalMetrics = parseClinicalFeatures(rawIndividual, isCataract, confidence);
+  
+  // Force Lens Opacity to always be between 25 and 30 per user request
+  clinicalMetrics.forEach(m => {
+    if (m.name === 'Lens Opacity') {
+      m.value = Math.floor(Math.random() * (30 - 25 + 1)) + 25;
+    }
+  });
+
   const metricBarFills  = [];
 
   clinicalMetrics.forEach((metric) => {
@@ -476,11 +477,7 @@ function renderResults(data, groqKey) {
   banner.style.color       = isCataract ? '#9f1239'              : '#134e4a';
 
   // ── Explanations ──────────────────────────────
-  document.getElementById('exp-simple').textContent    = rawSimple    || '--';
-  document.getElementById('exp-technical').textContent = rawTechnical || '--';
-  // AI Model explanation: we auto-generate from votes string
-  const aiModelExp = rawIndividual || '--';
-  document.getElementById('exp-ai_model').textContent  = aiModelExp;
+  // Explanation tabs were removed from UI
 
   // ── AI Report ─────────────────────────────────
   const reportEl = document.getElementById('ai-report-content');
